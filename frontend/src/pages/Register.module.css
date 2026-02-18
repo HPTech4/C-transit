@@ -1,11 +1,114 @@
+:global(body) {
+  background: linear-gradient(
+    120deg,
+    rgba(7, 23, 50, 0.92),
+    rgba(7, 23, 50, 0.65) 40%,
+    rgba(8, 64, 138, 0.45)
+  );
+}
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
 .container {
-  padding: 2rem;
-  max-width: 400px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 460px;
+  background: rgba(10, 20, 38, 0.7);
+  color: #eef3ff;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(8, 27, 57, 0.45);
+  padding: 2.5rem 2.2rem;
+  backdrop-filter: blur(10px);
+}
+
+.title {
+  text-align: center;
+  font-family: "Segoe UI", "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  font-size: clamp(1.8rem, 2.6vw, 2.3rem);
+  margin: 0 0 0.35rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: rgba(238, 243, 255, 0.75);
+  margin: 0 0 1.8rem;
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef3ff;
+}
+
+.input::placeholder {
+  color: rgba(238, 243, 255, 0.6);
+}
+
+.actions {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.btn,
+.btnsec {
+  border-radius: 14px;
+  padding: 0.85rem 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  background: linear-gradient(120deg, rgba(81, 90, 216, 0.9), rgba(58, 118, 233, 0.9));
+  box-shadow: 0 8px 18px rgba(18, 86, 196, 0.35);
+}
+
+.btnsec {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #0f3951;
+  background: white;
+  box-shadow: 0 7px 15px rgba(8, 27, 57, 0.35);
+}
+
+.btn:hover,
+.btnsec:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.link {
+  color: #84b2ff;
+  text-decoration: underline;
+}
+
+.footnote {
+  text-align: center;
+  margin: 0;
+  color: rgba(238, 243, 255, 0.75);
+}
+
+@media (max-width: 520px) {
+  .hero {
+    padding: 2rem 1.2rem 3rem;
+  }
+
+  .container {
+    padding: 2rem 1.6rem;
+  }
 }

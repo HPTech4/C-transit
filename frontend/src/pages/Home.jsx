@@ -1,32 +1,35 @@
+import { Link } from 'react-router-dom';
 import styles from './Home.module.css';
+
 
 export default function Home() {
   return (
     <main className={styles.hero}>
       <header className={styles.nav}>
         <div className={styles.brand}>C Transit</div>
-        <div className={styles.tagline}>Smart campus transit platform</div>
+        <div className={styles.tagline}>Seamless campus transport transactions</div>
       </header>
 
       <section className={styles.content}>
-        <p className={styles.kicker}>Reliable journeys, every day</p>
-        <h1 className={styles.title}>Move with confidence across the campus.</h1>
+        <p className={styles.kicker}>Tap, ride, and move faster</p>
+        <h1 className={styles.title}>Pay once. Ride anywhere on campus.</h1>
         <p className={styles.subtitle}>
-          Plan routes, track arrivals, and stay informed with real-time updates built
-          for modern commuters.
+          C Transit makes on-campus transport simple with cashless payments, instant
+          verification, and clear trip history. No queues, no confusion, just smooth
+          rides between lecture halls, hostels, and labs.
         </p>
 
         <div className={styles.actions}>
-          <a className={`${styles.button} ${styles.primary}`} href="/login">
+          <Link className={`${styles.button} ${styles.primary}`} to="/login">
             Login
-          </a>
-          <a className={`${styles.button} ${styles.secondary}`} href="/register">
+          </Link>
+          <Link className={`${styles.button} ${styles.secondary}`} to="/register">
             Register
-          </a>
+          </Link>
         </div>
 
         <div className={styles.trust}>
-          Serving riders with live schedules, alerts, and trip planning.
+          Trusted for secure fares, transparent records, and fast boarding.
         </div>
       </section>
     </main>

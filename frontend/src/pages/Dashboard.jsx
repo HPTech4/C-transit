@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaBars, FaUser, FaChartBar, FaBus, FaWallet, FaCog, FaSignOutAlt, FaEdit, FaDownload, FaQrcode, FaWalletAlt, FaStar, FaArrowRight } from 'react-icons/fa';
+import { FaBars, FaUser, FaChartBar, FaBus, FaWallet, FaCog, FaSignOutAlt, FaEdit, FaDownload, FaQrcode,  FaStar, FaArrowRight } from 'react-icons/fa';
 import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
@@ -16,7 +16,7 @@ export default function Dashboard() {
     studentId: '20230154',
     matricNumber: 'PHY/2026/154',
     department: 'Department of Physics',
-    level: '700 Level',
+    level: '500 Level',
     email: 'azeez.alimi@campusmail.edu',
     phone: '+234 (0) 802-345-6789',
     profileImage: 'AZ',
@@ -72,7 +72,7 @@ export default function Dashboard() {
               setMobileMenuOpen(false);
             }}
           >
-            <FaChartBar /> Overview
+            <FaChartBar  /> Overview
           </button>
           <button
             className={`${styles.navItem} ${activeTab === 'trips' ? styles.active : ''}`}
@@ -215,7 +215,7 @@ export default function Dashboard() {
               <div className={styles.cardGrid}>
                 {/* Balance Card */}
                 <div className={styles.card}>
-                  <div className={styles.cardIcon}><FaWalletAlt /></div>
+                  <div className={styles.cardIcon}><FaWallet size={25}/></div>
                   <div className={styles.cardBody}>
                     <p className={styles.cardLabel}>Wallet Balance</p>
                     <p className={styles.cardValue}>₦{(userBalance / 100).toFixed(2)}</p>
@@ -230,7 +230,7 @@ export default function Dashboard() {
 
                 {/* Rides This Month */}
                 <div className={styles.card}>
-                  <div className={styles.cardIcon}><FaBus /></div>
+                  <div className={styles.cardIcon}><FaBus size={25} /></div>
                   <div className={styles.cardBody}>
                     <p className={styles.cardLabel}>Rides This Month</p>
                     <p className={styles.cardValue}>12</p>
@@ -245,7 +245,7 @@ export default function Dashboard() {
 
                 {/* Total Spent */}
                 <div className={styles.card}>
-                  <div className={styles.cardIcon}><FaChartBar /></div>
+                  <div className={styles.cardIcon}><FaChartBar size={25}/></div>
                   <div className={styles.cardBody}>
                     <p className={styles.cardLabel}>Total Spent</p>
                     <p className={styles.cardValue}>₦1,050</p>
@@ -260,7 +260,7 @@ export default function Dashboard() {
 
                 {/* Quick Book Ride */}
                 <div className={`${styles.card} ${styles.highlight}`}>
-                  <div className={styles.cardIcon}><FaArrowRight /></div>
+                  <div className={styles.cardIcon}><FaArrowRight size={25}/></div>
                   <div className={styles.cardBody}>
                     <p className={styles.cardLabel}>Ready to Ride?</p>
                     <p className={styles.cardValue}>Book Now</p>

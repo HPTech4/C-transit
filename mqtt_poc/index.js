@@ -1,10 +1,10 @@
 const mqtt = require('mqtt');
 
-// 1. Connect to the local Mosquitto broker
-const client = mqtt.connect('mqtt://localhost:1883');
+// 1. Connect to the PUBLIC HiveMQ broker instead of localhost
+const client = mqtt.connect('mqtt://broker.hivemq.com:1883');
 
-// 2. Define the topic for offline transaction flushing 
-const topic = 'ctransit/tx/flush';
+// 2. Make the topic unique for the public test
+const topic = 'ctransit/tx/test_queue_v1';
 
 // 3. What to do when the connection is successful
 client.on('connect', () => {

@@ -1,8 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
 import 'dotenv/config';
-import conncetDB from './config/db.js';
-import authroutes from './routes/auth.routes.js';
+import conncetDB from './src/config/db.js';
+import authroutes from './src/routes/auth.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

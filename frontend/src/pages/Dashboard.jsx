@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaBars, FaUser, FaChartBar, FaBus, FaWallet, FaCog, FaSignOutAlt, FaEdit, FaDownload, FaQrcode,  FaStar, FaArrowRight } from 'react-icons/fa';
+import { 
+  FaBars, FaUser, FaChartBar, FaBus, FaWallet, FaCog, FaSignOutAlt, 
+  FaEdit, FaDownload, FaQrcode, FaStar, FaArrowRight, FaHistory, FaClock,
+  FaEnvelope, FaPhone, FaIdCard, FaUniversity, FaCalendar, FaMapMarkerAlt
+} from 'react-icons/fa';
 import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('overview');
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [comingSoonMessage, setComingSoonMessage] = useState('');
 
@@ -45,24 +47,12 @@ export default function Dashboard() {
           <div className={styles.logoBadge}>CT</div>
           <button 
             className={styles.toggleBtn}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle sidebar"
           >
             <FaBars size={20} />
           </button>
         </div>
-
-        {/* Profile Preview in Sidebar */}
-        {!sidebarOpen && (
-          <div className={styles.profilePreview}>
-            <div className={styles.profileAvatar}>{student.profileImage}</div>
-            <div className={styles.profileInfo}>
-              <p className={styles.profileName}>{student.fullName}</p>
-              <p className={styles.profileId}>{student.studentId}</p>
-              <p className={styles.profileDept}>{student.level}</p>
-            </div>
-          </div>
-        )}
 
         <nav className={styles.sidebarNav}>
           <button
@@ -73,15 +63,6 @@ export default function Dashboard() {
             }}
           >
             <FaChartBar  /> Overview
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'trips' ? styles.active : ''}`}
-            onClick={() => {
-              setActiveTab('trips');
-              setMobileMenuOpen(false);
-            }}
-          >
-            <FaBus /> Trips
           </button>
           <button
             className={`${styles.navItem} ${activeTab === 'wallet' ? styles.active : ''}`}
@@ -100,6 +81,15 @@ export default function Dashboard() {
             }}
           >
             <FaUser /> Profile
+          </button>
+          <button
+            className={`${styles.navItem} ${activeTab === 'history' ? styles.active : ''}`}
+            onClick={() => {
+              setActiveTab('history');
+              setMobileMenuOpen(false);
+            }}
+          >
+            <FaHistory /> History
           </button>
           <button
             className={`${styles.navItem} ${activeTab === 'settings' ? styles.active : ''}`}
@@ -131,7 +121,13 @@ export default function Dashboard() {
           </button>
           <h1>Campus Transit Dashboard</h1>
           <div className={styles.headerActions}>
-            <span className={styles.userGreeting}>Welcome, {student.fullName.split(' ')[0]}</span>
+            <div className={styles.userProfile}>
+              <div className={styles.userAvatar}>{student.profileImage}</div>
+              <div className={styles.userInfo}>
+                <p className={styles.userName}>{student.fullName}</p>
+                <p className={styles.userLevel}>{student.level}</p>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -144,70 +140,7 @@ export default function Dashboard() {
         )}
 
         <div className={styles.content}>
-          {/* Profile Tab */}
-          {activeTab === 'profile' && (
-            <section className={styles.section}>
-              <div className={styles.profileCard}>
-                <div className={styles.profileHeader}>
-                  <div className={styles.largeAvatar}>{student.profileImage}</div>
-                  <div className={styles.profileHeaderInfo}>
-                    <h2>{student.fullName}</h2>
-                    <p className={styles.profileBadge}>{student.level}</p>
-                    <p className={styles.profileCampus}>{student.campus}</p>
-                  </div>
-                </div>
-
-                <div className={styles.profileGrid}>
-                  <div className={styles.profileField}>
-                    <label>Student ID</label>
-                    <p>{student.studentId}</p>
-                  </div>
-                  <div className={styles.profileField}>
-                    <label>Matric Number</label>
-                    <p>{student.matricNumber}</p>
-                  </div>
-                  <div className={styles.profileField}>
-                    <label>Department</label>
-                    <p>{student.department}</p>
-                  </div>
-                  <div className={styles.profileField}>
-                    <label>Email</label>
-                    <p>{student.email}</p>
-                  </div>
-                  <div className={styles.profileField}>
-                    <label>Phone</label>
-                    <p>{student.phone}</p>
-                  </div>
-                  <div className={styles.profileField}>
-                    <label>Member Since</label>
-                    <p>{student.joinDate}</p>
-                  </div>
-                </div>
-
-                <div className={styles.profileActions}>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('Profile Update')}
-                  >
-                    <FaEdit /> Edit Profile
-                  </button>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('ID Card Download')}
-                  >
-                    <FaDownload /> Download ID Card
-                  </button>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('QR Code')}
-                  >
-                    <FaQrcode /> View QR Code
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
-
+          
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <section className={styles.section}>
@@ -273,53 +206,150 @@ export default function Dashboard() {
                   </button>
                 </div>
               </div>
+
+              {/* Recent Activity Section */}
+              <div className={styles.recentSection}>
+                <div className={styles.sectionHeader}>
+                  <h3><FaHistory /> Recent Activity</h3>
+                  <button 
+                    className={styles.viewMoreBtn}
+                    onClick={() => setActiveTab('history')}
+                  >
+                    View More <FaArrowRight />
+                  </button>
+                </div>
+                <div className={styles.activityList}>
+                  {recentTrips.slice(0, 3).map((trip) => (
+                    <div key={trip.id} className={styles.activityItem}>
+                      <div className={styles.activityIcon}>
+                        <FaBus />
+                      </div>
+                      <div className={styles.activityInfo}>
+                        <p className={styles.activityTitle}>{trip.from} → {trip.to}</p>
+                        <p className={styles.activityTime}><FaClock /> {trip.time}</p>
+                      </div>
+                      <div className={styles.activityAmount}>₦{trip.fare.toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </section>
           )}
 
-          {/* Trips Tab */}
-          {activeTab === 'trips' && (
+          {/* Profile Tab */}
+          {activeTab === 'profile' && (
             <section className={styles.section}>
-              <h2>Recent Trips</h2>
-              <div className={styles.tripsList}>
-                {recentTrips.map((trip) => (
-                  <div key={trip.id} className={styles.tripItem}>
-                    <div className={styles.tripInfo}>
-                      <p className={styles.tripRoute}>{trip.from} → {trip.to}</p>
-                      <p className={styles.tripTime}>{trip.time}</p>
-                    </div>
-                    <div className={styles.tripFare}>₦{(trip.fare).toFixed(2)}</div>
+              <div className={styles.profileCard}>
+                <div className={styles.profileHeader}>
+                  <div className={styles.largeAvatar}>{student.profileImage}</div>
+                  <div className={styles.profileHeaderInfo}>
+                    <h2>{student.fullName}</h2>
+                    <p className={styles.profileBadge}>{student.level}</p>
+                    <p className={styles.profileCampus}>
+                      <FaMapMarkerAlt /> {student.campus}
+                    </p>
                   </div>
-                ))}
+                </div>
+
+                <div className={styles.profileGrid}>
+                  <div className={styles.profileFieldPro}>
+                    <div className={styles.fieldIcon}>
+                      <FaIdCard />
+                    </div>
+                    <div className={styles.fieldContent}>
+                      <label>Student ID</label>
+                      <p>{student.studentId}</p>
+                    </div>
+                  </div>
+                  <div className={styles.profileFieldPro}>
+                    <div className={styles.fieldIcon}>
+                      <FaIdCard />
+                    </div>
+                    <div className={styles.fieldContent}>
+                      <label>Matric Number</label>
+                      <p>{student.matricNumber}</p>
+                    </div>
+                  </div>
+                  <div className={styles.profileFieldPro}>
+                    <div className={styles.fieldIcon}>
+                      <FaUniversity />
+                    </div>
+                    <div className={styles.fieldContent}>
+                      <label>Department</label>
+                      <p>{student.department}</p>
+                    </div>
+                  </div>
+                  <div className={styles.profileFieldPro}>
+                    <div className={styles.fieldIcon}>
+                      <FaEnvelope />
+                    </div>
+                    <div className={styles.fieldContent}>
+                      <label>Email</label>
+                      <p>{student.email}</p>
+                    </div>
+                  </div>
+                  <div className={styles.profileFieldPro}>
+                    <div className={styles.fieldIcon}>
+                      <FaPhone />
+                    </div>
+                    <div className={styles.fieldContent}>
+                      <label>Phone</label>
+                      <p>{student.phone}</p>
+                    </div>
+                  </div>
+                  <div className={styles.profileFieldPro}>
+                    <div className={styles.fieldIcon}>
+                      <FaCalendar />
+                    </div>
+                    <div className={styles.fieldContent}>
+                      <label>Member Since</label>
+                      <p>{student.joinDate}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.profileActions}>
+                  <button 
+                    className={styles.btn}
+                    onClick={() => handleComingSoon('Profile Update')}
+                  >
+                    <FaEdit /> Edit Profile
+                  </button>
+                  <button 
+                    className={styles.btn}
+                    onClick={() => handleComingSoon('ID Card Download')}
+                  >
+                    <FaDownload /> Download ID Card
+                  </button>
+                  <button 
+                    className={styles.btn}
+                    onClick={() => handleComingSoon('QR Code')}
+                  >
+                    <FaQrcode /> View QR Code
+                  </button>
+                </div>
               </div>
-              <button 
-                className={styles.btn}
-                onClick={() => handleComingSoon('Full Trip History')}
-                style={{ marginTop: '1.5rem' }}
-              >
-                View Full History
-              </button>
             </section>
           )}
 
           {/* Wallet Tab */}
           {activeTab === 'wallet' && (
             <section className={styles.section}>
-              <h2>Wallet Management</h2>
-              <div className={styles.walletCard}>
-                <p>Current Balance: <strong>₦{(userBalance / 100).toFixed(2)}</strong></p>
-                <div className={styles.walletActions}>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('Add Funds')}
-                  >
-                    + Add Funds
-                  </button>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('Transaction History')}
-                  >
-                    View History
-                  </button>
+              <div className={styles.comingSoonContainer}>
+                <div className={styles.comingSoonIcon}>
+                  <FaWallet className={styles.pulseIcon} />
+                </div>
+                <h2 className={styles.comingSoonTitle}>Wallet Management</h2>
+                <p className={styles.comingSoonText}>
+                  Your digital wallet is coming soon with exciting features.
+                </p>
+                <p className={styles.comingSoonSubtext}>
+                  Manage your balance, add funds, view transactions, and transfer money seamlessly.
+                </p>
+                <div className={styles.comingSoonFeatures}>
+                  <span className={styles.featureBadge}>Add Funds</span>
+                  <span className={styles.featureBadge}>Transaction History</span>
+                  <span className={styles.featureBadge}>Quick Transfer</span>
                 </div>
               </div>
             </section>
@@ -328,35 +358,44 @@ export default function Dashboard() {
           {/* Settings Tab */}
           {activeTab === 'settings' && (
             <section className={styles.section}>
-              <h2>Account Settings</h2>
-              <div className={styles.settingsForm}>
-                <div className={styles.settingItem}>
-                  <label>Email</label>
-                  <input type="email" disabled value={student.email} />
+              <div className={styles.comingSoonContainer}>
+                <div className={styles.comingSoonIcon}>
+                  <FaCog className={styles.spinIcon} />
                 </div>
-                <div className={styles.settingItem}>
-                  <label>Phone</label>
-                  <input type="tel" disabled value={student.phone} />
+                <h2 className={styles.comingSoonTitle}>Account Settings</h2>
+                <p className={styles.comingSoonText}>
+                  We're working on bringing you advanced account settings.
+                </p>
+                <p className={styles.comingSoonSubtext}>
+                  Soon you'll be able to manage your profile, security settings, and preferences all in one place.
+                </p>
+                <div className={styles.comingSoonFeatures}>
+                  <span className={styles.featureBadge}>Two-Factor Authentication</span>
+                  <span className={styles.featureBadge}>Privacy Controls</span>
+                  <span className={styles.featureBadge}>Notification Settings</span>
                 </div>
-                <div className={styles.settingItem}>
-                  <label>Emergency Contact</label>
-                  <input type="tel" placeholder="Add emergency contact number" />
+              </div>
+            </section>
+          )}
+
+          {/* History Tab */}
+          {activeTab === 'history' && (
+            <section className={styles.section}>
+              <div className={styles.comingSoonContainer}>
+                <div className={styles.comingSoonIcon}>
+                  <FaHistory className={styles.pulseIcon} />
                 </div>
-                <div className={styles.settingItem}>
-                  <label>Two-Factor Authentication</label>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('2FA Setup')}
-                  >
-                    Enable 2FA
-                  </button>
+                <h2 className={styles.comingSoonTitle}>Transaction History</h2>
+                <p className={styles.comingSoonText}>
+                  Your complete transaction history is coming soon.
+                </p>
+                <p className={styles.comingSoonSubtext}>
+                  View detailed records of all your rides, payments, and refunds with advanced filtering options.
+                </p>
+                <div className={styles.comingSoonFeatures}>
+                  <span className={styles.featureBadge}>Filter by Date</span>
+                  <span className={styles.featureBadge}>Export Data</span>
                 </div>
-                <button 
-                  className={styles.btn}
-                  onClick={() => handleComingSoon('Settings Save')}
-                >
-                  Save Changes
-                </button>
               </div>
             </section>
           )}

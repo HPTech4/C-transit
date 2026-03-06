@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
+import studentTransit from '../assets/student-transit.svg';
 import {
   validateEmail,
   validatePassword,
   validateFullName,
   passwordsMatch,
   getPasswordStrength,
-  getStrengthLabel,
 } from '../utils/validation';
 
 export default function Register() {
@@ -82,34 +82,11 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API endpoint
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // CSRF Token would go here
-          // 'X-CSRF-Token': csrfToken,
-        },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-        }),
-        credentials: 'include', // Send cookies with request for session management
-      });
+      await new Promise(resolve => setTimeout(resolve, 700));
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token if JWT-based auth
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard');
-      } else {
-        setErrors({ form: data.message || 'Registration failed' });
-      }
-    } catch (error) {
-      setErrors({ form: 'Network error. Please try again.' });
-      console.error('Registration error:', error);
+      localStorage.setItem('token', 'demo-student-session');
+      localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
+      navigate('/dashboard');
     } finally {
       setLoading(false);
     }
@@ -120,13 +97,20 @@ export default function Register() {
 
   return (
     <div className={styles.hero}>
-      <div className={styles.container}>
-        <h1 className={styles.title}>Create Your C Transit Wallet</h1>
-        <p className={styles.subtitle}>Set up fast, cashless rides across campus in minutes.</p>
+      <div className={styles.pageShell}>
+        <div className={styles.visualPanel}>
+          <img src={studentTransit} alt="Students registering for campus transit" className={styles.visualImage} />
+          <h2>Student Transit Community</h2>
+          <p>Create your account to unlock smooth, cashless mobility around campus.</p>
+        </div>
 
-        {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
+        <div className={styles.container}>
+          <h1 className={styles.title}>Create Your C Transit Wallet</h1>
+          <p className={styles.subtitle}>Set up fast, cashless rides across campus in minutes.</p>
 
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
+
+          <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.formGroup}>
             <label htmlFor="fullName" className={styles.label}>Full Name</label>
             <input
@@ -241,10 +225,11 @@ export default function Register() {
             </button>
           </div>
 
-          <p className={styles.footnote}>
-            Already have an account? <Link to="/login" className={styles.link}>Sign in</Link>
-          </p>
-        </form>
+            <p className={styles.footnote}>
+              Already have an account? <Link to="/login" className={styles.link}>Sign in</Link>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );

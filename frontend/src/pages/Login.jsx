@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { validateEmail, validatePassword } from '../utils/validation';
+import { validateEmail } from '../utils/validation';
+import studentTransit from '../assets/student-transit.svg';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,6 +13,11 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const demoCredentials = {
+    email: 'student@ctransit.edu',
+    password: 'Student@123',
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,33 +61,20 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API endpoint
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // CSRF Token would go here
-          // 'X-CSRF-Token': csrfToken,
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-        credentials: 'include', // Send cookies with request for session management
-      });
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      const data = await response.json();
+      const emailMatches = formData.email.trim().toLowerCase() === demoCredentials.email;
+      const passwordMatches = formData.password === demoCredentials.password;
 
-      if (response.ok) {
-        // Store token if JWT-based auth
-        localStorage.setItem('token', data.token);
+      if (emailMatches && passwordMatches) {
+        localStorage.setItem('token', 'demo-student-session');
+        localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
         navigate('/dashboard');
       } else {
-        setErrors({ form: data.message || 'Login failed' });
+        setErrors({
+          form: 'Invalid demo credentials. Use the placeholder account shown below.',
+        });
       }
-    } catch (error) {
-      setErrors({ form: 'Network error. Please try again.' });
-      console.error('Login error:', error);
     } finally {
       setLoading(false);
     }
@@ -89,13 +82,36 @@ export default function Login() {
 
   return (
     <div className={styles.hero}>
-      <div className={styles.container}>
-        <h1 className={styles.title}>Welcome Back</h1>
-        <p className={styles.subtitle}>Access your campus wallet and ride history in seconds.</p>
+      <div className={styles.pageShell}>
+        <div className={styles.visualPanel}>
+          <img src={studentTransit} alt="Students using campus transit" className={styles.visualImage} />
+          <h2>Campus Life, Simplified</h2>
+          <p>Move between lecture halls, hostels, and departments with one student wallet.</p>
+        </div>
 
-        {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
+        <div className={styles.container}>
+          <h1 className={styles.title}>Welcome Back</h1>
+          <p className={styles.subtitle}>Access your campus wallet and ride history in seconds.</p>
 
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.demoBox}>
+            <p className={styles.demoTitle}>Demo Login (Backend pending)</p>
+            <p>Email: {demoCredentials.email}</p>
+            <p>Password: {demoCredentials.password}</p>
+            <button
+              type="button"
+              className={styles.demoFillBtn}
+              onClick={() => {
+                setFormData(demoCredentials);
+                setErrors({});
+              }}
+            >
+              Autofill Demo Account
+            </button>
+          </div>
+
+          {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
+
+          <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.label}>Campus Email</label>
             <input
@@ -160,7 +176,8 @@ export default function Login() {
           <p className={styles.footnote}>
             New to C Transit? <Link to="/register" className={styles.link}>Create an account</Link>
           </p>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

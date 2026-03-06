@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import styles from './Register.module.css';
 import studentTransit from '../assets/student-transit.svg';
 import {
@@ -10,11 +11,15 @@ import {
   getPasswordStrength,
 } from '../utils/validation';
 
+const API_URL = 'http://localhost:3000/api/auth';
+
 export default function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstname: '',
+    lastname: '',
     email: '',
+    matricNumber: '',
     password: '',
     confirmPassword: '',
   });
@@ -48,8 +53,16 @@ export default function Register() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!validateFullName(formData.fullName)) {
-      newErrors.fullName = 'Full name must be at least 2 characters';
+    if (!validateFullName(formData.firstname)) {
+      newErrors.firstname = 'First name must be at least 2 characters';
+    }
+
+    if (!validateFullName(formData.lastname)) {
+      newErrors.lastname = 'Last name must be at least 2 characters';
+    }
+
+    if (!formData.matricNumber.trim()) {
+      newErrors.matricNumber = 'Matric number is required';
     }
 
     if (!formData.email.trim()) {
@@ -80,13 +93,29 @@ export default function Register() {
     }
 
     setLoading(true);
+    setErrors({});
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 700));
+      const response = await axios.post(`${API_URL}/register`, {
+        firstname: formData.firstname.trim(),
+        lastname: formData.lastname.trim(),
+        email: formData.email.trim(),
+        matricNumber: formData.matricNumber.trim(),
+        password: formData.password,
+      });
 
-      localStorage.setItem('token', 'demo-student-session');
+      // Store token and redirect
+      localStorage.setItem('token', response.data.token || 'registered');
       localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
+      
       navigate('/dashboard');
+    } catch (error) {
+      if (error.response?.data?.message) {
+        setErrors({ form: error.response.data.message });
+      } else {
+        setErrors({ form: 'Registration failed. Please try again.' });
+      }
+      console.error('Registration error:', error);
     } finally {
       setLoading(false);
     }
@@ -111,19 +140,36 @@ export default function Register() {
           {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
 
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          <div className={styles.formGroup}>
-            <label htmlFor="fullName" className={styles.label}>Full Name</label>
-            <input
-              id="fullName"
-              type="text"
-              name="fullName"
-              placeholder="John Doe"
-              value={formData.fullName}
-              onChange={handleChange}
-              className={`${styles.input} ${errors.fullName ? styles.invalid : ''}`}
-              disabled={loading}
-            />
-            {errors.fullName && <span className={styles.errorText}>{errors.fullName}</span>}
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label htmlFor="firstname" className={styles.label}>First Name</label>
+              <input
+                id="firstname"
+                type="text"
+                name="firstname"
+                placeholder="John"
+                value={formData.firstname}
+                onChange={handleChange}
+                className={`${styles.input} ${errors.firstname ? styles.invalid : ''}`}
+                disabled={loading}
+              />
+              {errors.firstname && <span className={styles.errorText}>{errors.firstname}</span>}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="lastname" className={styles.label}>Last Name</label>
+              <input
+                id="lastname"
+                type="text"
+                name="lastname"
+                placeholder="Doe"
+                value={formData.lastname}
+                onChange={handleChange}
+                className={`${styles.input} ${errors.lastname ? styles.invalid : ''}`}
+                disabled={loading}
+              />
+              {errors.lastname && <span className={styles.errorText}>{errors.lastname}</span>}
+            </div>
           </div>
 
           <div className={styles.formGroup}>
@@ -139,6 +185,21 @@ export default function Register() {
               disabled={loading}
             />
             {errors.email && <span className={styles.errorText}>{errors.email}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="matricNumber" className={styles.label}>Matric Number</label>
+            <input
+              id="matricNumber"
+              type="text"
+              name="matricNumber"
+              placeholder="e.g., 2021/001234"
+              value={formData.matricNumber}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.matricNumber ? styles.invalid : ''}`}
+              disabled={loading}
+            />
+            {errors.matricNumber && <span className={styles.errorText}>{errors.matricNumber}</span>}
           </div>
 
           <div className={styles.formGroup}>

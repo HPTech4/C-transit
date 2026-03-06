@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import styles from './Login.module.css';
 import { validateEmail } from '../utils/validation';
 import studentTransit from '../assets/student-transit.svg';
+
+const API_URL = 'http://localhost:3000/api/auth';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,11 +16,6 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  const demoCredentials = {
-    email: 'student@ctransit.edu',
-    password: 'Student@123',
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,22 +57,27 @@ export default function Login() {
     }
 
     setLoading(true);
+    setErrors({});
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await axios.post(`${API_URL}/login`, {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
 
-      const emailMatches = formData.email.trim().toLowerCase() === demoCredentials.email;
-      const passwordMatches = formData.password === demoCredentials.password;
-
-      if (emailMatches && passwordMatches) {
-        localStorage.setItem('token', 'demo-student-session');
-        localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
-        navigate('/dashboard');
+      // Store token and user info
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      if (error.response?.data?.message) {
+        setErrors({ form: error.response.data.message });
       } else {
-        setErrors({
-          form: 'Invalid demo credentials. Use the placeholder account shown below.',
-        });
+        setErrors({ form: 'Login failed. Please try again.' });
       }
+      console.error('Login error:', error);
     } finally {
       setLoading(false);
     }
@@ -92,22 +95,6 @@ export default function Login() {
         <div className={styles.container}>
           <h1 className={styles.title}>Welcome Back</h1>
           <p className={styles.subtitle}>Access your campus wallet and ride history in seconds.</p>
-
-          <div className={styles.demoBox}>
-            <p className={styles.demoTitle}>Demo Login (Backend pending)</p>
-            <p>Email: {demoCredentials.email}</p>
-            <p>Password: {demoCredentials.password}</p>
-            <button
-              type="button"
-              className={styles.demoFillBtn}
-              onClick={() => {
-                setFormData(demoCredentials);
-                setErrors({});
-              }}
-            >
-              Autofill Demo Account
-            </button>
-          </div>
 
           {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
 

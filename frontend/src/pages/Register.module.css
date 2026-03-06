@@ -100,6 +100,12 @@
   gap: 0.5rem;
 }
 
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
 .label {
   color: #eef3ff;
   font-size: 0.9rem;
@@ -281,6 +287,11 @@
 
   .visualPanel {
     padding: 1.2rem;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
   }
 
   .container {

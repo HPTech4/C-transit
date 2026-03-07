@@ -4,7 +4,7 @@ import axios from 'axios';
 import styles from './Login.module.css';
 import { validateEmail } from '../utils/validation';
 
-const API_URL = 'https://c-transit.onrender.com/api/auth/login';
+const API_URL = 'https://c-transit.onrender.com/api/auth';
 
 export default function Login() {
   const navigate = useNavigate();

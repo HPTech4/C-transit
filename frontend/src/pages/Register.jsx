@@ -10,7 +10,7 @@ import {
   getPasswordStrength,
 } from '../utils/validation';
 
-const API_URL = 'https://c-transit.onrender.com/api/auth/register';
+const API_URL = 'https://c-transit.onrender.com/api/auth';
 
 export default function Register() {
   const navigate = useNavigate();

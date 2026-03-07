@@ -1,11 +1,10 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styles from './Login.module.css';
 import { validateEmail } from '../utils/validation';
-import studentTransit from '../assets/student-transit.svg';
 
-const API_URL = 'http://localhost:3000/api/auth';
+const API_URL = 'https://c-transit.onrender.com/api/auth/login';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -86,12 +85,7 @@ export default function Login() {
   return (
     <div className={styles.hero}>
       <div className={styles.pageShell}>
-        <div className={styles.visualPanel}>
-          <img src={studentTransit} alt="Students using campus transit" className={styles.visualImage} />
-          <h2>Campus Life, Simplified</h2>
-          <p>Move between lecture halls, hostels, and departments with one student wallet.</p>
-        </div>
-
+      
         <div className={styles.container}>
           <h1 className={styles.title}>Welcome Back</h1>
           <p className={styles.subtitle}>Access your campus wallet and ride history in seconds.</p>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styles from './Register.module.css';
-import studentTransit from '../assets/student-transit.svg';
 import {
   validateEmail,
   validatePassword,
@@ -11,7 +10,7 @@ import {
   getPasswordStrength,
 } from '../utils/validation';
 
-const API_URL = 'http://localhost:3000/api/auth';
+const API_URL = 'https://c-transit.onrender.com/api/auth/register';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -127,12 +126,6 @@ export default function Register() {
   return (
     <div className={styles.hero}>
       <div className={styles.pageShell}>
-        <div className={styles.visualPanel}>
-          <img src={studentTransit} alt="Students registering for campus transit" className={styles.visualImage} />
-          <h2>Student Transit Community</h2>
-          <p>Create your account to unlock smooth, cashless mobility around campus.</p>
-        </div>
-
         <div className={styles.container}>
           <h1 className={styles.title}>Create Your C Transit Wallet</h1>
           <p className={styles.subtitle}>Set up fast, cashless rides across campus in minutes.</p>
@@ -147,7 +140,7 @@ export default function Register() {
                 id="firstname"
                 type="text"
                 name="firstname"
-                placeholder="John"
+                placeholder="John Doe"
                 value={formData.firstname}
                 onChange={handleChange}
                 className={`${styles.input} ${errors.firstname ? styles.invalid : ''}`}

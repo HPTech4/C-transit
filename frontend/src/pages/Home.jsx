@@ -31,12 +31,12 @@ export default function Home() {
             <FaBolt className={styles.cardIcon} />
             <h2>Why CTransit?</h2>
             <div className={styles.placeholder}>
-            <li>
-                <ol> No change for cash </ol>
-                <ol> Fare disputes </ol>
-                <ol> No payment records  </ol>
-                <ol> No delay at peak our </ol>
-            </li>
+              <ul className={styles.bulletList}>
+                <li>No change for cash</li>
+                <li>Fare disputes</li>
+                <li>No payment records</li>
+                <li>No delay at peak hours</li>
+              </ul>
             </div>
             <p className={styles.cardDescription}>
               We're solving the transportation challenge on campus. Placeholder text for why students and the institution need this solution.
@@ -47,13 +47,12 @@ export default function Home() {
             <FaShieldAlt className={styles.cardIcon} />
             <h2>What We're Building</h2>
             <div className={styles.placeholder}>
-              <li>
-                <ol> Student wallet for </ol>
-                <ol> cashless payments </ol>
-                <ol> Fixed campus fare enforcement  </ol>
-                <ol> Tap/Scan boarding system </ol>
-                <ol> Instant ridde history </ol>
-            </li>
+              <ul className={styles.bulletList}>
+                <li>Student wallet for cashless payments</li>
+                <li>Fixed campus fare enforcement</li>
+                <li>Tap/Scan boarding system</li>
+                <li>Instant ride history</li>
+              </ul>
             </div>
             <p className={styles.cardDescription}>
               A complete digital wallet and transportation ecosystem. Placeholder text describing the comprehensive solution.
@@ -106,18 +105,18 @@ export default function Home() {
             <a href="https://twitter.com/ctransit" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
               <FaTwitter />
             </a>
-            <a href="https://facebook.com/ctransit" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
               <FaFacebook />
             </a>
-            <a href="https://instagram.com/ctransit" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
               <FaInstagram />
             </a>
-            <a href="https://linkedin.com/company/ctransit" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
               <FaLinkedin />
             </a>
           </div>
 
-          <a href="https://chat.whatsapp.com/ctransit-community" target="_blank" rel="noopener noreferrer" className={styles.whatsappButton}>
+          <a href="https://whatsapp.com/channel/0029VbCHvnf6BIEah3Yiqh2q" target="_blank" rel="noopener noreferrer" className={styles.whatsappButton}>
             <FaWhatsapp className={styles.whatsappIcon} />
             Join WhatsApp Community
           </a>

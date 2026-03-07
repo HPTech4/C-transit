@@ -14,7 +14,7 @@
   overflow: hidden;
   background-image:
     linear-gradient(135deg, rgba(7, 23, 50, 0.88), rgba(7, 23, 50, 0.75)),
-    url("https://images.unsplash.com/photo-1562365825-51b1c2e4cb48?auto=format&fit=crop&w=1600&q=80");
+    url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjSxWWUEAAcCMljpqJjsgmXqJDorane7WCqg&s");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -154,7 +154,7 @@
   border: 2px dashed #84b2ff;
   border-radius: 8px;
   padding: 2rem;
-  text-align: center;
+  text-align: left;
   color: #5a7fd4;
   font-weight: 500;
   margin-bottom: 1rem;
@@ -162,6 +162,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.bulletList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.bulletList li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #2d5fd4;
+  font-weight: 500;
+}
+
+.bulletList li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #3a76e9;
+  font-weight: bold;
+  font-size: 1.1rem;
 }
 
 .cardDescription {
@@ -310,7 +334,7 @@
   align-items: center;
   gap: 0.8rem;
   padding: 0.9rem 2rem;
-  background: #25D366;
+  background: #25d366;
   color: white;
   border-radius: 50px;
   font-weight: 600;
@@ -321,7 +345,7 @@
 }
 
 .whatsappButton:hover {
-  background: #20BA5A;
+  background: #20ba5a;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
 }

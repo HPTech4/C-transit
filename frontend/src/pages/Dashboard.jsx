@@ -45,13 +45,6 @@ export default function Dashboard() {
       <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
         <div className={styles.sidebarHeader}>
           <div className={styles.logoBadge}>CT</div>
-          <button 
-            className={styles.toggleBtn}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle sidebar"
-          >
-            <FaBars size={20} />
-          </button>
         </div>
 
         <nav className={styles.sidebarNav}>

@@ -17,11 +17,10 @@
 
 .pageShell {
   width: 100%;
-  max-width: 1120px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  align-items: stretch;
+  max-width: 550px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .visualPanel {
@@ -37,25 +36,23 @@
 }
 
 .visualImage {
-  width: 100%;
-  border-radius: 14px;
-  margin-bottom: 1rem;
+  display: none;
 }
 
 .visualPanel h2 {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.45rem 0;
   font-size: 1.35rem;
 }
 
 .visualPanel p {
+  color: rgba(238, 243, 255, 0.9);
+  font-size: 0.95rem;
+  line-height: 1.4;
   margin: 0;
-  color: rgba(238, 243, 255, 0.78);
 }
 
 .container {
   width: 100%;
-  max-width: 460px;
-  justify-self: end;
   background: rgba(10, 20, 38, 0.7);
   color: #eef3ff;
   border-radius: 18px;

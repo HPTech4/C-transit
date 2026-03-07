@@ -49,6 +49,15 @@ export default function Dashboard() {
 
   return (
     <div className={styles.wrapper}>
+      {/* Mobile Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className={styles.backdrop} 
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar - Desktop and Mobile */}
       <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
         <div className={styles.sidebarHeader}>

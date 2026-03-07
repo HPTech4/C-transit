@@ -27,12 +27,15 @@ app.get("/", (req, res) => {
   res.send("C-transit server is running");
 });
 <<<<<<< Updated upstream:index.js
+<<<<<<< Updated upstream:index.js
 app.use(cors({
   origin: [
     "http://localhost:3000",
     "// Add the frontend URL here"
   ],
 }));
+=======
+>>>>>>> Stashed changes:backend/index.js
 =======
 >>>>>>> Stashed changes:backend/index.js
 

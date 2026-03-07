@@ -1,25 +1,55 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import './App.css';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+
+const isAuthenticated = () => Boolean(localStorage.getItem('token'));
+
+function ProtectedRoute({ children }) {
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+}
+
+function PublicAuthRoute({ children }) {
+  return isAuthenticated() ? <Navigate to="/dashboard" replace /> : children;
+}
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Default Redirect */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/login"
+          element={(
+            <PublicAuthRoute>
+              <Login />
+            </PublicAuthRoute>
+          )}
+        />
+        <Route
+          path="/register"
+          element={(
+            <PublicAuthRoute>
+              <Register />
+            </PublicAuthRoute>
+          )}
+        />
+        <Route
+          path="/dashboard"
+          element={(
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          )}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
-  )
-     
+  );
 }
 
-export default App
+export default App;
 

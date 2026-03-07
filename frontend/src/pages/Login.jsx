@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styles from './Login.module.css';
 import { validateEmail } from '../utils/validation';
-
-const API_URL = 'https://c-transit.onrender.com/api/auth';
+import { AUTH_API_URL } from '../config/api';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,6 +14,26 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', message: '' });
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    setModalContent({
+      title: 'Forgot Password',
+      message: 'Password recovery feature is coming soon! Please contact your campus administrator for assistance.'
+    });
+    setShowModal(true);
+  };
+
+  const handleGoogleLogin = () => {
+    setModalContent({
+      title: 'Google Login',
+      message: 'Google OAuth integration is coming soon! Stay tuned for this convenient login option.'
+    });
+    setShowModal(true);
+  };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,7 +78,7 @@ export default function Login() {
     setErrors({});
 
     try {
-      const response = await axios.post(`${API_URL}/login`, {
+      const response = await axios.post(`${AUTH_API_URL}/login`, {
         email: formData.email.trim(),
         password: formData.password,
       });
@@ -99,7 +118,7 @@ export default function Login() {
               id="email"
               type="email"
               name="email"
-              placeholder="your.email@campus.edu"
+              placeholder="name.email@st.futminna.edu.ng"
               value={formData.email}
               onChange={handleChange}
               className={`${styles.input} ${errors.email ? styles.invalid : ''}`}
@@ -134,7 +153,7 @@ export default function Login() {
           </div>
 
           <div className={styles.row}>
-            <Link to="/forgot" className={styles.link}>Forgot password?</Link>
+            <a href="#" onClick={handleForgotPassword} className={styles.link}>Forgot password?</a>
           </div>
 
           <div className={styles.actions}>
@@ -148,6 +167,7 @@ export default function Login() {
             <button
               className={styles.btnsec}
               type="button"
+                onClick={handleGoogleLogin}
               disabled={loading}
             >
               Continue with Google
@@ -158,6 +178,22 @@ export default function Login() {
             New to C Transit? <Link to="/register" className={styles.link}>Create an account</Link>
           </p>
           </form>
+
+            {showModal && (
+              <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+                <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                  <button className={styles.modalClose} onClick={() => setShowModal(false)}>×</button>
+                  <div className={styles.modalIcon}>
+                    {modalContent.title.includes('Password') ? '🔐' : '🚀'}
+                  </div>
+                  <h2 className={styles.modalTitle}>{modalContent.title}</h2>
+                  <p className={styles.modalMessage}>{modalContent.message}</p>
+                  <button className={styles.modalBtn} onClick={() => setShowModal(false)}>
+                    Got it
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
       </div>
     </div>

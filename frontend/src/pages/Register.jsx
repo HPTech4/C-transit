@@ -9,8 +9,7 @@ import {
   passwordsMatch,
   getPasswordStrength,
 } from '../utils/validation';
-
-const API_URL = 'https://c-transit.onrender.com/api/auth';
+import { AUTH_API_URL } from '../config/api';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -27,6 +26,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', message: '' });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -84,6 +85,14 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleGoogleSignup = () => {
+    setModalContent({
+      title: 'Google Sign Up',
+      message: 'Google OAuth registration is coming soon! For now, please create your account using the form above.'
+    });
+    setShowModal(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -95,7 +104,7 @@ export default function Register() {
     setErrors({});
 
     try {
-      const response = await axios.post(`${API_URL}/register`, {
+      const response = await axios.post(`${AUTH_API_URL}/register`, {
         firstname: formData.firstname.trim(),
         lastname: formData.lastname.trim(),
         email: formData.email.trim(),
@@ -171,7 +180,7 @@ export default function Register() {
               id="email"
               type="email"
               name="email"
-              placeholder="your.email@campus.edu"
+              placeholder="name.email@st.futminna.edu.ng"
               value={formData.email}
               onChange={handleChange}
               className={`${styles.input} ${errors.email ? styles.invalid : ''}`}
@@ -273,6 +282,7 @@ export default function Register() {
             <button
               className={styles.btnsec}
               type="button"
+                onClick={handleGoogleSignup}
               disabled={loading}
             >
               Continue with Google
@@ -283,6 +293,20 @@ export default function Register() {
               Already have an account? <Link to="/login" className={styles.link}>Sign in</Link>
             </p>
           </form>
+
+            {showModal && (
+              <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+                <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                  <button className={styles.modalClose} onClick={() => setShowModal(false)}>×</button>
+                  <div className={styles.modalIcon}>🚀</div>
+                  <h2 className={styles.modalTitle}>{modalContent.title}</h2>
+                  <p className={styles.modalMessage}>{modalContent.message}</p>
+                  <button className={styles.modalBtn} onClick={() => setShowModal(false)}>
+                    Got it
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
       </div>
     </div>

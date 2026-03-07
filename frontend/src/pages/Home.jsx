@@ -30,23 +30,23 @@ export default function Home() {
           <div className={styles.infoCard}>
             <FaBolt className={styles.cardIcon} />
             <h2>Why CTransit?</h2>
-            <div className={styles.placeholder}>
+            <div className={styles.featureListShell}>
               <ul className={styles.bulletList}>
                 <li>No change for cash</li>
                 <li>Fare disputes</li>
-                <li>No payment records</li>
-                <li>No delay at peak hours</li>
+                <li>Clear payment records</li>
+                <li>Delays at peak hours</li>
               </ul>
             </div>
             <p className={styles.cardDescription}>
-              We're solving the transportation challenge on campus. Placeholder text for why students and the institution need this solution.
+              CTransit removes boarding friction by replacing cash handling with secure digital payments, transparent fares, and verifiable trip records for students and operators.
             </p>
           </div>
 
           <div className={styles.infoCard}>
             <FaShieldAlt className={styles.cardIcon} />
             <h2>What We're Building</h2>
-            <div className={styles.placeholder}>
+            <div className={styles.featureListShell}>
               <ul className={styles.bulletList}>
                 <li>Student wallet for cashless payments</li>
                 <li>Fixed campus fare enforcement</li>
@@ -55,7 +55,7 @@ export default function Home() {
               </ul>
             </div>
             <p className={styles.cardDescription}>
-              A complete digital wallet and transportation ecosystem. Placeholder text describing the comprehensive solution.
+              We are delivering a complete campus mobility platform with wallet funding, fare automation, and accountability tools designed for institutional scale.
             </p>
           </div>
         </div>
@@ -83,8 +83,8 @@ export default function Home() {
           <div className={styles.step}>
             <div className={styles.stepNumber}>3</div>
             <FaQrcode className={styles.stepIcon} />
-            <h3>Scan & Ride Instantly</h3>
-            <p>Scan the QR code when boarding. Instant deduction. No cash, no delays.</p>
+            <h3>Tap Your Card & Ride Instantly</h3>
+            <p>Tap your card when boarding. Instant deduction. No cash, no delays.</p>
           </div>
 
         </div>
@@ -102,16 +102,16 @@ export default function Home() {
           <p className={styles.socialSubtext}>Be part of the movement shaping campus mobility</p>
           
           <div className={styles.socialLinks}>
-            <a href="https://twitter.com/ctransit" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
+            <a href="https://twitter.com/ctransit" target="_blank" rel="noopener noreferrer" className={styles.socialIcon} aria-label="Follow CTransit on Twitter">
               <FaTwitter />
             </a>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon} aria-label="Follow CTransit on Facebook">
               <FaFacebook />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon} aria-label="Follow CTransit on Instagram">
               <FaInstagram />
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon}>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className={styles.socialIcon} aria-label="Follow CTransit on LinkedIn">
               <FaLinkedin />
             </a>
           </div>

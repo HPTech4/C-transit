@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   FaBars, FaUser, FaChartBar, FaBus, FaWallet, FaCog, FaSignOutAlt, 
   FaEdit, FaDownload, FaQrcode, FaStar, FaArrowRight, FaHistory, FaClock,
@@ -7,6 +8,7 @@ import {
 import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [showComingSoon, setShowComingSoon] = useState(false);
@@ -22,7 +24,7 @@ export default function Dashboard() {
     email: 'azeez.alimi@campusmail.edu',
     phone: '+234 (0) 802-345-6789',
     profileImage: 'AZ',
-    joinDate: 'Februrary 2026',
+    joinDate: 'February 2026',
     campus: 'Gidan Kwano Campus',
   };
 
@@ -37,6 +39,12 @@ export default function Dashboard() {
     setComingSoonMessage(feature);
     setShowComingSoon(true);
     setTimeout(() => setShowComingSoon(false), 3000);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('studentEmail');
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -96,7 +104,7 @@ export default function Dashboard() {
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <button className={styles.logoutBtn}>
+          <button className={styles.logoutBtn} onClick={handleLogout}>
             <FaSignOutAlt /> Logout
           </button>
         </div>

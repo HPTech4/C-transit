@@ -1,11 +1,12 @@
 import User from "../models/user.models.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import 'dotenv/config';
+import "dotenv/config";
 
 // Register a Student
 export const registerStudent = async (req, res) => {
   const { firstname, lastname, email, matricNumber, password } = req.body;
+
   // Check missing fields
   try {
     if (!firstname || !lastname || !email || !matricNumber || !password) {
@@ -14,8 +15,28 @@ export const registerStudent = async (req, res) => {
         .json({ message: "Please provide all required fields" });
     }
 
+    // Validate email domain
+    if (!email.endsWith("@st.futminna.edu.ng")) {
+      return res.status(400).json({
+        message:
+          "Email must be a school email ending with '@st.futminna.edu.ng'",
+      });
+    }
+
+    // Validate matric number format
+    const matricRegex = /^\d{4}\/\d+\/[A-Z0-9]+$/;
+
+    if (!matricRegex.test(matricNumber)) {
+      return res.status(400).json({
+        message:
+          "Invalid matric number format. Expected format: 2021/1/88774LH",
+      });
+    }
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      $or: [{ email }, { matricNumber }],
+    });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -56,7 +77,7 @@ export const loginStudent = async (req, res) => {
     // Check User Credentials
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User does not exist" });
+      return res.status(400).json({ message: "Invalid Credentials" });
     }
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);

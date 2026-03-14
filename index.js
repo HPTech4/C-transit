@@ -22,7 +22,6 @@ app.use(cors({
 
 connectDB();
 
-
 app.get("/", (req, res) => {
   res.send("C-transit server is running");
 });

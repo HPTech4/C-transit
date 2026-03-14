@@ -1,4 +1,4 @@
-const { insertRideBatch } = require('PLACEHOLDER_PATH'); 
+const { insertRideBatch } = require('../db/insertRideBatch.js'); 
 
 async function forwardToBackend(batch) {
     // Guard clause: Do nothing if the batch is empty

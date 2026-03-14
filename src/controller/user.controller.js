@@ -1,102 +1,93 @@
-import User from "../models/user.models.js";
+import prisma from "../lib/prisma.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
 // Register a Student
 export const registerStudent = async (req, res) => {
-  const { firstname, lastname, email, matricNumber, password } = req.body;
-
-  // Check missing fields
   try {
+    const { firstname, lastname, email, matricNumber, password } = req.body;
+
     if (!firstname || !lastname || !email || !matricNumber || !password) {
-      return res
-        .status(400)
-        .json({ message: "Please provide all required fields" });
+      return res.status(400).json({ message: "All fields required" });
     }
 
-    // Validate email domain
-    if (!email.endsWith("@st.futminna.edu.ng")) {
-      return res.status(400).json({
-        message:
-          "Email must be a school email ending with '@st.futminna.edu.ng'",
-      });
-    }
-
-    // Validate matric number format
-    const matricRegex = /^\d{4}\/\d+\/[A-Z0-9]+$/;
-
-    if (!matricRegex.test(matricNumber)) {
-      return res.status(400).json({
-        message:
-          "Invalid matric number format. Expected format: 2021/1/88774LH",
-      });
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({
-      $or: [{ email }, { matricNumber }],
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { matricNumber }],
+      },
     });
+
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({
+        message: "User already exists",
+      });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
-    const newUser = new User({
-      firstname,
-      lastname,
-      email,
-      matricNumber,
-      password: hashedPassword,
-      role: "student",
+    const User = await prisma.user.create({
+      data: {
+        firstname,
+        lastname,
+        email: email.toLowerCase(),
+        matricNumber: matricNumber.toUpperCase(),
+        password: hashedPassword,
+        role: "STUDENT",
+      },
     });
 
-    await newUser.save();
-
-    res.status(201).json({ message: "Student registered successfully" });
+    res.status(201).json({
+      message: "Student registered successfully",
+    });
   } catch (error) {
-    console.error("Error registering student:", error);
-    res.status(500).json({ message: "Internal Server error" });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 export const loginStudent = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    // Check missing fields
+    const { email, password } = req.body;
+
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Please provide all required fields" });
+      return res.status(400).json({
+        message: "Please provide email and password",
+      });
     }
 
-    // Check User Credentials
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
     if (!user) {
-      return res.status(400).json({ message: "Invalid Credentials" });
+      return res.status(400).json({
+        message: "Invalid email or password",
+      });
     }
-    // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid credentials" });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(400).json({
+        message: "Invalid email or password",
+      });
     }
 
     const token = jwt.sign(
       {
-        userId: user._id,
+        userId: user.id,
         role: user.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({ token, message: "Login successful" });
+    res.json({
+      token,
+      message: "Login successful",
+    });
   } catch (error) {
-    console.error("Error logging in student:", error);
-    res.status(500).json({ message: "Internal Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -1,7 +1,6 @@
 // terminalPublisher.js
 
 function triggerOTAUpdate(client, firmwareUrl) {
-    /
     const topic = 'ctransit/terminals/cmd/update'; 
     
     

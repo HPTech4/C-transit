@@ -1,15 +1,18 @@
-import mongoose from "mongoose";
-
-const MONGO_URI = process.env.MONGO_URI;
+import prisma from "../lib/prisma.js";
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log("MongoDB connection successful");
+    await prisma.$connect();
+    console.log("DB Connected Successfully");
   } catch (error) {
-    console.error("MongoDB connection error:", error);
+    console.error("Database Connection Error:", error);
     process.exit(1);
   }
 };
 
+const disconnectDB = async () => {
+  await prisma.$disconnect();
+};
+
+export { prisma, connectDB, disconnectDB };
 export default connectDB;

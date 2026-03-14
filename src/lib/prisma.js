@@ -1,0 +1,22 @@
+import { PrismaClient } from "@prisma/client";
+
+const isProduction = process.env.NODE_ENV === "production";
+const pooledUrl = process.env.DATABASE_URL;
+const directUrl = process.env.DIRECT_URL;
+
+if (!pooledUrl && !directUrl) {
+  throw new Error("Missing database connection string. Set DATABASE_URL or DIRECT_URL.");
+}
+
+const databaseUrl = isProduction ? pooledUrl : directUrl ?? pooledUrl;
+
+const prisma = new PrismaClient({
+  log: isProduction ? ["error"] : ["query", "error", "warn"],
+  datasources: {
+    db: {
+      url: databaseUrl,
+    },
+  },
+});
+
+export default prisma;

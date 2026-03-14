@@ -29,6 +29,15 @@ model User {
   updatedAt    DateTime @updatedAt
 }
 
+model Transaction {
+  transaction_id   String   @id
+  type             String
+  amount           Int
+  terminal_id      String
+  device_timestamp DateTime
+  server_sync_time DateTime
+}
+
 enum Role {
   STUDENT
   ADMIN

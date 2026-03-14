@@ -210,11 +210,18 @@
   font-weight: 500;
   width: 100%;
   text-align: left;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
 }
-
+.whatsappLink {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 85%);
+  color: white;
+  padding: 0.85rem 1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+}
 .logoutBtn:hover {
   background: rgba(255, 71, 87, 0.25);
   color: #ff7f8c;
@@ -316,7 +323,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
@@ -393,67 +399,6 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  justify-content: center;
-}
-
-/* Professional Profile Fields */
-.profileFieldPro {
-  background: white;
-  border: 1px solid #f0f3f7;
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.profileFieldPro:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.fieldIcon {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #5a5ac2 0%, #3a76e9 100%);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.fieldContent {
-  flex: 1;
-  text-align: left;
-}
-
-.fieldContent label {
-  display: block;
-  color: #999;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-  margin-bottom: 0.3rem;
-}
-
-.fieldContent p {
-  margin: 0;
-  color: #0b2c5a;
-  font-size: 1rem;
-  font-weight: 600;
-  word-break: break-word;
-}
-
-.profileCampus {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 /* Card Grid */
@@ -2006,4 +1951,112 @@
     font-size: 0.9rem;
     min-height: 44px;
   }
+}
+
+/* Overlay Styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.overlayContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+}
+
+.overlayContent h1 {
+  margin-bottom: 1rem;
+  color: #0b2c5a;
+}
+
+.overlayContent p {
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.overlayContent a {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.overlayContent a:hover {
+  text-decoration: underline;
+}
+
+.overlayContent button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #5a5ac2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.overlayContent button:hover {
+  background: #3a76e9;
+}
+
+/* Animated Progress Bar */
+.progressBar {
+  position: relative;
+  height: 1rem;
+  background: #e5e9f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progressBar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(135deg, #5a5ac2 0%, #3a76e9 100%);
+  animation: progressAnimation 2s ease-in-out forwards;
+}
+
+@keyframes progressAnimation {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--progress-value, 100%);
+  }
+}
+
+/* Style for the list items */
+.animatedListItem {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInList 0.5s ease-in forwards;
+}
+
+@keyframes fadeInList {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }

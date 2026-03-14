@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   FaBars, FaUser, FaChartBar, FaBus, FaWallet, FaCog, FaSignOutAlt, 
   FaEdit, FaDownload, FaQrcode, FaStar, FaArrowRight, FaHistory, FaClock,
   FaEnvelope, FaPhone, FaIdCard, FaUniversity, FaCalendar, FaMapMarkerAlt
 } from 'react-icons/fa';
+
 import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
@@ -13,6 +14,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [comingSoonMessage, setComingSoonMessage] = useState('');
+  const [overlayVisible, setOverlayVisible] = useState(true);
+  const [registeredUsers, setRegisteredUsers] = useState(0);
 
   // Mock student data
   const student = {
@@ -28,12 +31,36 @@ export default function Dashboard() {
     campus: 'Gidan Kwano Campus',
   };
 
-  const userBalance = 2500; // Mock balance in cents
-  const recentTrips = [
-    { id: 1, from: 'School Gate ', to: 'SLS', fare: 150, time: '2 hours ago' },
-    { id: 2, from: 'Library', to: 'Hostel A', fare: 150, time: '5 hours ago' },
-    { id: 3, from: 'Bus Park', to: 'Engineering', fare: 150, time: '1 day ago' },
-  ];
+  const userName = localStorage.getItem('userName') || student.fullName; 
+  const zeroBalance = 0; // Set all amounts to zero
+
+  useEffect(() => {
+    // Fetch the real-time registered user count
+    const fetchRegisteredUsers = async () => {
+      try {
+        const response = await fetch('/api/registered-users'); // Replace with your actual API endpoint
+        const data = await response.json();
+        setRegisteredUsers(data.registeredUsers);
+      } catch (error) {
+        console.error('Error fetching registered users:', error);
+      }
+    };
+
+    fetchRegisteredUsers();
+  }, []);
+
+  useEffect(() => {
+    const handleError = (error) => {
+      console.error('Network error:', error);
+      alert('A network error occurred. Please check your connection.');
+    };
+
+    window.addEventListener('error', handleError);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
 
   const handleComingSoon = (feature) => {
     setComingSoonMessage(feature);
@@ -49,6 +76,37 @@ export default function Dashboard() {
 
   return (
     <div className={styles.wrapper}>
+      {overlayVisible && (
+        <div className={styles.overlay}>
+          <div className={styles.overlayContent}>
+            <h1>Welcome, {student.fullName}</h1>
+            <p>You’re part of the early access group for CTransit.</p>
+            <p>
+              <strong>Early Access Status:</strong> You are among the first students preparing to use CTransit. <br />
+              <span style={{ fontSize: '1.5rem', color: '#3a76e9', animation: 'pulse 1.5s infinite' }}>
+                {registeredUsers} registered users
+              </span>.
+            </p>
+            <p><strong>System Preparation in Progress:</strong></p>
+            <ul>
+              <li className={styles.animatedListItem} style={{ animationDelay: '0.2s' }}>
+                Wallet system: <div className={styles.progressBar} style={{ '--progress-value': '90%' }}></div> 90%
+              </li>
+              <li className={styles.animatedListItem} style={{ animationDelay: '0.4s' }}>
+                Driver terminals: <div className={styles.progressBar} style={{ '--progress-value': '45%' }}></div> 45%
+              </li>
+              <li className={styles.animatedListItem} style={{ animationDelay: '0.6s' }}>
+                Campus rollout: <div className={styles.progressBar} style={{ '--progress-value': '5%' }}></div> 5%
+              </li>
+            </ul>
+            <a href="https://whatsapp.com/channel/0029VbCHvnf6BIEah3Yiqh2q" target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
+              Join the WhatsApp Community
+            </a>
+            
+          </div>
+        </div>
+      )}
+
       {/* Mobile Backdrop Overlay */}
       {mobileMenuOpen && (
         <div 
@@ -129,7 +187,7 @@ export default function Dashboard() {
           >
             <FaBars size={24} />
           </button>
-          <h1>Campus Transit Dashboard</h1>
+          <h1>Welcome, {userName}</h1>
           <div className={styles.headerActions}>
             <div className={styles.userProfile}>
               <div className={styles.userAvatar}>{student.profileImage}</div>
@@ -161,7 +219,7 @@ export default function Dashboard() {
                   <div className={styles.cardIcon}><FaWallet size={25}/></div>
                   <div className={styles.cardBody}>
                     <p className={styles.cardLabel}>Wallet Balance</p>
-                    <p className={styles.cardValue}>₦{(userBalance / 100).toFixed(2)}</p>
+                    <p className={styles.cardValue}>₦{zeroBalance.toFixed(2)}</p>
                   </div>
                   <button 
                     className={styles.cardAction}
@@ -191,7 +249,7 @@ export default function Dashboard() {
                   <div className={styles.cardIcon}><FaChartBar size={25}/></div>
                   <div className={styles.cardBody}>
                     <p className={styles.cardLabel}>Total Spent</p>
-                    <p className={styles.cardValue}>₦1,050</p>
+                    <p className={styles.cardValue}>₦{zeroBalance.toFixed(2)}</p>
                   </div>
                   <button 
                     className={styles.cardAction}
@@ -228,20 +286,7 @@ export default function Dashboard() {
                     View More <FaArrowRight />
                   </button>
                 </div>
-                <div className={styles.activityList}>
-                  {recentTrips.slice(0, 3).map((trip) => (
-                    <div key={trip.id} className={styles.activityItem}>
-                      <div className={styles.activityIcon}>
-                        <FaBus />
-                      </div>
-                      <div className={styles.activityInfo}>
-                        <p className={styles.activityTitle}>{trip.from} → {trip.to}</p>
-                        <p className={styles.activityTime}><FaClock /> {trip.time}</p>
-                      </div>
-                      <div className={styles.activityAmount}>₦{trip.fare.toFixed(2)}</div>
-                    </div>
-                  ))}
-                </div>
+               
               </div>
             </section>
           )}

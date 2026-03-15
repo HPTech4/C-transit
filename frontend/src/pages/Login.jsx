@@ -17,6 +17,55 @@ export default function Login() {
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '' });
 
+  const getUserNameFromResponse = (data) => {
+    const candidateNames = [
+      data?.user?.name,
+      data?.user?.fullName,
+      data?.user?.fullname,
+      [data?.user?.firstname, data?.user?.lastname].filter(Boolean).join(' ').trim(),
+      data?.name,
+      data?.fullName,
+      data?.fullname,
+      [data?.firstname, data?.lastname].filter(Boolean).join(' ').trim(),
+    ];
+
+    const directName = candidateNames.find(
+      (value) => typeof value === 'string' && value.trim().length > 0,
+    );
+
+    if (directName) {
+      return directName.trim();
+    }
+
+    const token = data?.token;
+    if (typeof token !== 'string' || !token.includes('.')) {
+      return '';
+    }
+
+    try {
+      const payloadBase64 = token.split('.')[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+      const paddedPayload = payloadBase64.padEnd(Math.ceil(payloadBase64.length / 4) * 4, '=');
+      const payload = JSON.parse(atob(paddedPayload));
+
+      const tokenNames = [
+        payload?.name,
+        payload?.fullName,
+        payload?.fullname,
+        [payload?.firstname, payload?.lastname].filter(Boolean).join(' ').trim(),
+      ];
+
+      const tokenName = tokenNames.find(
+        (value) => typeof value === 'string' && value.trim().length > 0,
+      );
+
+      return tokenName ? tokenName.trim() : '';
+    } catch {
+      return '';
+    }
+  };
+
   const handleForgotPassword = (e) => {
     e.preventDefault();
     setModalContent({
@@ -86,7 +135,15 @@ export default function Login() {
       // Store token and user info
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
-      
+
+      // Persist the logged-in user's name for dashboard rendering.
+      const resolvedUserName = getUserNameFromResponse(response.data);
+      if (resolvedUserName) {
+        localStorage.setItem('userName', resolvedUserName);
+      } else {
+        localStorage.removeItem('userName');
+      }
+
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (error) {

@@ -41,24 +41,37 @@ This repository contains the **frontend code** for the Cashless Campus Platform.
 git clone https://github.com/your-username/cashless-campus.git
 cd cashless-campus
 ```
+
 **Install frontend dependencies**
+
+```bash
 cd frontend
 npm install
+```
+
+**Set frontend API URL**
+
+Create `frontend/.env` and set:
+
+```bash
+VITE_API_URL=https://c-transit.onrender.com
+```
 
 **Start frontend server**
-npm start
+
+```bash
+npm run dev
+```
 
 **Backend setup (done by backend dev)**
 
 - Navigate to the backend folder
-
-- Run npm install to install dependencies
-
-- Start server: npm run dev
+- Run `npm install` to install dependencies
+- Start server: `npm run dev`
 
 **Connect frontend to backend**
 
-- Update API endpoints in frontend config if needed
+- Ensure `VITE_API_URL` points to the active backend instance
   
 **Contributing**
 

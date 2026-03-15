@@ -19,7 +19,7 @@ export default function Dashboard() {
 
   // Mock student data
   const student = {
-    fullName: 'Alimi Azeez',
+    fullName: 'Alimi Azeez Opeyemi',
     studentId: '20230154',
     matricNumber: 'PHY/2026/154',
     department: 'Department of Physics',
@@ -31,7 +31,13 @@ export default function Dashboard() {
     campus: 'Gidan Kwano Campus',
   };
 
-  const userName = localStorage.getItem('userName') || student.fullName; 
+  const userName = (localStorage.getItem('userName') || '').trim();
+  const userInitials = userName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('');
   const zeroBalance = 0; // Set all amounts to zero
 
   useEffect(() => {
@@ -71,6 +77,7 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('studentEmail');
+    localStorage.removeItem('userName');
     navigate('/login', { replace: true });
   };
 
@@ -79,7 +86,7 @@ export default function Dashboard() {
       {overlayVisible && (
         <div className={styles.overlay}>
           <div className={styles.overlayContent}>
-            <h1>Welcome, {student.fullName}</h1>
+            <h1>Welcome, {userName}</h1>
             <p>You’re part of the early access group for CTransit.</p>
             <p>
               <strong>Early Access Status:</strong> You are among the first students preparing to use CTransit. <br />
@@ -88,7 +95,7 @@ export default function Dashboard() {
               </span>.
             </p>
             <p><strong>System Preparation in Progress:</strong></p>
-            <ul>
+            <ul style={{ marginBottom: '2.5rem' }}>
               <li className={styles.animatedListItem} style={{ animationDelay: '0.2s' }}>
                 Wallet system: <div className={styles.progressBar} style={{ '--progress-value': '90%' }}></div> 90%
               </li>
@@ -99,10 +106,9 @@ export default function Dashboard() {
                 Campus rollout: <div className={styles.progressBar} style={{ '--progress-value': '5%' }}></div> 5%
               </li>
             </ul>
-            <a href="https://whatsapp.com/channel/0029VbCHvnf6BIEah3Yiqh2q" target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
+            <a href="https://whatsapp.com/channel/0029VbCHvnf6BIEah3Yiqh2q" target="_blank" rel="noopener noreferrer" className={styles.whatsappLink} style={{ marginTop: '5%' }}>
               Join the WhatsApp Community
             </a>
-            
           </div>
         </div>
       )}
@@ -190,9 +196,9 @@ export default function Dashboard() {
           <h1>Welcome, {userName}</h1>
           <div className={styles.headerActions}>
             <div className={styles.userProfile}>
-              <div className={styles.userAvatar}>{student.profileImage}</div>
+              <div className={styles.userAvatar}>{userInitials}</div>
               <div className={styles.userInfo}>
-                <p className={styles.userName}>{student.fullName}</p>
+                <p className={styles.userName}>{userName}</p>
                 <p className={styles.userLevel}>{student.level}</p>
               </div>
             </div>
@@ -296,9 +302,9 @@ export default function Dashboard() {
             <section className={styles.section}>
               <div className={styles.profileCard}>
                 <div className={styles.profileHeader}>
-                  <div className={styles.largeAvatar}>{student.profileImage}</div>
+                  <div className={styles.largeAvatar}>{userInitials}</div>
                   <div className={styles.profileHeaderInfo}>
-                    <h2>{student.fullName}</h2>
+                    <h2>{userName}</h2>
                     <p className={styles.profileBadge}>{student.level}</p>
                     <p className={styles.profileCampus}>
                       <FaMapMarkerAlt /> {student.campus}

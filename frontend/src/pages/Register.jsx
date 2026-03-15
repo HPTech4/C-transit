@@ -115,6 +115,10 @@ export default function Register() {
       // Store token and redirect
       localStorage.setItem('token', response.data.token || 'registered');
       localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
+      localStorage.setItem(
+        'userName',
+        `${formData.firstname.trim()} ${formData.lastname.trim()}`.trim(),
+      );
       
       navigate('/dashboard');
     } catch (error) {

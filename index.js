@@ -4,7 +4,9 @@ import cors from 'cors';
 import 'dotenv/config';
 import connectDB from "./src/config/db.js";
 import authRoutes from './src/routes/auth.routes.js';
-
+import userRoutes from './src/routes/user.routes.js';
+import { connectMQTT } from './src/utils/mqttClient.js';
+import { setupTerminalListener } from './src/utils/terminalListener.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +24,9 @@ app.use(cors({
 
 connectDB();
 
+// const mqttClient = connectMQTT();
+// setupTerminalListener(mqttClient);
+
 app.get("/", (req, res) => {
   res.send("C-transit server is running");
 });
@@ -35,6 +40,7 @@ app.use(cors({
 }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

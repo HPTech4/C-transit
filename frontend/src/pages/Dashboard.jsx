@@ -1,23 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FaBars, FaUser, FaChartBar, FaBus, FaWallet, FaCog, FaSignOutAlt, 
-  FaEdit, FaDownload, FaQrcode, FaStar, FaArrowRight, FaHistory, FaClock,
-  FaEnvelope, FaPhone, FaIdCard, FaUniversity, FaCalendar, FaMapMarkerAlt
+import {
+  FaWallet,
+  FaCog,
+  FaSignOutAlt,
+  FaStar,
+  FaHistory,
+  FaClock,
+  FaArrowRight,
+  FaUser,
+  FaBus,
 } from 'react-icons/fa';
+
+import { AUTH_API_URL } from '../config/api';
 
 import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [comingSoonMessage, setComingSoonMessage] = useState('');
+  const [authFlashMessage, setAuthFlashMessage] = useState('');
   const [overlayVisible, setOverlayVisible] = useState(true);
   const [registeredUsers, setRegisteredUsers] = useState(0);
+  const [copySuccess, setCopySuccess] = useState(false);
 
-  // Mock student data
+  // Existing mock student data wiring retained.
   const student = {
     fullName: 'Alimi Azeez Opeyemi',
     studentId: '20230154',
@@ -26,25 +35,41 @@ export default function Dashboard() {
     level: '500 Level',
     email: 'azeez.alimi@campusmail.edu',
     phone: '+234 (0) 802-345-6789',
-    profileImage: 'AZ',
     joinDate: 'February 2026',
     campus: 'Gidan Kwano Campus',
   };
 
   const userName = (localStorage.getItem('userName') || '').trim();
-  const userInitials = userName
+  const userEmail = (localStorage.getItem('studentEmail') || '').trim();
+  const storedMatricNumber = (localStorage.getItem('matricNumber') || '').trim();
+  const displayNameFromEmail = userEmail
+    ? userEmail
+      .split('@')[0]
+      .replace(/[._-]+/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+      .trim()
+    : '';
+  const displayName = (userName || displayNameFromEmail).trim();
+  const displayMatricNumber = storedMatricNumber || 'Not available';
+  const displayEmail = userEmail || student.email;
+  const userInitials = (displayName || 'Campus Transit')
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0].toUpperCase())
-    .join('');
-  const zeroBalance = 0; // Set all amounts to zero
+    .join('') || 'CT';
+  const zeroBalance = 0;
+
+  const recentTrips = [
+    { id: 1, title: 'Shuttle Ride', status: 'Completed', amount: -150, date: 'Dec 16, 2023', type: 'ride' },
+    { id: 2, title: 'Wallet Funding', status: 'Completed', amount: 3000, date: 'Jan 18, 2023', type: 'fund' },
+    { id: 3, title: 'Shuttle Ride', status: 'Completed', amount: -150, date: 'Jan 16, 2023', type: 'ride' },
+  ];
 
   useEffect(() => {
-    // Fetch the real-time registered user count
     const fetchRegisteredUsers = async () => {
       try {
-        const response = await fetch('/api/registered-users'); // Replace with your actual API endpoint
+        const response = await fetch(`${AUTH_API_URL}/users/count`);
         const data = await response.json();
         setRegisteredUsers(data.registeredUsers);
       } catch (error) {
@@ -68,6 +93,22 @@ export default function Dashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    const successMessage = sessionStorage.getItem('authSuccessMessage');
+    if (!successMessage) {
+      return undefined;
+    }
+
+    setAuthFlashMessage(successMessage);
+    sessionStorage.removeItem('authSuccessMessage');
+
+    const timer = setTimeout(() => {
+      setAuthFlashMessage('');
+    }, 3200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleComingSoon = (feature) => {
     setComingSoonMessage(feature);
     setShowComingSoon(true);
@@ -75,10 +116,49 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
+    const shouldLogout = window.confirm('Are you sure you want to logout now?');
+    if (!shouldLogout) {
+      return;
+    }
+
     localStorage.removeItem('token');
     localStorage.removeItem('studentEmail');
     localStorage.removeItem('userName');
+    localStorage.removeItem('matricNumber');
     navigate('/login', { replace: true });
+  };
+
+  const handleCopyAccount = async () => {
+    try {
+      await navigator.clipboard.writeText('1234 5678 90');
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 1800);
+    } catch (error) {
+      console.error('Failed to copy account number:', error);
+      alert('Copy failed. Please copy manually.');
+    }
+  };
+
+  const renderAmount = (amount) => {
+    const sign = amount > 0 ? '+' : '-';
+    const formatted = Math.abs(amount).toLocaleString('en-NG', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    return `${sign} ₦${formatted}`;
+  };
+
+  const getDrawerTitle = () => {
+    if (activeTab === 'profile') {
+      return 'Profile';
+    }
+
+    if (activeTab === 'history') {
+      return 'Transfer History';
+    }
+
+    return 'Settings';
   };
 
   return (
@@ -86,381 +166,241 @@ export default function Dashboard() {
       {overlayVisible && (
         <div className={styles.overlay}>
           <div className={styles.overlayContent}>
-            <h1>Welcome, {userName}</h1>
-            <p>You’re part of the early access group for CTransit.</p>
+            <h1>Welcome, {displayName || 'Campus User'}</h1>
+            <p>You are part of the early access group for CTransit.</p>
             <p>
-              <strong>Early Access Status:</strong> You are among the first students preparing to use CTransit. <br />
-              <span style={{ fontSize: '1.5rem', color: '#3a76e9', animation: 'pulse 1.5s infinite' }}>
-                {registeredUsers} registered users
-              </span>.
+              <strong>Early Access Status:</strong> You are among the first students preparing to use CTransit.
+              <br />
+              <span className={styles.registeredUsersCounter}>{registeredUsers} registered users</span>
             </p>
             <p><strong>System Preparation in Progress:</strong></p>
-            <ul style={{ marginBottom: '2.5rem' }}>
-              <li className={styles.animatedListItem} style={{ animationDelay: '0.2s' }}>
-                Wallet system: <div className={styles.progressBar} style={{ '--progress-value': '90%' }}></div> 90%
+            <ul className={styles.overlayList}>
+              <li className={styles.animatedListItem}>
+                Wallet system: <div className={styles.progressBar} style={{ '--progress-value': '90%' }} /> 90%
               </li>
-              <li className={styles.animatedListItem} style={{ animationDelay: '0.4s' }}>
-                Driver terminals: <div className={styles.progressBar} style={{ '--progress-value': '45%' }}></div> 45%
+              <li className={styles.animatedListItem}>
+                Driver terminals: <div className={styles.progressBar} style={{ '--progress-value': '45%' }} /> 45%
               </li>
-              <li className={styles.animatedListItem} style={{ animationDelay: '0.6s' }}>
-                Campus rollout: <div className={styles.progressBar} style={{ '--progress-value': '5%' }}></div> 5%
+              <li className={styles.animatedListItem}>
+                Campus rollout: <div className={styles.progressBar} style={{ '--progress-value': '5%' }} /> 5%
               </li>
             </ul>
-            <a href="https://whatsapp.com/channel/0029VbCHvnf6BIEah3Yiqh2q" target="_blank" rel="noopener noreferrer" className={styles.whatsappLink} style={{ marginTop: '5%' }}>
+            <a
+              href="https://whatsapp.com/channel/0029VbCHvnf6BIEah3Yiqh2q"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.whatsappLink}
+            >
               Join the WhatsApp Community
             </a>
+            <button className={styles.dismissOverlayBtn} onClick={() => setOverlayVisible(false)}>
+              Continue to Dashboard
+            </button>
           </div>
         </div>
       )}
 
-      {/* Mobile Backdrop Overlay */}
-      {mobileMenuOpen && (
-        <div 
-          className={styles.backdrop} 
-          onClick={() => setMobileMenuOpen(false)}
-          aria-hidden="true"
-        />
+      {showComingSoon && (
+        <div className={styles.toast}>
+          <span><FaStar /> {comingSoonMessage}</span>
+          <span>We are preparing this feature...</span>
+        </div>
       )}
 
-      {/* Sidebar - Desktop and Mobile */}
-      <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
-        <div className={styles.sidebarHeader}>
-          <div className={styles.logoBadge}>CT</div>
+      {authFlashMessage && (
+        <div className={styles.authToast}>
+          <strong>Success</strong>
+          <span>{authFlashMessage}</span>
         </div>
+      )}
 
-        <nav className={styles.sidebarNav}>
-          <button
-            className={`${styles.navItem} ${activeTab === 'overview' ? styles.active : ''}`}
-            onClick={() => {
-              setActiveTab('overview');
-              setMobileMenuOpen(false);
-            }}
-          >
-            <FaChartBar  /> Overview
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'wallet' ? styles.active : ''}`}
-            onClick={() => {
-              setActiveTab('wallet');
-              setMobileMenuOpen(false);
-            }}
-          >
-            <FaWallet /> Wallet
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'profile' ? styles.active : ''}`}
-            onClick={() => {
-              setActiveTab('profile');
-              setMobileMenuOpen(false);
-            }}
-          >
-            <FaUser /> Profile
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'history' ? styles.active : ''}`}
-            onClick={() => {
-              setActiveTab('history');
-              setMobileMenuOpen(false);
-            }}
-          >
-            <FaHistory /> History
-          </button>
-          <button
-            className={`${styles.navItem} ${activeTab === 'settings' ? styles.active : ''}`}
-            onClick={() => {
-              setActiveTab('settings');
-              setMobileMenuOpen(false);
-            }}
-          >
-            <FaCog /> Settings
-          </button>
-        </nav>
+      <main className={styles.dashboardShell}>
+        <header className={styles.topHeader}>
+          <div className={styles.brandWrap}>
+            <div className={styles.brandBadge}>C</div>
+            <h1 className={styles.brandTitle}>C-Transit</h1>
+          </div>
 
-        <div className={styles.sidebarFooter}>
-          <button className={styles.logoutBtn} onClick={handleLogout}>
-            <FaSignOutAlt /> Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className={styles.main}>
-        <header className={styles.header}>
-          <button 
-            className={styles.mobileMenuBtn}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <FaBars size={24} />
-          </button>
-          <h1>Welcome, {userName}</h1>
           <div className={styles.headerActions}>
-            <div className={styles.userProfile}>
-              <div className={styles.userAvatar}>{userInitials}</div>
-              <div className={styles.userInfo}>
-                <p className={styles.userName}>{userName}</p>
-                <p className={styles.userLevel}>{student.level}</p>
-              </div>
+            <button
+              className={styles.headerActionBtn}
+              onClick={() => setActiveTab('settings')}
+              aria-label="Open settings"
+            >
+              <FaCog />
+            </button>
+            <button
+              className={styles.headerActionBtn}
+              onClick={() => setActiveTab('profile')}
+              aria-label="Open profile"
+            >
+              <FaUser />
+            </button>
+            <div className={styles.userIdentity}>
+              <p>{displayName || 'Campus User'}</p>
+              <span>{displayMatricNumber}</span>
             </div>
+            <button className={styles.avatarBtn} onClick={() => setActiveTab('profile')}>
+              {userInitials}
+            </button>
+            <button className={styles.logoutBtn} onClick={handleLogout}>
+              <FaSignOutAlt /> Logout
+            </button>
           </div>
         </header>
 
-        {/* Coming Soon Toast */}
-        {showComingSoon && (
-          <div className={styles.toast}>
-            <span><FaStar /> {comingSoonMessage}</span>
-            <span>We're preparing this feature...</span>
+        <div className={styles.mainGrid}>
+            <section className={styles.leftColumn}>
+              <div className={styles.greetingBlock}>
+                <h2>Hello, {displayName || 'Campus User'}</h2>
+                <p>Matric No: {displayMatricNumber}</p>
+              </div>
+
+              <div className={styles.walletCard}>
+                <div className={styles.walletHead}>
+                  <p>Wallet Balance</p>
+                  <h3>₦{zeroBalance.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                  <small>Tap your student ID card to pay for rides.</small>
+                </div>
+
+                <div className={styles.transferCard}>
+                  <div>
+                    <span>Fund via Bank Transfer</span>
+                    <p>Wema Bank</p>
+                    <strong>1234 5678 90</strong>
+                  </div>
+                  <button onClick={handleCopyAccount}>{copySuccess ? 'Copied' : 'Copy'}</button>
+                </div>
+              </div>
+
+              <div className={styles.quickActionsRow}>
+                <button
+                  className={styles.primaryAction}
+                  onClick={() => handleComingSoon('Fund Wallet')}
+                >
+                  <FaWallet /> Fund Wallet
+                </button>
+                <button
+                  className={styles.secondaryAction}
+                  onClick={() => setActiveTab('history')}
+                >
+                  <FaHistory /> History
+                </button>
+              </div>
+            </section>
+
+            <section className={styles.rightColumn}>
+              <div className={styles.activityHead}>
+                <h3>Recent Activity</h3>
+                <button className={styles.linkBtn} onClick={() => setActiveTab('history')}>
+                  View Transfer History <FaArrowRight />
+                </button>
+              </div>
+
+              <div className={styles.activityList}>
+                {recentTrips.map((item, index) => (
+                  <article
+                    key={item.id}
+                    className={`${styles.activityCard} ${index === 2 ? styles.dimmedCard : ''}`}
+                  >
+                    <div className={styles.activityLeft}>
+                      <div className={`${styles.activityIcon} ${item.type === 'fund' ? styles.fundIcon : styles.rideIcon}`}>
+                        {item.type === 'fund' ? <FaWallet /> : <FaBus />}
+                      </div>
+                      <div>
+                        <h4>{item.title}</h4>
+                        <p>{item.status}</p>
+                      </div>
+                    </div>
+                    <div className={styles.activityRight}>
+                      <h4 className={item.amount > 0 ? styles.credit : styles.debit}>{renderAmount(item.amount)}</h4>
+                      <p>{item.date}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+
+        {activeTab !== 'overview' && (
+          <div
+            className={styles.drawerBackdrop}
+            role="presentation"
+            onClick={() => setActiveTab('overview')}
+          >
+            <aside
+              className={styles.drawerPanel}
+              role="dialog"
+              aria-modal="true"
+              aria-label={getDrawerTitle()}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className={styles.drawerHeader}>
+                <h3>{getDrawerTitle()}</h3>
+                <button
+                  className={styles.drawerCloseBtn}
+                  onClick={() => setActiveTab('overview')}
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className={styles.drawerBody}>
+                {activeTab === 'profile' && (
+                  <div className={styles.profileGrid}>
+                    <div><label>Full Name</label><p>{displayName || 'Campus User'}</p></div>
+                    <div><label>Student ID</label><p>{student.studentId}</p></div>
+                    <div><label>Matric Number</label><p>{displayMatricNumber}</p></div>
+                    <div><label>Department</label><p>{student.department}</p></div>
+                    <div><label>Email</label><p>{displayEmail}</p></div>
+                    <div><label>Phone</label><p>{student.phone}</p></div>
+                    <div><label>Level</label><p>{student.level}</p></div>
+                    <div><label>Campus</label><p>{student.campus}</p></div>
+                    <div><label>Member Since</label><p>{student.joinDate}</p></div>
+                  </div>
+                )}
+
+                {activeTab === 'history' && (
+                  <div className={styles.activityList}>
+                    {recentTrips.map((item) => (
+                      <article key={`history-${item.id}`} className={styles.activityCard}>
+                        <div className={styles.activityLeft}>
+                          <div className={`${styles.activityIcon} ${item.type === 'fund' ? styles.fundIcon : styles.rideIcon}`}>
+                            {item.type === 'fund' ? <FaWallet /> : <FaClock />}
+                          </div>
+                          <div>
+                            <h4>{item.title}</h4>
+                            <p>{item.status}</p>
+                          </div>
+                        </div>
+                        <div className={styles.activityRight}>
+                          <h4 className={item.amount > 0 ? styles.credit : styles.debit}>{renderAmount(item.amount)}</h4>
+                          <p>{item.date}</p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+
+                {activeTab === 'settings' && (
+                  <>
+                    <p className={styles.settingsText}>
+                      Settings is now available in this drawer. More account controls will be added here.
+                    </p>
+                    <div className={styles.settingsActions}>
+                      <button className={styles.secondaryAction} onClick={() => handleComingSoon('Notification Settings')}>
+                        Notification Settings
+                      </button>
+                      <button className={styles.secondaryAction} onClick={() => handleComingSoon('Security Settings')}>
+                        Security Settings
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </aside>
           </div>
         )}
-
-        <div className={styles.content}>
-          
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <section className={styles.section}>
-              <h2>Dashboard Overview</h2>
-              <div className={styles.cardGrid}>
-                {/* Balance Card */}
-                <div className={styles.card}>
-                  <div className={styles.cardIcon}><FaWallet size={25}/></div>
-                  <div className={styles.cardBody}>
-                    <p className={styles.cardLabel}>Wallet Balance</p>
-                    <p className={styles.cardValue}>₦{zeroBalance.toFixed(2)}</p>
-                  </div>
-                  <button 
-                    className={styles.cardAction}
-                    onClick={() => handleComingSoon('Top Up')}
-                  >
-                    Top up
-                  </button>
-                </div>
-
-                {/* Rides This Month */}
-                <div className={styles.card}>
-                  <div className={styles.cardIcon}><FaBus size={25} /></div>
-                  <div className={styles.cardBody}>
-                    <p className={styles.cardLabel}>Rides This Month</p>
-                    <p className={styles.cardValue}>12</p>
-                  </div>
-                  <button 
-                    className={styles.cardAction}
-                    onClick={() => handleComingSoon('Analytics')}
-                  >
-                    View
-                  </button>
-                </div>
-
-                {/* Total Spent */}
-                <div className={styles.card}>
-                  <div className={styles.cardIcon}><FaChartBar size={25}/></div>
-                  <div className={styles.cardBody}>
-                    <p className={styles.cardLabel}>Total Spent</p>
-                    <p className={styles.cardValue}>₦{zeroBalance.toFixed(2)}</p>
-                  </div>
-                  <button 
-                    className={styles.cardAction}
-                    onClick={() => handleComingSoon('Reports')}
-                  >
-                    Report
-                  </button>
-                </div>
-
-                {/* Quick Book Ride */}
-                <div className={`${styles.card} ${styles.highlight}`}>
-                  <div className={styles.cardIcon}><FaArrowRight size={25}/></div>
-                  <div className={styles.cardBody}>
-                    <p className={styles.cardLabel}>Ready to Ride?</p>
-                    <p className={styles.cardValue}>Book Now</p>
-                  </div>
-                  <button 
-                    className={styles.cardAction}
-                    onClick={() => handleComingSoon('Ride Booking')}
-                  >
-                    + Book
-                  </button>
-                </div>
-              </div>
-
-              {/* Recent Activity Section */}
-              <div className={styles.recentSection}>
-                <div className={styles.sectionHeader}>
-                  <h3><FaHistory /> Recent Activity</h3>
-                  <button 
-                    className={styles.viewMoreBtn}
-                    onClick={() => setActiveTab('history')}
-                  >
-                    View More <FaArrowRight />
-                  </button>
-                </div>
-               
-              </div>
-            </section>
-          )}
-
-          {/* Profile Tab */}
-          {activeTab === 'profile' && (
-            <section className={styles.section}>
-              <div className={styles.profileCard}>
-                <div className={styles.profileHeader}>
-                  <div className={styles.largeAvatar}>{userInitials}</div>
-                  <div className={styles.profileHeaderInfo}>
-                    <h2>{userName}</h2>
-                    <p className={styles.profileBadge}>{student.level}</p>
-                    <p className={styles.profileCampus}>
-                      <FaMapMarkerAlt /> {student.campus}
-                    </p>
-                  </div>
-                </div>
-
-                <div className={styles.profileGrid}>
-                  <div className={styles.profileFieldPro}>
-                    <div className={styles.fieldIcon}>
-                      <FaIdCard />
-                    </div>
-                    <div className={styles.fieldContent}>
-                      <label>Student ID</label>
-                      <p>{student.studentId}</p>
-                    </div>
-                  </div>
-                  <div className={styles.profileFieldPro}>
-                    <div className={styles.fieldIcon}>
-                      <FaIdCard />
-                    </div>
-                    <div className={styles.fieldContent}>
-                      <label>Matric Number</label>
-                      <p>{student.matricNumber}</p>
-                    </div>
-                  </div>
-                  <div className={styles.profileFieldPro}>
-                    <div className={styles.fieldIcon}>
-                      <FaUniversity />
-                    </div>
-                    <div className={styles.fieldContent}>
-                      <label>Department</label>
-                      <p>{student.department}</p>
-                    </div>
-                  </div>
-                  <div className={styles.profileFieldPro}>
-                    <div className={styles.fieldIcon}>
-                      <FaEnvelope />
-                    </div>
-                    <div className={styles.fieldContent}>
-                      <label>Email</label>
-                      <p>{student.email}</p>
-                    </div>
-                  </div>
-                  <div className={styles.profileFieldPro}>
-                    <div className={styles.fieldIcon}>
-                      <FaPhone />
-                    </div>
-                    <div className={styles.fieldContent}>
-                      <label>Phone</label>
-                      <p>{student.phone}</p>
-                    </div>
-                  </div>
-                  <div className={styles.profileFieldPro}>
-                    <div className={styles.fieldIcon}>
-                      <FaCalendar />
-                    </div>
-                    <div className={styles.fieldContent}>
-                      <label>Member Since</label>
-                      <p>{student.joinDate}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.profileActions}>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('Profile Update')}
-                  >
-                    <FaEdit /> Edit Profile
-                  </button>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('ID Card Download')}
-                  >
-                    <FaDownload /> Download ID Card
-                  </button>
-                  <button 
-                    className={styles.btn}
-                    onClick={() => handleComingSoon('QR Code')}
-                  >
-                    <FaQrcode /> View QR Code
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Wallet Tab */}
-          {activeTab === 'wallet' && (
-            <section className={styles.section}>
-              <div className={styles.comingSoonContainer}>
-                <div className={styles.comingSoonIcon}>
-                  <FaWallet className={styles.pulseIcon} />
-                </div>
-                <h2 className={styles.comingSoonTitle}>Wallet Management</h2>
-                <p className={styles.comingSoonText}>
-                  Your digital wallet is coming soon with exciting features.
-                </p>
-                <p className={styles.comingSoonSubtext}>
-                  Manage your balance, add funds, view transactions, and transfer money seamlessly.
-                </p>
-                <div className={styles.comingSoonFeatures}>
-                  <span className={styles.featureBadge}>Add Funds</span>
-                  <span className={styles.featureBadge}>Transaction History</span>
-                  <span className={styles.featureBadge}>Quick Transfer</span>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Settings Tab */}
-          {activeTab === 'settings' && (
-            <section className={styles.section}>
-              <div className={styles.comingSoonContainer}>
-                <div className={styles.comingSoonIcon}>
-                  <FaCog className={styles.spinIcon} />
-                </div>
-                <h2 className={styles.comingSoonTitle}>Account Settings</h2>
-                <p className={styles.comingSoonText}>
-                  We're working on bringing you advanced account settings.
-                </p>
-                <p className={styles.comingSoonSubtext}>
-                  Soon you'll be able to manage your profile, security settings, and preferences all in one place.
-                </p>
-                <div className={styles.comingSoonFeatures}>
-                  <span className={styles.featureBadge}>Two-Factor Authentication</span>
-                  <span className={styles.featureBadge}>Privacy Controls</span>
-                  <span className={styles.featureBadge}>Notification Settings</span>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* History Tab */}
-          {activeTab === 'history' && (
-            <section className={styles.section}>
-              <div className={styles.comingSoonContainer}>
-                <div className={styles.comingSoonIcon}>
-                  <FaHistory className={styles.pulseIcon} />
-                </div>
-                <h2 className={styles.comingSoonTitle}>Transaction History</h2>
-                <p className={styles.comingSoonText}>
-                  Your complete transaction history is coming soon.
-                </p>
-                <p className={styles.comingSoonSubtext}>
-                  View detailed records of all your rides, payments, and refunds with advanced filtering options.
-                </p>
-                <div className={styles.comingSoonFeatures}>
-                  <span className={styles.featureBadge}>Filter by Date</span>
-                  <span className={styles.featureBadge}>Export Data</span>
-                </div>
-              </div>
-            </section>
-          )}
-        </div>
       </main>
     </div>
   );

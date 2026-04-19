@@ -104,7 +104,7 @@ export default function Register() {
     setErrors({});
 
     try {
-      const response = await axios.post(`${AUTH_API_URL}/register`, {
+      await axios.post(`${AUTH_API_URL}/register`, {
         firstname: formData.firstname.trim(),
         lastname: formData.lastname.trim(),
         email: formData.email.trim(),
@@ -112,15 +112,27 @@ export default function Register() {
         password: formData.password,
       });
 
-      // Store token and redirect
-      localStorage.setItem('token', response.data.token || 'registered');
+      // Persist profile data locally and continue through explicit login.
+      localStorage.removeItem('token');
       localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
       localStorage.setItem(
         'userName',
         `${formData.firstname.trim()} ${formData.lastname.trim()}`.trim(),
       );
-      
-      navigate('/dashboard');
+      localStorage.setItem('matricNumber', formData.matricNumber.trim());
+
+      setModalContent({
+        title: 'Registration Successful',
+        message: 'Your account is ready. Redirecting you to login...'
+      });
+      setShowModal(true);
+
+      setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: { successMessage: 'Registration successful. Please sign in to continue.' },
+        });
+      }, 1200);
     } catch (error) {
       if (error.response?.data?.message) {
         setErrors({ form: error.response.data.message });

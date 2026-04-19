@@ -1,5 +1,5 @@
-﻿import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+﻿import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styles from './Login.module.css';
 import { validateEmail } from '../utils/validation';
@@ -7,11 +7,13 @@ import { AUTH_API_URL } from '../config/api';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
-    email: '',
+    email: localStorage.getItem('studentEmail') || '',
     password: '',
   });
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState(location.state?.successMessage || '');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -83,6 +85,20 @@ export default function Login() {
     setShowModal(true);
   };
 
+  useEffect(() => {
+    if (!location.state?.successMessage) {
+      return undefined;
+    }
+
+    setSuccessMessage(location.state.successMessage);
+
+    const timer = setTimeout(() => {
+      setSuccessMessage('');
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, [location.state]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -116,6 +132,25 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const getMatricNumberFromResponse = (data) => {
+    const candidates = [
+      data?.user?.matricNumber,
+      data?.user?.matric_number,
+      data?.user?.matricNo,
+      data?.user?.matric,
+      data?.matricNumber,
+      data?.matric_number,
+      data?.matricNo,
+      data?.matric,
+    ];
+
+    const resolved = candidates.find(
+      (value) => value !== undefined && value !== null && String(value).trim().length > 0,
+    );
+
+    return resolved ? String(resolved).trim() : '';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -140,12 +175,20 @@ export default function Login() {
       const resolvedUserName = getUserNameFromResponse(response.data);
       if (resolvedUserName) {
         localStorage.setItem('userName', resolvedUserName);
-      } else {
-        localStorage.removeItem('userName');
       }
 
-      // Redirect to dashboard
-      navigate('/dashboard');
+      const resolvedMatricNumber = getMatricNumberFromResponse(response.data);
+      if (resolvedMatricNumber) {
+        localStorage.setItem('matricNumber', resolvedMatricNumber);
+      }
+
+      setSuccessMessage('Login successful. Redirecting to dashboard...');
+      sessionStorage.setItem('authSuccessMessage', 'Login successful. Welcome back.');
+
+      // Redirect to dashboard after showing feedback.
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 700);
     } catch (error) {
       if (error.response?.data?.message) {
         setErrors({ form: error.response.data.message });
@@ -165,6 +208,19 @@ export default function Login() {
         <div className={styles.container}>
           <h1 className={styles.title}>Welcome Back</h1>
           <p className={styles.subtitle}>Access your campus wallet and ride history in seconds.</p>
+
+          {successMessage && (
+            <div
+              className={styles.errorMessage}
+              style={{
+                background: 'rgba(34, 197, 94, 0.15)',
+                borderColor: 'rgba(34, 197, 94, 0.35)',
+                color: '#86efac',
+              }}
+            >
+              {successMessage}
+            </div>
+          )}
 
           {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
 

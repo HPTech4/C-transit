@@ -12,7 +12,7 @@ import {
   FaBus,
 } from 'react-icons/fa';
 
-import { AUTH_API_URL } from '../config/api';
+import { AUTH_API_URL, USER_API_URL } from '../config/api';
 
 import styles from './Dashboard.module.css';
 
@@ -69,7 +69,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchRegisteredUsers = async () => {
       try {
-        const response = await fetch(`${AUTH_API_URL}/users/count`);
+        const response = await fetch(`${USER_API_URL}/users/count`);
         const data = await response.json();
         setRegisteredUsers(data.registeredUsers);
       } catch (error) {
@@ -193,7 +193,9 @@ export default function Dashboard() {
             >
               Join the WhatsApp Community
             </a>
-           
+            <button className={styles.dismissOverlayBtn} onClick={() => setOverlayVisible(false)}>
+              Continue to Dashboard
+            </button>
           </div>
         </div>
       )}

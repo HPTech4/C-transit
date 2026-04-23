@@ -12,7 +12,7 @@ import {
   FaBus,
 } from 'react-icons/fa';
 
-import { AUTH_API_URL, USER_API_URL } from '../config/api';
+import { USER_API_URL } from '../config/api';
 
 import styles from './Dashboard.module.css';
 

@@ -7,6 +7,7 @@ import {
 const router = express.Router();
 
 router.get("/count", fetchUserCount);
+
 router.get("/", fetchAllUsers);
 
 export default router;

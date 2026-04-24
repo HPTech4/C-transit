@@ -1,13 +1,11 @@
 import prisma from "../lib/prisma.js";
 
-// Get total number of users
-async function getUserCount() {
+const getUserCount = async () => {
   const count = await prisma.user.count();
   return count;
-}
+};
 
-// Get all users (optional, if you want list)
-async function getAllUsers() {
+const getAllUsers = async () => {
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -19,6 +17,6 @@ async function getAllUsers() {
   });
 
   return users;
-}
+};
 
 export { getUserCount, getAllUsers };

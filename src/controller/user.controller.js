@@ -1,4 +1,3 @@
-
 import { getUserCount, getAllUsers } from "../services/user.service.js";
 
 // GET /api/users/count
@@ -7,12 +6,10 @@ export const fetchUserCount = async (req, res) => {
     const count = await getUserCount();
 
     res.status(200).json({
-      success: true,
       count,
     });
   } catch (error) {
     res.status(500).json({
-      success: false,
       message: "Failed to fetch user count",
     });
   }
@@ -24,7 +21,6 @@ export const fetchAllUsers = async (req, res) => {
     const users = await getAllUsers();
 
     res.status(200).json({
-      success: true,
       users,
     });
   } catch (error) {

@@ -5,8 +5,8 @@ import 'dotenv/config';
 import connectDB from "./src/config/db.js";
 import authRoutes from './src/routes/auth.routes.js';
 import userRoutes from './src/routes/user.routes.js';
-import { connectMQTT } from './src/utils/mqttClient.js';
-import { setupTerminalListener } from './src/utils/terminalListener.js';
+// import { connectMQTT } from './src/utils/mqttClient.js';
+// import { setupTerminalListener } from './src/utils/terminalListener.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

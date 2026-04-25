@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   FaWallet,
   FaCog,
@@ -25,53 +26,78 @@ export default function Dashboard() {
   const [overlayVisible, setOverlayVisible] = useState(true);
   const [registeredUsers, setRegisteredUsers] = useState(0);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  
+  // Real user data from API
+  const [userData, setUserData] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [recentTrips, setRecentTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Existing mock student data wiring retained.
-  const student = {
-    fullName: 'Alimi Azeez Opeyemi',
-    studentId: '20230154',
-    matricNumber: 'PHY/2026/154',
-    department: 'Department of Physics',
-    level: '500 Level',
-    email: 'azeez.alimi@campusmail.edu',
-    phone: '+234 (0) 802-345-6789',
-    joinDate: 'February 2026',
-    campus: 'Gidan Kwano Campus',
-  };
-
-  const userName = (localStorage.getItem('userName') || '').trim();
-  const userEmail = (localStorage.getItem('studentEmail') || '').trim();
-  const storedMatricNumber = (localStorage.getItem('matricNumber') || '').trim();
-  const displayNameFromEmail = userEmail
-    ? userEmail
-      .split('@')[0]
-      .replace(/[._-]+/g, ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase())
-      .trim()
-    : '';
-  const displayName = (userName || displayNameFromEmail).trim();
-  const displayMatricNumber = storedMatricNumber || 'Not available';
-  const displayEmail = userEmail || student.email;
+  // Extract user info
+  const token = localStorage.getItem('token');
+  const displayName = userData?.firstname ? `${userData.firstname} ${userData.lastname || ''}` : 'Campus User';
+  const displayMatricNumber = userData?.matricNumber || 'Not available';
+  const displayEmail = userData?.email || 'email@example.com';
   const userInitials = (displayName || 'Campus Transit')
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0].toUpperCase())
     .join('') || 'CT';
-  const zeroBalance = 0;
 
-  const recentTrips = [
-    { id: 1, title: 'Shuttle Ride', status: 'Completed', amount: -150, date: 'Dec 16, 2023', type: 'ride' },
-    { id: 2, title: 'Wallet Funding', status: 'Completed', amount: 3000, date: 'Jan 18, 2023', type: 'fund' },
-    { id: 3, title: 'Shuttle Ride', status: 'Completed', amount: -150, date: 'Jan 16, 2023', type: 'ride' },
-  ];
+  useEffect(() => {
+    // Fetch user data
+    const fetchUserData = async () => {
+      try {
+        if (!token) {
+          navigate('/login', { replace: true });
+          return;
+        }
+
+        const response = await fetch(`${USER_API_URL}/user/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+
+        const data = await response.json();
+        
+        // Extract data with fallbacks
+        const userData = data.data || data.user || data;
+        setUserData(userData);
+        setWalletBalance(userData?.walletBalance || 0);
+        setRecentTrips(userData?.recentTrips || []);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        // Set default fallback data so app still works
+        setUserData({
+          firstname: 'Guest',
+          lastname: 'User',
+          email: 'user@campus.edu',
+          matricNumber: 'Not available',
+        });
+        setWalletBalance(0);
+        setRecentTrips([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [token, navigate]);
 
   useEffect(() => {
     const fetchRegisteredUsers = async () => {
       try {
         const response = await fetch(`${USER_API_URL}/users/count`);
-        const data = await response.json();
-        setRegisteredUsers(data.registeredUsers);
+        const json = await response.json();
+        const count = json.data.count;
+        setRegisteredUsers(count.registeredUsers);
       } catch (error) {
         console.error('Error fetching registered users:', error);
       }
@@ -104,7 +130,7 @@ export default function Dashboard() {
 
     const timer = setTimeout(() => {
       setAuthFlashMessage('');
-    }, 3200);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -116,16 +142,17 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    const shouldLogout = window.confirm('Are you sure you want to logout now?');
-    if (!shouldLogout) {
-      return;
-    }
+    setShowLogoutModal(true);
+  };
 
+  const confirmLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('studentEmail');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('matricNumber');
+    setShowLogoutModal(false);
     navigate('/login', { replace: true });
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const handleCopyAccount = async () => {
@@ -259,7 +286,7 @@ export default function Dashboard() {
               <div className={styles.walletCard}>
                 <div className={styles.walletHead}>
                   <p>Wallet Balance</p>
-                  <h3>₦{zeroBalance.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                  <h3>₦{walletBalance.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
                   <small>Tap your student ID card to pay for rides.</small>
                 </div>
 
@@ -402,6 +429,46 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {showLogoutModal && (
+        <motion.div
+          className={styles.modalOverlay}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={cancelLogout}
+        >
+          <motion.div
+            className={styles.logoutModal}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Logout</h2>
+            <p>Are you sure you want to logout?</p>
+            <div className={styles.modalActions}>
+              <motion.button
+                className={styles.cancelBtn}
+                onClick={cancelLogout}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Cancel
+              </motion.button>
+              <motion.button
+                className={styles.confirmBtn}
+                onClick={confirmLogout}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Logout
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

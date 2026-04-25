@@ -2,8 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import './App.css';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 
 const isAuthenticated = () => Boolean(localStorage.getItem('token'));
@@ -25,7 +24,7 @@ function App() {
           path="/login"
           element={(
             <PublicAuthRoute>
-              <Login />
+              <AuthPage />
             </PublicAuthRoute>
           )}
         />
@@ -33,7 +32,7 @@ function App() {
           path="/register"
           element={(
             <PublicAuthRoute>
-              <Register />
+              <AuthPage />
             </PublicAuthRoute>
           )}
         />

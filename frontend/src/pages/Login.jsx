@@ -1,15 +1,17 @@
 ﻿import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import styles from './Login.module.css';
 import { validateEmail } from '../utils/validation';
 import { AUTH_API_URL } from '../config/api';
+import { EmailIcon, LockIcon, EyeIcon, EyeOffIcon, LoadingSpinner, BusIcon, StudentCapIcon } from '../components/AnimatedIcons';
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
-    email: localStorage.getItem('studentEmail') || '',
+    email: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
@@ -167,20 +169,8 @@ export default function Login() {
         password: formData.password,
       });
 
-      // Store token and user info
+      // Store only the token
       localStorage.setItem('token', response.data.token);
-      localStorage.setItem('studentEmail', formData.email.trim().toLowerCase());
-
-      // Persist the logged-in user's name for dashboard rendering.
-      const resolvedUserName = getUserNameFromResponse(response.data);
-      if (resolvedUserName) {
-        localStorage.setItem('userName', resolvedUserName);
-      }
-
-      const resolvedMatricNumber = getMatricNumberFromResponse(response.data);
-      if (resolvedMatricNumber) {
-        localStorage.setItem('matricNumber', resolvedMatricNumber);
-      }
 
       setSuccessMessage('Login successful. Redirecting to dashboard...');
       sessionStorage.setItem('authSuccessMessage', 'Login successful. Welcome back.');
@@ -203,14 +193,42 @@ export default function Login() {
 
   return (
     <div className={styles.hero}>
-      <div className={styles.pageShell}>
-      
-        <div className={styles.container}>
-          <h1 className={styles.title}>Welcome Back</h1>
-          <p className={styles.subtitle}>Access your campus wallet and ride history in seconds.</p>
+      {/* Floating background elements */}
+      <BusIcon />
+      <StudentCapIcon />
+
+      <motion.div
+        className={styles.pageShell}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <motion.div
+          className={styles.container}
+          whileHover={{ boxShadow: "0 35px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15)" }}
+        >
+          <motion.h1
+            className={styles.title}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            Welcome Back
+          </motion.h1>
+          <motion.p
+            className={styles.subtitle}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            Access your campus wallet and ride history in seconds.
+          </motion.p>
 
           {successMessage && (
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               className={styles.errorMessage}
               style={{
                 background: 'rgba(34, 197, 94, 0.15)',
@@ -219,96 +237,224 @@ export default function Login() {
               }}
             >
               {successMessage}
-            </div>
+            </motion.div>
           )}
 
-          {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
-
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          <div className={styles.formGroup}>
-            <label htmlFor="email" className={styles.label}>Campus Email</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              placeholder="name.email@st.futminna.edu.ng"
-              value={formData.email}
-              onChange={handleChange}
-              className={`${styles.input} ${errors.email ? styles.invalid : ''}`}
-              disabled={loading}
-            />
-            {errors.email && <span className={styles.errorText}>{errors.email}</span>}
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="password" className={styles.label}>Password</label>
-            <div className={styles.passwordWrapper}>
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`${styles.input} ${errors.password ? styles.invalid : ''}`}
-                disabled={loading}
-              />
-              <button
-                type="button"
-                className={styles.togglePassword}
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
-            </div>
-            {errors.password && <span className={styles.errorText}>{errors.password}</span>}
-          </div>
-
-          <div className={styles.row}>
-            <a href="#" onClick={handleForgotPassword} className={styles.link}>Forgot password?</a>
-          </div>
-
-          <div className={styles.actions}>
-            <button
-              className={styles.btn}
-              type="submit"
-              disabled={loading}
+          {errors.form && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ type: "spring", stiffness: 200 }}
+              className={styles.errorMessage}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-            <button
-              className={styles.btnsec}
-              type="button"
-                onClick={handleGoogleLogin}
-              disabled={loading}
+              {errors.form}
+            </motion.div>
+          )}
+
+          <motion.form
+            className={styles.form}
+            onSubmit={handleSubmit}
+            noValidate
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <motion.div
+              className={styles.formGroup}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
             >
-              Continue with Google
-            </button>
-          </div>
-
-          <p className={styles.footnote}>
-            New to C Transit? <Link to="/register" className={styles.link}>Create an account</Link>
-          </p>
-          </form>
-
-            {showModal && (
-              <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
-                <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                  <button className={styles.modalClose} onClick={() => setShowModal(false)}>×</button>
-                  <div className={styles.modalIcon}>
-                    {modalContent.title.includes('Password') ? '🔐' : '🚀'}
-                  </div>
-                  <h2 className={styles.modalTitle}>{modalContent.title}</h2>
-                  <p className={styles.modalMessage}>{modalContent.message}</p>
-                  <button className={styles.modalBtn} onClick={() => setShowModal(false)}>
-                    Got it
-                  </button>
-                </div>
+              <label htmlFor="email" className={styles.label}>Campus Email</label>
+              <div className={styles.inputWrapper}>
+                <EmailIcon />
+                <motion.input
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="name.email@st.futminna.edu.ng"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`${styles.input} ${errors.email ? styles.invalid : ''}`}
+                  disabled={loading}
+                  whileFocus={{
+                    boxShadow: "0 0 0 3px rgba(132, 178, 255, 0.2)"
+                  }}
+                />
               </div>
-            )}
-        </div>
-      </div>
+              {errors.email && (
+                <motion.span
+                  className={styles.errorText}
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {errors.email}
+                </motion.span>
+              )}
+            </motion.div>
+
+            <motion.div
+              className={styles.formGroup}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              <label htmlFor="password" className={styles.label}>Password</label>
+              <div className={styles.passwordWrapper}>
+                <LockIcon />
+                <motion.input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`${styles.input} ${errors.password ? styles.invalid : ''}`}
+                  disabled={loading}
+                  whileFocus={{
+                    boxShadow: "0 0 0 3px rgba(132, 178, 255, 0.2)"
+                  }}
+                />
+                <motion.button
+                  type="button"
+                  className={styles.togglePassword}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label="Toggle password visibility"
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+                </motion.button>
+              </div>
+              {errors.password && (
+                <motion.span
+                  className={styles.errorText}
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {errors.password}
+                </motion.span>
+              )}
+            </motion.div>
+
+            <motion.div
+              className={styles.row}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              <motion.a
+                href="#"
+                onClick={handleForgotPassword}
+                className={styles.link}
+                whileHover={{ x: 5, textDecoration: "underline" }}
+              >
+                Forgot password?
+              </motion.a>
+            </motion.div>
+
+            <motion.div
+              className={styles.actions}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              <motion.button
+                className={styles.btn}
+                type="submit"
+                disabled={loading}
+                whileHover={!loading ? { scale: 1.02, boxShadow: "0 15px 35px rgba(132, 178, 255, 0.3)" } : {}}
+                whileTap={!loading ? { scale: 0.98 } : {}}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <motion.div
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  {loading ? (
+                    <>
+                      <LoadingSpinner />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign in'
+                  )}
+                </motion.div>
+              </motion.button>
+              <motion.button
+                className={styles.btnsec}
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                whileHover={!loading ? { scale: 1.02 } : {}}
+                whileTap={!loading ? { scale: 0.98 } : {}}
+              >
+                🔗 Continue with Google
+              </motion.button>
+            </motion.div>
+
+            <motion.p
+              className={styles.footnote}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+            >
+              New to C Transit?{' '}
+              <Link to="/register" className={styles.link}>
+                <motion.span
+                  whileHover={{ textDecoration: "underline", x: 2 }}
+                >
+                  Create an account
+                </motion.span>
+              </Link>
+            </motion.p>
+          </motion.form>
+
+          {showModal && (
+            <motion.div
+              className={styles.modalOverlay}
+              onClick={() => setShowModal(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className={styles.modalContent}
+                onClick={(e) => e.stopPropagation()}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
+                <motion.button
+                  className={styles.modalClose}
+                  onClick={() => setShowModal(false)}
+                  whileHover={{ scale: 1.2, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  ×
+                </motion.button>
+                <motion.div
+                  className={styles.modalIcon}
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {modalContent.title.includes('Password') ? '🔐' : '🚀'}
+                </motion.div>
+                <h2 className={styles.modalTitle}>{modalContent.title}</h2>
+                <p className={styles.modalMessage}>{modalContent.message}</p>
+                <motion.button
+                  className={styles.modalBtn}
+                  onClick={() => setShowModal(false)}
+                  whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(132, 178, 255, 0.3)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Got it
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

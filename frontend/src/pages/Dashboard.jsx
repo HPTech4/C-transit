@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaWallet,
   FaCog,
@@ -11,8 +11,12 @@ import {
   FaArrowRight,
   FaUser,
   FaBus,
+  FaChevronDown,
+  FaBars,
+  FaTimes,
 } from 'react-icons/fa';
 
+import NotificationCenter from '../components/NotificationCenter';
 import { USER_API_URL } from '../config/api';
 
 import styles from './Dashboard.module.css';
@@ -27,6 +31,8 @@ export default function Dashboard() {
   const [registeredUsers, setRegisteredUsers] = useState(0);
   const [copySuccess, setCopySuccess] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   // Real user data from API
   const [userData, setUserData] = useState(null);
@@ -34,8 +40,39 @@ export default function Dashboard() {
   const [recentTrips, setRecentTrips] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Mock user data (using until backend API is available)
+  const mockUserData = {
+    firstname: 'Alimi',
+    lastname: 'Azeez',
+    email: 'alimi@st.futminna.edu',
+    matricNumber: 'PHY/2026/154',
+    walletBalance: 0.00 ,
+    recentTrips: [
+      {
+        id: 1,
+        destination: 'Engineering Block',
+        fare: 500.00,
+        time: '10:30 AM',
+        date: '2026-04-24',
+      },
+      {
+        id: 2,
+        destination: 'Library',
+        fare: 500.00,
+        time: '2:15 PM',
+        date: '2026-04-24',
+      },
+      {
+        id: 3,
+        destination: 'Medical Center',
+        fare: 1000.00,
+        time: '4:45 PM',
+        date: '2026-04-23',
+      },
+    ],
+  };
+
   // Extract user info
-  const token = localStorage.getItem('token');
   const displayName = userData?.firstname ? `${userData.firstname} ${userData.lastname || ''}` : 'Campus User';
   const displayMatricNumber = userData?.matricNumber || 'Not available';
   const displayEmail = userData?.email || 'email@example.com';
@@ -47,49 +84,12 @@ export default function Dashboard() {
     .join('') || 'CT';
 
   useEffect(() => {
-    // Fetch user data
-    const fetchUserData = async () => {
-      try {
-        if (!token) {
-          navigate('/login', { replace: true });
-          return;
-        }
-
-        const response = await fetch(`${USER_API_URL}/user/profile`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-
-        const data = await response.json();
-        
-        // Extract data with fallbacks
-        const userData = data.data || data.user || data;
-        setUserData(userData);
-        setWalletBalance(userData?.walletBalance || 0);
-        setRecentTrips(userData?.recentTrips || []);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        // Set default fallback data so app still works
-        setUserData({
-          firstname: 'Guest',
-          lastname: 'User',
-          email: 'user@campus.edu',
-          matricNumber: 'Not available',
-        });
-        setWalletBalance(0);
-        setRecentTrips([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [token, navigate]);
+    // Use mock data for now (until backend API is available)
+    setUserData(mockUserData);
+    setWalletBalance(mockUserData.walletBalance);
+    setRecentTrips(mockUserData.recentTrips);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     const fetchRegisteredUsers = async () => {
@@ -122,17 +122,20 @@ export default function Dashboard() {
   useEffect(() => {
     const successMessage = sessionStorage.getItem('authSuccessMessage');
     if (!successMessage) {
-      return undefined;
+      return;
     }
 
     setAuthFlashMessage(successMessage);
     sessionStorage.removeItem('authSuccessMessage');
 
+    // Auto-dismiss success message after 2.5 seconds
     const timer = setTimeout(() => {
       setAuthFlashMessage('');
-    }, 2000);
+    }, 2500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleComingSoon = (feature) => {
@@ -250,31 +253,152 @@ export default function Dashboard() {
 
           <div className={styles.headerActions}>
             <button
-              className={styles.headerActionBtn}
-              onClick={() => setActiveTab('settings')}
-              aria-label="Open settings"
+              className={styles.mobileMenuBtn}
+              onClick={() => setShowMobileMenu(true)}
+              aria-label="Open dashboard menu"
             >
-              <FaCog />
+              <FaBars />
             </button>
-            <button
-              className={styles.headerActionBtn}
-              onClick={() => setActiveTab('profile')}
-              aria-label="Open profile"
-            >
-              <FaUser />
-            </button>
-            <div className={styles.userIdentity}>
-              <p>{displayName || 'Campus User'}</p>
-              <span>{displayMatricNumber}</span>
+
+            {/* Notification Center Bell */}
+            <div className={styles.notificationWrapper}>
+              <NotificationCenter />
             </div>
-            <button className={styles.avatarBtn} onClick={() => setActiveTab('profile')}>
-              {userInitials}
-            </button>
-            <button className={styles.logoutBtn} onClick={handleLogout}>
-              <FaSignOutAlt /> Logout
-            </button>
+
+            {/* Profile Menu Dropdown */}
+            <div className={styles.profileMenuWrapper}>
+              <button
+                className={styles.profileMenuBtn}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                aria-label="Open profile menu"
+              >
+                <div className={styles.profileMenuHeader}>
+                  <div className={styles.avatarCircle}>{userInitials}</div>
+                  <div className={styles.profileMenuInfo}>
+                    <p className={styles.profileMenuName}>{displayName || 'Campus User'}</p>
+                    <span className={styles.profileMenuMatric}>{displayMatricNumber}</span>
+                  </div>
+                  <FaChevronDown className={styles.profileMenuChevron} />
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showProfileMenu && (
+                <motion.div
+                  className={styles.profileDropdown}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <button
+                    className={styles.dropdownItem}
+                    onClick={() => {
+                      navigate('/profile');
+                      setShowProfileMenu(false);
+                    }}
+                  >
+                    <FaUser /> View Profile
+                  </button>
+                  <button
+                    className={styles.dropdownItem}
+                    onClick={() => {
+                      navigate('/settings');
+                      setShowProfileMenu(false);
+                    }}
+                  >
+                    <FaCog /> Settings
+                  </button>
+                  <div className={styles.dropdownDivider} />
+                  <button
+                    className={`${styles.dropdownItem} ${styles.dropdownLogout}`}
+                    onClick={handleLogout}
+                  >
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </motion.div>
+              )}
+            </div>
           </div>
         </header>
+
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              className={styles.mobileMenuBackdrop}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileMenu(false)}
+            >
+              <motion.aside
+                className={styles.mobileMenuPanel}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className={styles.mobileMenuHead}>
+                  <h3>Dashboard Menu</h3>
+                  <button
+                    className={styles.mobileCloseBtn}
+                    onClick={() => setShowMobileMenu(false)}
+                    aria-label="Close dashboard menu"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+
+                <div className={styles.mobileMenuBody}>
+                  <div className={styles.mobileNotificationWrap}>
+                    <NotificationCenter />
+                  </div>
+
+                  <button
+                    className={styles.mobileMenuItem}
+                    onClick={() => {
+                      navigate('/profile');
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    <FaUser /> View Profile
+                  </button>
+
+                  <button
+                    className={styles.mobileMenuItem}
+                    onClick={() => {
+                      navigate('/settings');
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    <FaCog /> Settings
+                  </button>
+
+                  <button
+                    className={styles.mobileMenuItem}
+                    onClick={() => {
+                      setActiveTab('history');
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    <FaHistory /> Transfer History
+                  </button>
+
+                  <button
+                    className={`${styles.mobileMenuItem} ${styles.mobileMenuLogout}`}
+                    onClick={() => {
+                      handleLogout();
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </div>
+              </motion.aside>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className={styles.mainGrid}>
             <section className={styles.leftColumn}>

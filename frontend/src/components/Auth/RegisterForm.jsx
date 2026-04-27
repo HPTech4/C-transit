@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { EmailIcon, LockIcon, EyeIcon, EyeOffIcon, LoadingSpinner } from '../AnimatedIcons';
+import OTPVerification from './OTPVerification';
 import {
   validateEmail,
   validatePassword,
@@ -47,7 +48,8 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('weak');
 
   const handleChange = (e) => {
@@ -121,7 +123,10 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      await axios.post(`${AUTH_API_URL}/register`, {
+      // BACKEND: POST /api/auth/register
+      // Expected response: { success: true, message: "OTP sent to your email" }
+      // Backend should send OTP to user's email
+      const response = await axios.post(`${AUTH_API_URL}/register`, {
         firstname: formData.firstname.trim(),
         lastname: formData.lastname.trim(),
         email: formData.email.trim(),
@@ -129,14 +134,9 @@ export default function RegisterForm() {
         password: formData.password,
       });
 
-      setShowModal(true);
-      setTimeout(() => {
-        navigate('/login', {
-          state: {
-            successMessage: 'Registration successful! Please log in with your credentials.',
-          },
-        });
-      }, 2000);
+      // Store email and show OTP modal
+      setUserEmail(formData.email.trim());
+      setShowOTPModal(true);
     } catch (error) {
       if (error.response?.data?.message) {
         setErrors({ form: error.response.data.message });
@@ -158,6 +158,31 @@ export default function RegisterForm() {
       default:
         return '#ef4444';
     }
+  };
+
+  // Handle successful OTP verification
+  const handleOTPSuccess = (data) => {
+    // BACKEND RESPONSE from verify-otp:
+    // { token: "jwt_token", user: { firstname, lastname, email, matricNumber } }
+    
+    // Token is already saved by OTPVerification component
+    // Close modal and redirect to dashboard
+    setShowOTPModal(false);
+    
+    // Clear form
+    setFormData({
+      firstname: '',
+      lastname: '',
+      email: '',
+      matricNumber: '',
+      password: '',
+      confirmPassword: '',
+    });
+
+    // Redirect to dashboard
+    setTimeout(() => {
+      navigate('/dashboard', { replace: true });
+    }, 500);
   };
 
   return (
@@ -356,13 +381,13 @@ export default function RegisterForm() {
         </motion.button>
       </motion.form>
 
-      {showModal && (
-        <motion.div className={styles.successModal} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
-          <div className={styles.checkmark}>✓</div>
-          <h3>Account Created!</h3>
-          <p>Redirecting to login...</p>
-        </motion.div>
-      )}
+      {/* OTP Verification Modal */}
+      <OTPVerification
+        isOpen={showOTPModal}
+        email={userEmail}
+        onClose={() => setShowOTPModal(false)}
+        onSuccess={handleOTPSuccess}
+      />
     </>
   );
 }

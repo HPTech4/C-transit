@@ -9,30 +9,10 @@ const { injectMqttPublisher } = require('../services/syncService');
 
 // ============================================================
 // MQTT CLIENT — CONNECTION MANAGEMENT
-//
-// Connects to HiveMQ Cloud via MQTTS (TLS 1.2, Port 8883).
-// Subscribes to all uplink and status topics via wildcards.
-//
-// CRITICAL — QoS 1 MANUAL ACK:
-//   The mqtt package's `manualAcking: true` option disables
-//   auto-acknowledgement. The broker holds the message in
-//   "unacknowledged" state until we explicitly call
-//   client.ack(packet) after successful DB write.
-//
-//   If this process crashes before ack, the broker will
-//   re-deliver the message on reconnect. Hardware retains
-//   its flash data. No data is ever lost.
 // ============================================================
 
 let client = null;
 
-/**
- * Initialise and connect the MQTT client.
- * Sets up all event handlers and topic subscriptions.
- * Returns the connected client instance.
- *
- * @returns {Promise<mqtt.MqttClient>}
- */
 function connectMqtt() {
   return new Promise((resolve, reject) => {
     logger.info(
@@ -42,9 +22,30 @@ function connectMqtt() {
 
     client = mqtt.connect(mqttConfig.brokerUrl, {
       ...mqttConfig.options,
-      // CRITICAL: Disable auto-ack. We manually call client.ack(packet)
-      // only after successful DB write in the message handler.
-      manualAcking: true,
+      protocolVersion: 5, // Required to unlock advanced manual acking
+      
+      // 🔥 THE FIX: This replaces both the old auto-ack and the message listener
+      customHandleAcks: function (topic, message, packet, done) {
+        const topicLog = logger.child({ topic, packetMessageId: packet.messageId });
+        topicLog.debug('mqtt.message_received');
+
+        // 1. Pass the payload to the router and WAIT for DB to finish
+        routeUplinkMessage(topic, message)
+          .then(() => {
+            // 2. Success! Database is safe. Send the PUBACK to the bus.
+            topicLog.debug('mqtt.puback_released');
+            done(null, 0); 
+          })
+          .catch((err) => {
+            // 3. Database Crash! Withhold PUBACK. 
+            // Hardware will keep the data on its SD card and retry later.
+            topicLog.error(
+              { err: err.message },
+              'mqtt.message_processing_failed — PUBACK withheld — hardware will retry'
+            );
+            done(err); 
+          });
+      }
     });
 
     // ── Connection Events ─────────────────────────────────
@@ -52,13 +53,11 @@ function connectMqtt() {
     client.on('connect', (connack) => {
       logger.info({ sessionPresent: connack.sessionPresent }, 'mqtt.connected');
 
-      // Inject this client into the downlink queue publisher
+      // Inject dependencies
       injectClient(client);
-
-      // Inject the publish function into syncService to break circular dep
       injectMqttPublisher(publishToTerminal);
 
-      // Subscribe to all uplink topics (wildcard)
+      // Subscribe to all uplink topics (QoS 1 is required for the ack hostage logic)
       const topics = {
         [mqttConfig.topics.uplinkWildcard]: { qos: mqttConfig.qos.uplink },
         [mqttConfig.topics.statusWildcard]: { qos: mqttConfig.qos.uplink },
@@ -74,41 +73,10 @@ function connectMqtt() {
       });
     });
 
-    // ── Message Handler ───────────────────────────────────
-    // The core of the system. Every message from every terminal
-    // passes through here. PUBACK is manually released ONLY after
-    // the async processing chain completes successfully.
-
-    client.on('message', async (topic, payload, packet) => {
-      const topicLog = logger.child({ topic, packetMessageId: packet.messageId });
-      topicLog.debug('mqtt.message_received');
-
-      try {
-        // Process the message — this awaits DB writes before returning
-        await routeUplinkMessage(topic, payload);
-
-        // ── PUBACK Released ───────────────────────────────
-        // Only reached if routeUplinkMessage resolves without throwing.
-        // This signals the broker that the message is fully processed.
-        // The broker then signals the hardware to clear its flash buffer.
-        client.ack(packet);
-        topicLog.debug('mqtt.puback_released');
-      } catch (err) {
-        // Processing failed — DO NOT ACK.
-        // Hardware retains data. Broker will re-deliver on next connection.
-        topicLog.error(
-          { err: err.message },
-          'mqtt.message_processing_failed — PUBACK withheld — hardware will retry'
-        );
-        // Do not re-throw — the listener must stay alive for subsequent messages
-      }
-    });
-
     // ── Error & Reconnect Events ──────────────────────────
 
     client.on('error', (err) => {
       logger.error({ err: err.message }, 'mqtt.error');
-      // mqtt.js handles reconnection automatically via reconnectPeriod
     });
 
     client.on('reconnect', () => {
@@ -134,10 +102,6 @@ function connectMqtt() {
   });
 }
 
-/**
- * Gracefully disconnect the MQTT client.
- * Called during process shutdown to send a clean DISCONNECT packet.
- */
 function disconnectMqtt() {
   return new Promise((resolve) => {
     if (!client) return resolve();

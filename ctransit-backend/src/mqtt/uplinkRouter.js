@@ -6,8 +6,6 @@ const { handlePendingLink } = require('../services/registrationService');
 const { handleLwtEvent } = require('./lwtHandler');
 const logger = require('../config/logger');
 const { prisma } = require('../services/ledgerService');
-const { buildDeltaCommand } = require('../utils/parser');
-const { broadcastDeltaToFleet } = require('../services/syncService');
 
 // ============================================================
 // UPLINK ROUTER — THE CENTRAL MESSAGE DISPATCHER
@@ -15,12 +13,10 @@ const { broadcastDeltaToFleet } = require('../services/syncService');
 // Receives ALL messages from the broker and routes them
 // based on topic and payload type.
 //
-// CRITICAL: The `packet` object is passed through so the
-// calling code in client.js can manually call client.ack(packet)
-// ONLY after this module resolves successfully.
-//
-// This module NEVER calls ack itself — that responsibility
-// belongs to client.js after awaiting this function.
+// CRITICAL ARCHITECTURE NOTE:
+// This function is awaited by `client.js` inside `customHandleAcks`.
+// If this function resolves cleanly, the MQTT PUBACK is released.
+// If it throws an error, the PUBACK is withheld and the hardware retries.
 // ============================================================
 
 /**
@@ -104,7 +100,7 @@ async function routeUplinkMessage(topic, payloadBuffer) {
   }
 }
 
-// ── Full Sync Handler ─────────────────────────────────────
+// ── Hardened Full Sync Handler ─────────────────────────────────────
 
 /**
  * Handle SYS:REQ_FULL_SYNC from a terminal with blank/wiped memory.
@@ -114,8 +110,6 @@ async function routeUplinkMessage(topic, payloadBuffer) {
  * @param {string} terminalId
  * @param {Object} log - Pino child logger
  */
-// ── Hardened Full Sync Handler ─────────────────────────────────────
-
 async function handleFullSyncRequest(terminalId, log) {
   log.info('uplink.full_sync_requested');
 

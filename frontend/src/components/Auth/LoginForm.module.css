@@ -104,6 +104,17 @@
   font-size: 0.85rem;
 }
 
+.successNotice {
+  border: 1px solid #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: #166534;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.08);
+}
+
 .row {
   text-align: right;
 }

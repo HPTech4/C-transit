@@ -124,17 +124,10 @@ export default function OTPVerification({ isOpen, email, onClose, onSuccess }) {
         return;
       }
 
-      // Success! Save token and call onSuccess callback
+      // Success! Notify the parent so it can route the user back to login.
       // BACKEND RESPONSE EXPECTED:
       // { token: "jwt_token_here", user: { firstname, lastname, email, matricNumber } }
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        // Optional: Save user data if needed
-        // localStorage.setItem('user', JSON.stringify(data.user));
-
-        // Call parent callback to redirect or close modal
-        onSuccess(data);
-      }
+      onSuccess(data);
     } catch (err) {
       console.error('OTP verification error:', err);
       setError('Network error. Please try again.');

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaWallet,
@@ -14,6 +14,7 @@ import {
   FaChevronDown,
   FaBars,
   FaTimes,
+  FaExclamationCircle,
 } from 'react-icons/fa';
 
 import NotificationCenter from '../components/NotificationCenter';
@@ -33,6 +34,8 @@ export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showKycReminder, setShowKycReminder] = useState(false);
+  const [kycReminderMessage, setKycReminderMessage] = useState('');
   
   // Real user data from API
   const [userData, setUserData] = useState(null);
@@ -70,6 +73,15 @@ export default function Dashboard() {
         date: '2026-04-23',
       },
     ],
+  };
+
+  const student = {
+    studentId: 'PHY/2026/154',
+    department: 'Physics',
+    phone: '+234 81 XXXX XXXX',
+    level: '300 Level',
+    campus: 'Main Campus',
+    joinDate: 'January 2026',
   };
 
   // Extract user info
@@ -138,6 +150,18 @@ export default function Dashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    const reminder = sessionStorage.getItem('kycReminderMessage');
+
+    if (!reminder) {
+      return;
+    }
+
+    setKycReminderMessage(reminder);
+    setShowKycReminder(true);
+    sessionStorage.removeItem('kycReminderMessage');
+  }, []);
+
   const handleComingSoon = (feature) => {
     setComingSoonMessage(feature);
     setShowComingSoon(true);
@@ -146,6 +170,11 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     setShowLogoutModal(true);
+  };
+
+  const goToSettings = () => {
+    setShowKycReminder(false);
+    navigate('/settings');
   };
 
   const confirmLogout = () => {
@@ -223,9 +252,7 @@ export default function Dashboard() {
             >
               Join the WhatsApp Community
             </a>
-            <button className={styles.dismissOverlayBtn} onClick={() => setOverlayVisible(false)}>
-              Continue to Dashboard
-            </button>
+           
           </div>
         </div>
       )}
@@ -244,12 +271,27 @@ export default function Dashboard() {
         </div>
       )}
 
+      {showKycReminder && (
+        <motion.div className={styles.kycPrompt} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <div>
+            <strong><FaExclamationCircle /> KYC Required</strong>
+            <span>{kycReminderMessage || 'Complete your KYC to unlock card linking and wallet features.'}</span>
+          </div>
+          <button onClick={goToSettings}>Open Settings</button>
+        </motion.div>
+      )}
+
       <main className={styles.dashboardShell}>
         <header className={styles.topHeader}>
           <div className={styles.brandWrap}>
             <div className={styles.brandBadge}>C</div>
             <h1 className={styles.brandTitle}>C-Transit</h1>
           </div>
+
+          <nav className={styles.quickNav} aria-label="Account shortcuts">
+            <Link to="/settings">Settings</Link>
+            <Link to="/card-linking">Link Card</Link>
+          </nav>
 
           <div className={styles.headerActions}>
             <button
@@ -351,6 +393,16 @@ export default function Dashboard() {
                 </div>
 
                 <div className={styles.mobileMenuBody}>
+                      <button
+                        className={styles.mobileMenuItem}
+                        onClick={() => {
+                          navigate('/card-linking');
+                          setShowMobileMenu(false);
+                        }}
+                      >
+                        <FaWallet /> Link Card
+                      </button>
+
                   <div className={styles.mobileNotificationWrap}>
                     <NotificationCenter />
                   </div>
@@ -378,7 +430,7 @@ export default function Dashboard() {
                   <button
                     className={styles.mobileMenuItem}
                     onClick={() => {
-                      setActiveTab('history');
+                      navigate('/history');
                       setShowMobileMenu(false);
                     }}
                   >
@@ -443,7 +495,7 @@ export default function Dashboard() {
             <section className={styles.rightColumn}>
               <div className={styles.activityHead}>
                 <h3>Recent Activity</h3>
-                <button className={styles.linkBtn} onClick={() => setActiveTab('history')}>
+                <button className={styles.linkBtn} onClick={() => navigate('/history')}>
                   View Transfer History <FaArrowRight />
                 </button>
               </div>

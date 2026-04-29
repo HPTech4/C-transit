@@ -1,7 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaCog, FaBell, FaShieldAlt, FaTrash, FaDownload } from 'react-icons/fa';
+import {
+  FaArrowLeft,
+  FaCog,
+  FaBell,
+  FaShieldAlt,
+  FaTrash,
+  FaDownload,
+  FaIdCard,
+  FaCheckCircle,
+  FaArrowRight,
+  FaUsers,
+  FaLock,
+  FaInfoCircle,
+} from 'react-icons/fa';
 import styles from './Settings.module.css';
 
 /**
@@ -23,6 +36,9 @@ export default function Settings() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('general');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionModal, setActionModal] = useState({ title: '', message: '' });
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Mock preferences data (replace with API response)
   const [preferences, setPreferences] = useState({
@@ -38,6 +54,29 @@ export default function Settings() {
     promos: false,
   });
 
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('user_theme');
+    const savedLanguage = localStorage.getItem('user_language');
+    const savedCurrency = localStorage.getItem('user_currency');
+
+    if (savedTheme || savedLanguage || savedCurrency) {
+      setPreferences((previous) => ({
+        ...previous,
+        ...(savedTheme ? { theme: savedTheme } : {}),
+        ...(savedLanguage ? { language: savedLanguage } : {}),
+        ...(savedCurrency ? { currency: savedCurrency } : {}),
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = preferences.theme;
+    document.documentElement.lang = preferences.language === 'yoruba' ? 'yo' : preferences.language === 'igbo' ? 'ig' : 'en';
+    localStorage.setItem('user_theme', preferences.theme);
+    localStorage.setItem('user_language', preferences.language);
+    localStorage.setItem('user_currency', preferences.currency);
+  }, [preferences.theme, preferences.language, preferences.currency]);
+
   // BACKEND: PUT /api/user/preferences
   // Send: { preferences object }
   // Response: { success: true, preferences: {...updatedPrefs} }
@@ -48,12 +87,24 @@ export default function Settings() {
     console.log('Preferences updated:', updated);
   };
 
+  const showToast = (message) => {
+    setSuccessMessage(message);
+    window.clearTimeout(window.__settingsToastTimer);
+    window.__settingsToastTimer = window.setTimeout(() => setSuccessMessage(''), 2500);
+  };
+
+  const openActionModal = (title, message) => {
+    setActionModal({ title, message });
+    setShowActionModal(true);
+  };
+
   // BACKEND: POST /api/user/delete-account
   // Send: { password: "user_password" }
   // Response: { success: true, message: "Account deleted" }
   const handleDeleteAccount = async () => {
     // TODO: Call API and redirect to home
     setShowDeleteConfirm(false);
+    showToast('Delete request captured. Your account removal flow would continue here.');
   };
 
   // BACKEND: GET /api/user/download-data
@@ -61,6 +112,7 @@ export default function Settings() {
   const handleDownloadData = async () => {
     // TODO: Call API to download data
     console.log('Downloading user data...');
+    showToast('Your data export has been prepared.');
   };
 
   const containerVariants = {
@@ -85,6 +137,12 @@ export default function Settings() {
         </motion.button>
         <h1>Settings & Preferences</h1>
       </div>
+
+      {successMessage && (
+        <motion.div className={styles.toast} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <FaCheckCircle /> {successMessage}
+        </motion.div>
+      )}
 
       <div className={styles.container}>
         {/* Tabs */}
@@ -124,6 +182,7 @@ export default function Settings() {
             <PrivacySettings
               onDownload={handleDownloadData}
               onDelete={() => setShowDeleteConfirm(true)}
+              onShowInfo={openActionModal}
             />
           )}
         </motion.div>
@@ -134,6 +193,14 @@ export default function Settings() {
         <DeleteConfirmModal
           onConfirm={handleDeleteAccount}
           onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
+
+      {showActionModal && (
+        <ActionInfoModal
+          title={actionModal.title}
+          message={actionModal.message}
+          onClose={() => setShowActionModal(false)}
         />
       )}
     </motion.div>
@@ -161,6 +228,7 @@ function GeneralSettings({ preferences, onSave }) {
           <option value="english">English</option>
           <option value="yoruba">Yoruba</option>
           <option value="igbo">Igbo</option>
+          <option value="hausa">Hausa</option>
         </select>
       </div>
 
@@ -171,6 +239,7 @@ function GeneralSettings({ preferences, onSave }) {
         </div>
         <div className={styles.themeButtons}>
           <motion.button
+            type="button"
             className={`${styles.themeBtn} ${preferences.theme === 'light' ? styles.active : ''}`}
             onClick={() => onSave('theme', 'light')}
             whileHover={{ scale: 1.05 }}
@@ -178,6 +247,7 @@ function GeneralSettings({ preferences, onSave }) {
             ☀️ Light
           </motion.button>
           <motion.button
+            type="button"
             className={`${styles.themeBtn} ${preferences.theme === 'dark' ? styles.active : ''}`}
             onClick={() => onSave('theme', 'dark')}
             whileHover={{ scale: 1.05 }}
@@ -190,16 +260,16 @@ function GeneralSettings({ preferences, onSave }) {
       <div className={styles.settingItem}>
         <div className={styles.settingLabel}>
           <label>Currency</label>
-          <p>Display currency for all transactions</p>
+          <p>All amounts are displayed in Nigerian Naira (₦)</p>
         </div>
         <select
           value={preferences.currency}
           onChange={(e) => onSave('currency', e.target.value)}
           className={styles.select}
+          disabled
+          aria-disabled="true"
         >
           <option value="NGN">Nigerian Naira (₦)</option>
-          <option value="USD">US Dollar ($)</option>
-          <option value="EUR">Euro (€)</option>
         </select>
       </div>
     </motion.div>
@@ -333,10 +403,30 @@ function NotificationSettings({ preferences, onSave }) {
 /**
  * Privacy & Security Tab
  */
-function PrivacySettings({ onDownload, onDelete }) {
+function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
+  const navigate = useNavigate();
+
   return (
     <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <h2>Privacy & Security</h2>
+
+      <div className={styles.sectionGroup}>
+        <h3>KYC Verification</h3>
+        <div className={styles.actionItem}>
+          <div>
+            <label>Identity verification status</label>
+            <p>Complete your KYC to enable wallet linking and dispute resolution tools</p>
+          </div>
+          <motion.button
+            className={styles.actionBtn}
+            onClick={() => navigate('/kyc')}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <FaIdCard /> Complete KYC
+          </motion.button>
+        </div>
+      </div>
 
       <div className={styles.sectionGroup}>
         <h3>Two-Factor Authentication</h3>
@@ -347,10 +437,14 @@ function PrivacySettings({ onDownload, onDelete }) {
           </div>
           <motion.button
             className={styles.actionBtn}
+            type="button"
+            onClick={() => {
+              onShowInfo('Two-Factor Authentication', '2FA setup would connect to the backend here. For now, this is a working premium placeholder.');
+            }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            Set Up 2FA
+            <FaLock /> Set Up 2FA
           </motion.button>
         </div>
       </div>
@@ -364,10 +458,14 @@ function PrivacySettings({ onDownload, onDelete }) {
           </div>
           <motion.button
             className={styles.actionBtn}
+            type="button"
+            onClick={() => {
+              onShowInfo('Active Sessions', 'This section would list devices, IPs, and login timestamps once connected to the API.');
+            }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            View Sessions
+            <FaUsers /> View Sessions
           </motion.button>
         </div>
       </div>
@@ -417,6 +515,25 @@ function PrivacySettings({ onDownload, onDelete }) {
           </a>
         </div>
       </div>
+    </motion.div>
+  );
+}
+
+function ActionInfoModal({ title, message, onClose }) {
+  return (
+    <motion.div className={styles.modalOverlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div className={styles.modal} initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+        <h2>{title}</h2>
+        <p className={styles.infoText}>
+          <FaInfoCircle /> {message}
+        </p>
+
+        <div className={styles.modalActions}>
+          <motion.button className={styles.cancelBtn} onClick={onClose} whileHover={{ scale: 1.02 }}>
+            Close
+          </motion.button>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

@@ -41,6 +41,8 @@ export default function UserProfile() {
     totalTrips: 42,
     totalSpent: 25500,
     memberSince: 'January 2026',
+    avgSpend: 607,
+    lastTrip: '2026-04-29',
   };
 
   // BACKEND: PUT /api/user/profile
@@ -164,19 +166,19 @@ export default function UserProfile() {
           </div>
         </motion.div>
 
-        {/* Emergency Contact Card */}
+        {/* Report Dispute Shortcut Card (replaces Emergency Contact) */}
         <motion.div className={styles.emergencyCard} variants={itemVariants}>
           <h3>
-            <FaPhone /> Emergency Contact
+            <FaExclamationTriangle /> Report a Dispute
           </h3>
-          <p className={styles.placeholder}>No emergency contact added yet</p>
+          <p className={styles.placeholder}>Found an incorrect charge? Report it and track resolution.</p>
           <motion.button
             className={styles.addBtn}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setIsEditing(true)}
+            onClick={() => navigate('/report-dispute')}
           >
-            Add Emergency Contact
+            Go to Dispute Form
           </motion.button>
         </motion.div>
       </div>

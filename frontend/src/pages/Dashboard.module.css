@@ -116,6 +116,26 @@
   letter-spacing: -0.03em;
 }
 
+.quickNav {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.quickNav a {
+  color: #2563eb;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: #2563eb;
+  text-underline-offset: 0.22rem;
+  white-space: nowrap;
+}
+
+.quickNav a:hover {
+  color: #1e3a8a;
+}
+
 .headerActions {
   display: flex;
   align-items: center;
@@ -1001,6 +1021,46 @@
   font-size: 0.92rem;
 }
 
+.kycPrompt {
+  position: relative;
+  z-index: 2;
+  margin: 0 0 1rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.kycPrompt strong,
+.kycPrompt span {
+  display: block;
+}
+
+.kycPrompt strong {
+  color: #1e3a8a;
+  margin-bottom: 0.2rem;
+}
+
+.kycPrompt span {
+  color: #334155;
+  font-weight: 600;
+}
+
+.kycPrompt button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.7rem 0.95rem;
+  background: #1e3a8a;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .toast {
   position: fixed;
   top: 1rem;
@@ -1037,6 +1097,16 @@
     flex-wrap: wrap;
   }
 
+  .quickNav {
+    order: 3;
+    width: 100%;
+  }
+
+  .kycPrompt {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .mobileMenuBtn {
     display: inline-flex;
     align-items: center;
@@ -1046,6 +1116,10 @@
   .notificationWrapper,
   .profileMenuWrapper {
     display: none;
+  }
+
+  .quickNav a {
+    font-size: 0.92rem;
   }
 
   .profileMenuInfo {

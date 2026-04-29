@@ -4,6 +4,55 @@
   padding: 2rem 1rem;
 }
 
+:global(html[data-theme="dark"]) .settingsPage {
+  background: linear-gradient(135deg, #0b1220 0%, #111827 100%);
+}
+
+:global(html[data-theme="dark"]) .header h1,
+:global(html[data-theme="dark"]) .settingsCard h2,
+:global(html[data-theme="dark"]) .sectionGroup h3,
+:global(html[data-theme="dark"]) .settingLabel label,
+:global(html[data-theme="dark"]) .toggleLabel label,
+:global(html[data-theme="dark"]) .actionItem label,
+:global(html[data-theme="dark"]) .modal h2 {
+  color: #e2e8f0;
+}
+
+:global(html[data-theme="dark"]) .tabs,
+:global(html[data-theme="dark"]) .settingsCard,
+:global(html[data-theme="dark"]) .modal,
+:global(html[data-theme="dark"]) .backBtn,
+:global(html[data-theme="dark"]) .tab,
+:global(html[data-theme="dark"]) .themeBtn,
+:global(html[data-theme="dark"]) .select,
+:global(html[data-theme="dark"]) .actionItem,
+:global(html[data-theme="dark"]) .toggleItem,
+:global(html[data-theme="dark"]) .link {
+  background: #111827;
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:global(html[data-theme="dark"]) .settingLabel p,
+:global(html[data-theme="dark"]) .toggleLabel p,
+:global(html[data-theme="dark"]) .actionItem p,
+:global(html[data-theme="dark"]) .header p,
+:global(html[data-theme="dark"]) .warningText,
+:global(html[data-theme="dark"]) .infoText {
+  color: #94a3b8;
+}
+
+:global(html[data-theme="dark"]) .themeBtn.active,
+:global(html[data-theme="dark"]) .tab.active,
+:global(html[data-theme="dark"]) .actionBtn,
+:global(html[data-theme="dark"]) .submitBtn {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+}
+
+:global(html[data-theme="dark"]) .modalOverlay {
+  background: rgba(2, 6, 23, 0.78);
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -90,6 +139,20 @@
   border-radius: 1.2rem;
   padding: 2rem;
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+
+.toast {
+  max-width: 1000px;
+  margin: 0 auto 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
 }
 
 .settingsCard h2 {
@@ -259,7 +322,7 @@
 
 .slider:before {
   position: absolute;
-  content: '';
+  content: "";
   height: 22px;
   width: 22px;
   left: 3px;
@@ -338,6 +401,10 @@ input:checked + .slider:before {
   background: #dc2626;
 }
 
+.actionBtn svg {
+  font-size: 0.95rem;
+}
+
 .actionBtn.dangerBtn:hover:not(:disabled) {
   background: #b91c1c;
   box-shadow: 0 8px 20px rgba(220, 38, 38, 0.2);
@@ -365,6 +432,39 @@ input:checked + .slider:before {
 .link:hover {
   background: rgba(37, 99, 235, 0.1);
   text-decoration: underline;
+}
+
+.infoText {
+  margin: 0 0 1.2rem;
+  padding: 1rem;
+  background: #f8fbff;
+  border-radius: 0.8rem;
+  border-left: 4px solid #2563eb;
+  color: #334155;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.infoText svg {
+  color: #2563eb;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.infoText + .modalActions {
+  margin-top: 0;
+}
+
+.actionBtn:focus-visible,
+.tab:focus-visible,
+.themeBtn:focus-visible,
+.link:focus-visible,
+.backBtn:focus-visible,
+.select:focus-visible,
+.input:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 2px;
 }
 
 /* Modal Styles */

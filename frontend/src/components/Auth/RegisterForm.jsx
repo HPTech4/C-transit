@@ -164,9 +164,9 @@ export default function RegisterForm() {
   const handleOTPSuccess = (data) => {
     // BACKEND RESPONSE from verify-otp:
     // { token: "jwt_token", user: { firstname, lastname, email, matricNumber } }
-    
-    // Token is already saved by OTPVerification component
-    // Close modal and redirect to dashboard
+
+    // After email verification, route the user back to login so they can sign in normally.
+    sessionStorage.setItem('authSuccessMessage', 'Email verified successfully. Please sign in to continue.');
     setShowOTPModal(false);
     
     // Clear form
@@ -179,9 +179,9 @@ export default function RegisterForm() {
       confirmPassword: '',
     });
 
-    // Redirect to dashboard
+    // Redirect to login page after verification success.
     setTimeout(() => {
-      navigate('/dashboard', { replace: true });
+      navigate('/login', { replace: true });
     }, 500);
   };
 

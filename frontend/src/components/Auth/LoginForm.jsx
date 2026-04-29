@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -38,6 +38,22 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '' });
+  const [noticeMessage, setNoticeMessage] = useState('');
+
+  useEffect(() => {
+    const storedMessage = sessionStorage.getItem('authSuccessMessage');
+
+    if (!storedMessage) {
+      return;
+    }
+
+    setNoticeMessage(storedMessage);
+    sessionStorage.removeItem('authSuccessMessage');
+
+    const timer = setTimeout(() => setNoticeMessage(''), 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,6 +98,7 @@ export default function LoginForm() {
 
       localStorage.setItem('token', response.data.token);
       sessionStorage.setItem('authSuccessMessage', 'Login successful. Welcome back.');
+      sessionStorage.setItem('kycReminderMessage', 'Complete your KYC to unlock card linking, reports, and wallet features.');
 
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
@@ -125,6 +142,16 @@ export default function LoginForm() {
         initial="hidden"
         animate="visible"
       >
+        {noticeMessage && (
+          <motion.div
+            className={styles.successNotice}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {noticeMessage}
+          </motion.div>
+        )}
+
         <motion.div className={styles.formGroup} variants={itemVariants}>
           <label htmlFor="email" className={styles.label}>
             Email Address

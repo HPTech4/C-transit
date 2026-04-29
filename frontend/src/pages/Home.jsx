@@ -1,6 +1,13 @@
 import { Link } from 'react-router-dom';
 import styles from './Home.module.css';
 import { FaUserPlus, FaMoneyBillWave, FaQrcode, FaBolt, FaShieldAlt, FaWhatsapp, FaTwitter, FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+
+const recentHistory = [
+  { id: 1, day: 'Mon', date: '2026-04-29', route: 'Engineering Block', status: 'Success', amount: '₦500' },
+  { id: 2, day: 'Tue', date: '2026-04-28', route: 'Library', status: 'Success', amount: '₦500' },
+  { id: 3, day: 'Wed', date: '2026-04-27', route: 'Medical Center', status: 'Pending', amount: '₦1000' },
+];
 
 export default function Home() {
   return (
@@ -121,6 +128,26 @@ export default function Home() {
             Join WhatsApp Community
           </a>
         </div>
+      </section>
+
+      {/* Recent Activity */}
+      <section className={styles.recentActivity}>
+        <h2 className={styles.sectionTitle}>Recent Activity</h2>
+        <div className={styles.activityList}>
+          {recentHistory.map((r) => (
+            <div key={r.id} className={styles.activityItem}>
+              <div className={styles.activityLeft}>
+                <div className={styles.activityRoute}>{r.route}</div>
+                <div className={styles.activityDate}>{r.date}</div>
+              </div>
+              <div className={styles.activityRight}>
+                <div className={styles.activityAmount}>{r.amount}</div>
+                <div className={r.status === 'Success' ? styles.statusSuccess : styles.statusPending}>{r.status}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <Link to="/history" className={`${styles.button} ${styles.secondary}`}>View Full History</Link>
       </section>
     </main>
   );

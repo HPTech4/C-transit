@@ -25,6 +25,76 @@
     "Inter", "Source Sans 3", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+:global(html[data-theme="dark"]) .wrapper {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.16), transparent 42%),
+    radial-gradient(circle at 90% 0%, rgba(56, 189, 248, 0.14), transparent 38%),
+    linear-gradient(180deg, #07111f 0%, #0b1220 100%);
+  color: #e2e8f0;
+}
+
+:global(html[data-theme="dark"]) .topHeader,
+:global(html[data-theme="dark"]) .walletCard,
+:global(html[data-theme="dark"]) .activityCard,
+:global(html[data-theme="dark"]) .panelCard,
+:global(html[data-theme="dark"]) .drawerPanel,
+:global(html[data-theme="dark"]) .profileDropdown,
+:global(html[data-theme="dark"]) .mobileMenuPanel,
+:global(html[data-theme="dark"]) .overlayContent {
+  background: #0f1724;
+  border-color: rgba(148, 163, 184, 0.16);
+  color: #e2e8f0;
+}
+
+:global(html[data-theme="dark"]) .brandTitle,
+:global(html[data-theme="dark"]) .greetingBlock h2,
+:global(html[data-theme="dark"]) .activityHead h3,
+:global(html[data-theme="dark"]) .panelHeader h3,
+:global(html[data-theme="dark"]) .drawerHeader h3,
+:global(html[data-theme="dark"]) .overlayContent h1 {
+  color: #e2e8f0;
+}
+
+:global(html[data-theme="dark"]) .quickNavButton,
+:global(html[data-theme="dark"]) .secondaryAction,
+:global(html[data-theme="dark"]) .linkBtn,
+:global(html[data-theme="dark"]) .mobileMenuItem,
+:global(html[data-theme="dark"]) .drawerCloseBtn,
+:global(html[data-theme="dark"]) .headerActionBtn,
+:global(html[data-theme="dark"]) .profileMenuBtn,
+:global(html[data-theme="dark"]) .mobileCloseBtn,
+:global(html[data-theme="dark"]) .backBtn {
+  background: #111827;
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+:global(html[data-theme="dark"]) .walletHead p,
+:global(html[data-theme="dark"]) .walletHead small,
+:global(html[data-theme="dark"]) .activityLeft p,
+:global(html[data-theme="dark"]) .activityRight p,
+:global(html[data-theme="dark"]) .profileMenuMatric,
+:global(html[data-theme="dark"]) .settingsText,
+:global(html[data-theme="dark"]) .overlayContent p {
+  color: #94a3b8;
+}
+
+:global(html[data-theme="dark"]) .transferCard,
+:global(html[data-theme="dark"]) .profileGrid div,
+:global(html[data-theme="dark"]) .drawerHeader,
+:global(html[data-theme="dark"]) .settingsActions,
+:global(html[data-theme="dark"]) .mobileMenuItem,
+:global(html[data-theme="dark"]) .profileDropdown {
+  background: #0b1220;
+}
+
+:global(html[data-theme="dark"]) .linkBtn,
+:global(html[data-theme="dark"]) .quickNav a,
+:global(html[data-theme="dark"]) .walletHead h3,
+:global(html[data-theme="dark"]) .credit {
+  color: #7dd3fc;
+}
+
 .wrapper::before {
   content: "";
   position: absolute;
@@ -130,6 +200,24 @@
   text-decoration-color: #2563eb;
   text-underline-offset: 0.22rem;
   white-space: nowrap;
+}
+
+.quickNavButton {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: #2563eb;
+  text-underline-offset: 0.22rem;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+
+.quickNavButton:hover {
+  color: #1e3a8a;
 }
 
 .quickNav a:hover {

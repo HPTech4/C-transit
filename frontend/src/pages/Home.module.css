@@ -3,6 +3,35 @@
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+:global(html[data-theme="dark"]) .home {
+  color: #e2e8f0;
+}
+
+:global(html[data-theme="dark"]) .infoSection,
+:global(html[data-theme="dark"]) .howItWorks {
+  background: linear-gradient(180deg, #0b1220, #0f1724);
+}
+
+:global(html[data-theme="dark"]) .infoCard,
+:global(html[data-theme="dark"]) .step,
+:global(html[data-theme="dark"]) .activityItem {
+  background: #0f1724;
+  color: #e2e8f0;
+}
+
+:global(html[data-theme="dark"]) .infoCard h2,
+:global(html[data-theme="dark"]) .sectionTitle,
+:global(html[data-theme="dark"]) .step h3,
+:global(html[data-theme="dark"]) .activityRoute {
+  color: #e2e8f0;
+}
+
+:global(html[data-theme="dark"]) .cardDescription,
+:global(html[data-theme="dark"]) .step p,
+:global(html[data-theme="dark"]) .activityDate {
+  color: #94a3b8;
+}
+
 /* Hero Section */
 .hero {
   position: relative;
@@ -448,6 +477,7 @@
 
       .socialLinks {
         gap: 0.6rem;
+        flex-wrap: wrap;
       }
 
       .socialIcon {

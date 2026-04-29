@@ -18,6 +18,7 @@ import {
 } from 'react-icons/fa';
 
 import NotificationCenter from '../components/NotificationCenter';
+import CardLinkingModal from '../components/CardLinkingModal';
 import { USER_API_URL } from '../config/api';
 
 import styles from './Dashboard.module.css';
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showKycReminder, setShowKycReminder] = useState(false);
   const [kycReminderMessage, setKycReminderMessage] = useState('');
+  const [showCardLinkModal, setShowCardLinkModal] = useState(false);
   
   // Real user data from API
   const [userData, setUserData] = useState(null);
@@ -177,6 +179,12 @@ export default function Dashboard() {
     navigate('/settings');
   };
 
+  const openCardLinkModal = () => {
+    setShowProfileMenu(false);
+    setShowMobileMenu(false);
+    setShowCardLinkModal(true);
+  };
+
   const confirmLogout = () => {
     localStorage.removeItem('token');
     setShowLogoutModal(false);
@@ -252,7 +260,9 @@ export default function Dashboard() {
             >
               Join the WhatsApp Community
             </a>
-           
+            <button className={styles.dismissOverlayBtn} onClick={() => setOverlayVisible(false)}>
+              Continue to Dashboard
+            </button>
           </div>
         </div>
       )}
@@ -290,7 +300,9 @@ export default function Dashboard() {
 
           <nav className={styles.quickNav} aria-label="Account shortcuts">
             <Link to="/settings">Settings</Link>
-            <Link to="/card-linking">Link Card</Link>
+            <button type="button" className={styles.quickNavButton} onClick={openCardLinkModal}>
+              Link Card
+            </button>
           </nav>
 
           <div className={styles.headerActions}>
@@ -396,8 +408,7 @@ export default function Dashboard() {
                       <button
                         className={styles.mobileMenuItem}
                         onClick={() => {
-                          navigate('/card-linking');
-                          setShowMobileMenu(false);
+                          openCardLinkModal();
                         }}
                       >
                         <FaWallet /> Link Card
@@ -645,6 +656,8 @@ export default function Dashboard() {
           </motion.div>
         </motion.div>
       )}
+
+      <CardLinkingModal isOpen={showCardLinkModal} onClose={() => setShowCardLinkModal(false)} />
     </div>
   );
 }

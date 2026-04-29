@@ -1,13 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaLock, FaShieldAlt, FaUserTie } from 'react-icons/fa';
+import { FaLock, FaShieldAlt, FaUserTie, FaArrowRight } from 'react-icons/fa';
 
 import PrimaryButton from '../components/Admin/PrimaryButton';
-import {
-  ADMIN_PLACEHOLDER_CREDENTIALS,
-  setAdminSession,
-} from '../config/adminAuth';
+import { ADMIN_PLACEHOLDER_CREDENTIALS, setAdminSession } from '../config/adminAuth';
 
 import styles from './AdminLogin.module.css';
 
@@ -19,7 +16,7 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
 
   const helperText = useMemo(
-    () => `Use ${ADMIN_PLACEHOLDER_CREDENTIALS.email} / ${ADMIN_PLACEHOLDER_CREDENTIALS.password}`,
+    () => `Demo: ${ADMIN_PLACEHOLDER_CREDENTIALS.email} / ${ADMIN_PLACEHOLDER_CREDENTIALS.password}`,
     [],
   );
 
@@ -28,7 +25,7 @@ export default function AdminLogin() {
     setError('');
 
     if (!email || !password) {
-      setError('Please enter admin email and password.');
+      setError('Please enter both email and password.');
       return;
     }
 
@@ -39,12 +36,12 @@ export default function AdminLogin() {
         email.toLowerCase() !== ADMIN_PLACEHOLDER_CREDENTIALS.email
         || password !== ADMIN_PLACEHOLDER_CREDENTIALS.password
       ) {
-        setError('Invalid admin credentials. Please use the placeholder details.');
+        setError('Invalid credentials. Use demo credentials below.');
         setLoading(false);
         return;
       }
 
-      // Backend integration: replace this with POST /api/admin/login and store the server-issued token.
+      // Backend integration: POST /api/admin/login - replace placeholder when backend is ready
       setAdminSession({
         name: 'Operations Admin',
         email: ADMIN_PLACEHOLDER_CREDENTIALS.email,
@@ -57,65 +54,120 @@ export default function AdminLogin() {
 
   return (
     <div className={styles.wrapper}>
-      <motion.section
-        className={styles.loginCard}
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-      >
-        <div className={styles.header}>
-          <span className={styles.badge}>C-Transit Control</span>
-          <h1>Admin Access Portal</h1>
-          <p>Secure access for operations, finance, support, and oversight teams.</p>
-        </div>
+      <div className={styles.container}>
+        {/* Left Column: Form */}
+        <motion.section
+          className={styles.formSection}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className={styles.formHeader}>
+            <div className={styles.badgeWrapper}>
+              <span className={styles.badge}>C-Transit Control</span>
+            </div>
+            <h1 className={styles.title}>Admin Access</h1>
+            <p className={styles.subtitle}>Secure portal for operations teams</p>
+          </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <label htmlFor="adminEmail">Admin Email</label>
-          <input
-            id="adminEmail"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="admin@ctransit.ng"
-          />
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.formGroup}>
+              <label htmlFor="adminEmail" className={styles.label}>Admin Email</label>
+              <input
+                id="adminEmail"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="admin@ctransit.ng"
+                className={styles.input}
+                required
+              />
+            </div>
 
-          <label htmlFor="adminPassword">Password</label>
-          <input
-            id="adminPassword"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Enter secure password"
-          />
+            <div className={styles.formGroup}>
+              <label htmlFor="adminPassword" className={styles.label}>Password</label>
+              <input
+                id="adminPassword"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="••••••••"
+                className={styles.input}
+                required
+              />
+            </div>
 
-          {error && <p className={styles.error}>{error}</p>}
-          <p className={styles.helper}>{helperText}</p>
+            {error && (
+              <motion.div
+                className={styles.errorBox}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {error}
+              </motion.div>
+            )}
 
-          <PrimaryButton type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign in as Admin'}
-          </PrimaryButton>
-        </form>
-      </motion.section>
+            <PrimaryButton type="submit" disabled={loading} className={styles.submitBtn}>
+              {loading ? (
+                <><span>Verifying...</span></>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <FaArrowRight />
+                </>
+              )}
+            </PrimaryButton>
+          </form>
 
-      <motion.aside
-        className={styles.infoCard}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.35, delay: 0.1 }}
-      >
-        <h2>Platform Security Layers</h2>
-        <ul>
-          <li>
-            <FaShieldAlt /> Role-based privilege boundaries
-          </li>
-          <li>
-            <FaLock /> Encrypted session management
-          </li>
-          <li>
-            <FaUserTie /> Full admin audit log readiness
-          </li>
-        </ul>
-      </motion.aside>
+          <div className={styles.demoBox}>
+            <p className={styles.demoLabel}>Demo Credentials:</p>
+            <code className={styles.demoCode}>{helperText}</code>
+          </div>
+        </motion.section>
+
+        {/* Right Column: Security Info */}
+        <motion.aside
+          className={styles.infoSection}
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          <div className={styles.infoHeader}>
+            <h2 className={styles.infoTitle}>Security Features</h2>
+            <p className={styles.infoSubtitle}>Enterprise-grade protection</p>
+          </div>
+
+          <ul className={styles.featureList}>
+            <li className={styles.featureItem}>
+              <div className={styles.featureIcon}>
+                <FaShieldAlt />
+              </div>
+              <div className={styles.featureContent}>
+                <h3>Role-Based Access</h3>
+                <p>Multi-level privilege boundaries</p>
+              </div>
+            </li>
+            <li className={styles.featureItem}>
+              <div className={styles.featureIcon}>
+                <FaLock />
+              </div>
+              <div className={styles.featureContent}>
+                <h3>Encrypted Sessions</h3>
+                <p>Secure token management</p>
+              </div>
+            </li>
+            <li className={styles.featureItem}>
+              <div className={styles.featureIcon}>
+                <FaUserTie />
+              </div>
+              <div className={styles.featureContent}>
+                <h3>Audit Logging</h3>
+                <p>Complete action tracking</p>
+              </div>
+            </li>
+          </ul>
+        </motion.aside>
+      </div>
     </div>
   );
 }

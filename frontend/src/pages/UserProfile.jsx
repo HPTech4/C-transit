@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaEdit, FaLock, FaPhone, FaCalendarAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit, FaLock, FaPhone, FaCalendarAlt, FaExclamationTriangle } from 'react-icons/fa';
 import styles from './UserProfile.module.css';
 
 /**

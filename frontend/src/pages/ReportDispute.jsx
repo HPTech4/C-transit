@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaExclamationCircle, FaPaperPlane } from 'react-icons/fa';
 
@@ -16,8 +16,6 @@ const issueOptions = [
 
 export default function ReportDispute() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const reference = searchParams.get('ref') || '';
   const [issue, setIssue] = useState(issueOptions[0]);
   const [description, setDescription] = useState('');
   const [otherIssue, setOtherIssue] = useState('');

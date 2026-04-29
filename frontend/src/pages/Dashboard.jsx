@@ -262,9 +262,7 @@ export default function Dashboard() {
             >
               Join the WhatsApp Community
             </a>
-            <button className={styles.dismissOverlayBtn} onClick={() => setOverlayVisible(false)}>
-              Continue to Dashboard
-            </button>
+          
           </div>
         </div>
       )}

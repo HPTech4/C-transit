@@ -15,11 +15,14 @@ export default function CardLinking() {
     // simple validation: 6 digits
     if (!/^\d{6}$/.test(pin)) return;
 
-    // Backend integration: post the pin/tokenize request here.
+    // BACKEND INTEGRATION: POST /api/user/card-linking
+    // Send: { pin: "123456", cardToken: "token_from_payment_gateway" }
+    // Response: { success: true, message: "Card linked successfully", cardLast4: "1234" }
+    // TODO: Replace with actual API endpoint when backend is ready
     setSuccess(true);
-    sessionStorage.setItem('authSuccessMessage', 'Card linked successfully. You can now use wallet funding tools.');
+    sessionStorage.setItem('authSuccessMessage', 'Verification successful. Redirecting to login...');
 
-    setTimeout(() => navigate('/'), 1600);
+    setTimeout(() => navigate('/login', { replace: true }), 1600);
   };
 
   return (
@@ -39,7 +42,7 @@ export default function CardLinking() {
           <div className={styles.successBox}>
             <FaCheckCircle />
             <h2>Card linked successfully</h2>
-            <p>Redirecting you back to the homepage now.</p>
+            <p>Redirecting you to login now.</p>
           </div>
         ) : (
           <form className={styles.form} onSubmit={handleSubmit}>
@@ -55,10 +58,7 @@ export default function CardLinking() {
               />
             </label>
 
-            <div className={styles.noteBox}>
-              <p>Your PIN is used to verify card ownership. This is a demo flow; no card data is stored.</p>
-            </div>
-
+            
             <button className={styles.submitBtn} type="submit" disabled={!/^\d{6}$/.test(pin)}>Link Card</button>
           </form>
         )}

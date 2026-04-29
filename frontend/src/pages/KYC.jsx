@@ -52,7 +52,10 @@ export default function KYC() {
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    // Backend integration: submit KYC details and image file here.
+    // BACKEND INTEGRATION: POST /api/user/kyc/submit
+    // Send: FormData with { firstname, lastname, matricNumber, phone, schoolId, idCardImage }
+    // Response: { success: true, message: "KYC submitted for review", kycStatus: "pending" }
+    // TODO: Replace with actual API endpoint when backend is ready - use FormData for file upload
     setSuccess(true);
     sessionStorage.setItem('authSuccessMessage', 'KYC completed successfully. Your account will be reviewed shortly.');
 

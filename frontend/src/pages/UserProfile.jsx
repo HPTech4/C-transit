@@ -119,10 +119,6 @@ export default function UserProfile() {
                 <label>Phone Number</label>
                 <p>{userData.phone}</p>
               </div>
-              <div className={styles.infoItem}>
-                <label>Member Since</label>
-                <p>{userData.joinDate}</p>
-              </div>
             </div>
           </div>
 

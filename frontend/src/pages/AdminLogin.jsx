@@ -41,7 +41,10 @@ export default function AdminLogin() {
         return;
       }
 
-      // Backend integration: POST /api/admin/login - replace placeholder when backend is ready
+      // BACKEND INTEGRATION: POST /api/admin/login
+      // Send: { email: "admin@ctransit.ng", password: "admin_password" }
+      // Response: { success: true, token: "jwt_token", user: { name, email, role } }
+      // TODO: Replace with actual API endpoint when backend is ready
       setAdminSession({
         name: 'Operations Admin',
         email: ADMIN_PLACEHOLDER_CREDENTIALS.email,
@@ -118,11 +121,6 @@ export default function AdminLogin() {
               )}
             </PrimaryButton>
           </form>
-
-          <div className={styles.demoBox}>
-            <p className={styles.demoLabel}>Demo Credentials:</p>
-            <code className={styles.demoCode}>{helperText}</code>
-          </div>
         </motion.section>
 
         {/* Right Column: Security Info */}

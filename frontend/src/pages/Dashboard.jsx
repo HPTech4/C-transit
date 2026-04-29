@@ -106,6 +106,8 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    // BACKEND INTEGRATION: GET /api/users/count
+    // Response: { data: { count: { registeredUsers: 150 } } }
     const fetchRegisteredUsers = async () => {
       try {
         const response = await fetch(`${USER_API_URL}/users/count`);
@@ -299,7 +301,6 @@ export default function Dashboard() {
           </div>
 
           <nav className={styles.quickNav} aria-label="Account shortcuts">
-            <Link to="/settings">Settings</Link>
             <button type="button" className={styles.quickNavButton} onClick={openCardLinkModal}>
               Link Card
             </button>

@@ -26,7 +26,10 @@ export default function ReportDispute() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Backend integration: send dispute payload to the support API here.
+    // BACKEND INTEGRATION: POST /api/support/report-dispute
+    // Send: { issueType: "issue_category", description: "user_complaint_details" }
+    // Response: { success: true, ticketId: "TICKET_12345", message: "Dispute submitted" }
+    // TODO: Replace with actual API endpoint when backend is ready
     setSuccess(true);
     sessionStorage.setItem('authSuccessMessage', 'Your report has been submitted. It will be attended to soon.');
     setTimeout(() => navigate('/history'), 2200);

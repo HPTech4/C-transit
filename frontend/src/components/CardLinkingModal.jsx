@@ -34,8 +34,10 @@ export default function CardLinkingModal({ isOpen, onClose }) {
       return;
     }
 
-    // Backend integration placeholder: POST /api/user/card-linking
-    // This endpoint is not ready yet, so the modal shows a demo success state for now.
+    // BACKEND INTEGRATION: POST /api/user/card-linking
+    // Send: { pin: "123456", cardToken: "token_from_payment_gateway" }
+    // Response: { success: true, message: "Card linked successfully", cardLast4: "1234" }
+    // TODO: Replace with actual API endpoint when backend is ready
     sessionStorage.setItem('authSuccessMessage', 'Card linked successfully. You can now use wallet funding tools.');
     setIsSuccessful(true);
   };
@@ -92,11 +94,6 @@ export default function CardLinkingModal({ isOpen, onClose }) {
                     pattern="\\d{6}"
                   />
                 </label>
-
-                <div className={styles.noteBox}>
-                  <p>Your PIN is used to verify card ownership. This is a demo flow; no card data is stored.</p>
-                </div>
-
                 <button className={styles.submitBtn} type="submit" disabled={!/^\d{6}$/.test(pin)}>
                   Link Card
                 </button>

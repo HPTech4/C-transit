@@ -1,0 +1,41 @@
+{
+  "name": "ctransit-backend-hardware-link",
+  "version": "1.0.0",
+  "description": "C-Transit Backend Hardware Integration Service — Bridges ESP32 terminal fleet via HiveMQ Cloud to PostgreSQL financial ledger",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "lint": "eslint src/**/*.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "ioredis": "^5.3.2",
+    "mqtt": "^5.3.4",
+    "pino": "^8.19.0",
+    "pino-pretty": "^11.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "prisma": "^5.10.0"
+  },
+  "keywords": [
+    "mqtt",
+    "hivemq",
+    "esp32",
+    "iot",
+    "fintech",
+    "transit",
+    "offline-first"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}

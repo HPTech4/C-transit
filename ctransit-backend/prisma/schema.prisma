@@ -1,0 +1,50 @@
+// ============================================================
+// C-TRANSIT PRISMA SCHEMA
+// Immutable financial ledger — PostgreSQL
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Terminal {
+  terminal_id       String    @id @db.VarChar(20) 
+  status            String    @default("OFFLINE") @db.VarChar(20)
+  last_seen         DateTime? @db.Timestamptz(6)
+  active_driver_uid String?   @db.VarChar(20)
+  secret_key        String    @db.VarChar(64)
+
+  transactions Transaction[]
+
+  @@map("terminals")
+}
+
+model Transaction {
+  // CRITICAL FIX: Expanded to 64 chars to support your SHA-256 composite hashes
+  transaction_id String   @id @db.VarChar(64)       
+  terminal_id    String   @db.VarChar(20)
+  student_uid    String   @db.VarChar(20)
+  amount         Decimal  @db.Decimal(10, 2)
+  driver_uid     String?  @db.VarChar(20)
+  synced_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  terminal Terminal @relation(fields: [terminal_id], references: [terminal_id])
+
+  @@map("transactions")
+}
+
+model Wallet {
+  id          String   @id @default(uuid())
+  student_uid String   @unique @db.VarChar(20)
+  balance     Decimal  @default(0) @db.Decimal(10, 2)
+  is_linked   Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@map("wallets")
+}

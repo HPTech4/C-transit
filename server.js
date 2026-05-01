@@ -1,30 +1,17 @@
 'use strict';
 
 // Load and validate environment variables first — before any other import
-import './config/env.js';
+import './src/config/env.js';
 
 import http from 'http';
 import app from './app.js';
-import { connectMqtt, disconnectMqtt } from './mqtt/client.js';
-import { getRedisClient } from './config/redis.js';
-import { prisma } from './services/ledgerService.js';
-import logger from './config/logger.js';
-import env from './config/env.js';
+import { connectMqtt, disconnectMqtt } from './src/mqtt/client.js';
+import { getRedisClient } from './src/config/redis.js';
+import { prisma } from './src/services/ledger.service.js';
+import logger from './src/config/logger.js';
+import env from './src/config/env.js';
 
-// ============================================================
-// SERVER ENTRY POINT
-// Boot sequence:
-//   1. Connect to Redis
-//   2. Connect to PostgreSQL (via Prisma)
-//   3. Establish MQTTS connection to HiveMQ
-//   4. Start HTTP server
-//
-// Shutdown sequence (SIGTERM/SIGINT):
-//   1. Stop accepting new HTTP connections
-//   2. Send MQTT DISCONNECT to broker (clean LWT)
-//   3. Disconnect Redis
-//   4. Disconnect Prisma (PostgreSQL connection pool)
-// ============================================================
+// HTTP server with boot/shutdown sequence for Redis, PostgreSQL, and MQTT
 
 const server = http.createServer(app);
 let isShuttingDown = false;
@@ -32,7 +19,6 @@ let isShuttingDown = false;
 async function boot() {
   logger.info({ version: process.version, env: env.NODE_ENV }, 'server.boot_start');
 
-  // ── 1. Redis ───────────────────────────────────────────
   try {
     const redis = getRedisClient();
     await redis.ping();
@@ -42,17 +28,16 @@ async function boot() {
     process.exit(1);
   }
 
-  // ── 2. PostgreSQL ──────────────────────────────────────
   try {
     await prisma.$connect();
     await prisma.$queryRaw`SELECT 1`;
     logger.info('server.postgres_ready');
+    console.log('✓ Database connection successful');
   } catch (err) {
     logger.fatal({ err: err.message }, 'server.postgres_connection_failed — aborting');
     process.exit(1);
   }
 
-  // ── 3. MQTT ────────────────────────────────────────────
   try {
     await connectMqtt();
     logger.info('server.mqtt_ready');
@@ -61,9 +46,9 @@ async function boot() {
     process.exit(1);
   }
 
-  // ── 4. HTTP Server ─────────────────────────────────────
   server.listen(env.PORT, () => {
     logger.info({ port: env.PORT }, 'server.http_listening');
+    console.log(`✓ Server successfully started on port ${env.PORT}`);
   });
 
   server.on('error', (err) => {
@@ -74,7 +59,7 @@ async function boot() {
   logger.info('server.boot_complete — all systems operational');
 }
 
-// ── Graceful Shutdown ─────────────────────────────────────
+// Graceful shutdown handler
 
 async function shutdown(signal) {
   if (isShuttingDown) return;
@@ -82,7 +67,6 @@ async function shutdown(signal) {
 
   logger.info({ signal }, 'server.shutdown_initiated');
 
-  // Stop accepting new HTTP connections
   server.close(async () => {
     logger.info('server.http_closed');
   });

@@ -1,25 +1,39 @@
 'use strict';
 
 import express from 'express';
-import logger from './config/logger.js';
+import morgan from 'morgan';
+import cors from 'cors';
+import 'dotenv/config';
+import logger from './src/config/logger.js';
+import connectDB from './src/config/db.js';
 
-import healthRouter from './routes/health.js';
-import adminRouter from './routes/admin.js';
+import healthRouter from './src/routes/health.routes.js';
+import adminRouter from './src/routes/admin.routes.js';
+import authRoutes from './src/routes/auth.routes.js';
+import userRoutes from './src/routes/user.routes.js';
+import walletsRouter, { requireStudentAuth } from './src/controller/wallets.controller.js';
+import { authenticateToken } from './src/middleware/auth.middleware.js';
 
-// ============================================================
-// EXPRESS APPLICATION
-// Minimal HTTP surface — the real work is done over MQTT.
-// HTTP endpoints handle: health checks, admin operations,
-// Monnify webhooks, and mobile app registration confirms.
-// ============================================================
+// Express app with MQTT and REST API endpoints
 
 const app = express();
 
-// ── Middleware ─────────────────────────────────────────────
-app.use(express.json({ limit: '10kb' })); // Reject oversized payloads
+app.use(morgan('dev'));
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false }));
 
-// ── Request Logging ────────────────────────────────────────
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://c-transit.vercel.app"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"]
+}));
+
+connectDB();
+
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
@@ -37,16 +51,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Routes ─────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.send('C-transit server is running');
+});
+
 app.use('/health', healthRouter);
 app.use('/admin', adminRouter);
 
-// ── 404 Handler ────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
+
+app.use('/api/users', userRoutes);
+app.use('/api/wallets', authenticateToken, requireStudentAuth, walletsRouter);
+
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
-
-// ── Global Error Handler ───────────────────────────────────
 app.use((err, req, res, next) => {
   logger.error({ err: err.message, path: req.path }, 'http.unhandled_error');
   res.status(500).json({ error: 'Internal server error' });

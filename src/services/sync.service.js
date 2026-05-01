@@ -1,38 +1,30 @@
 'use strict';
-
 import { getRedisClient, redisKeys } from '../config/redis.js';
 import logger from '../config/logger.js';
-import { prisma } from './ledgerService.js';
-
-let _mqttPublish = null; 
-
+import { prisma } from './ledger.service.js';
+let _mqttPublish = null;
 function injectMqttPublisher(publishFn) {
   _mqttPublish = publishFn;
 }
-
 async function routeDeltaToTerminal(terminalId, deltaCommand) {
   const redis = getRedisClient();
   const log = logger.child({ terminalId, deltaCommand });
-
   try {
     const terminal = await prisma.terminal.findUnique({
       where: { terminal_id: terminalId },
       select: { status: true },
     });
-
     if (!terminal) {
       log.warn('sync.terminal_not_in_db — queuing delta');
       await redis.rpush(redisKeys.terminalQueue(terminalId), deltaCommand);
       return;
     }
-
     if (terminal.status === 'ONLINE') {
       if (!_mqttPublish) {
         log.error('sync.mqtt_publisher_not_injected — falling back to queue');
         await redis.rpush(redisKeys.terminalQueue(terminalId), deltaCommand);
         return;
       }
-
       await _mqttPublish(terminalId, deltaCommand);
       log.info('sync.delta_published_direct');
     } else {
@@ -48,25 +40,18 @@ async function routeDeltaToTerminal(terminalId, deltaCommand) {
     }
   }
 }
-
 async function broadcastDeltaToFleet(deltaCommand) {
   const log = logger.child({ deltaCommand });
   const redis = getRedisClient();
-
   try {
-    // CRITICAL FIX: Fetch all statuses at once to prevent connection pool exhaustion.
     const terminals = await prisma.terminal.findMany({
       select: { terminal_id: true, status: true },
     });
-
     if (terminals.length === 0) {
       log.warn('sync.fleet_broadcast_no_terminals');
       return;
     }
-
     log.info({ terminalCount: terminals.length }, 'sync.fleet_broadcast_start');
-
-    // Route in-memory based on the fetched status batch, avoiding 50+ DB queries.
     const promises = terminals.map(async (t) => {
       const qLog = log.child({ terminalId: t.terminal_id });
       try {
@@ -81,61 +66,48 @@ async function broadcastDeltaToFleet(deltaCommand) {
         qLog.error({ err: err.message }, 'sync.broadcast_routing_failed');
       }
     });
-
     await Promise.allSettled(promises);
     log.info('sync.fleet_broadcast_complete');
-
   } catch (err) {
     log.error({ err: err.message }, 'sync.fleet_broadcast_error');
   }
 }
-
 async function flushTerminalQueue(terminalId) {
   const redis = getRedisClient();
   const log = logger.child({ terminalId });
-
   if (!_mqttPublish) {
     log.error('sync.flush_queue_no_mqtt_publisher');
     return;
   }
-
   const queueKey = redisKeys.terminalQueue(terminalId);
-
   try {
     const queueLength = await redis.llen(queueKey);
-
     if (queueLength === 0) {
       log.debug('sync.flush_queue_empty');
       return;
     }
-
     log.info({ queueLength }, 'sync.flush_queue_start');
-
     let command;
     let flushedCount = 0;
-
     while ((command = await redis.lpop(queueKey)) !== null) {
       try {
         await _mqttPublish(terminalId, command);
         flushedCount++;
         log.debug({ command, flushedCount }, 'sync.flush_queue_item_sent');
       } catch (publishErr) {
-        // Failsafe: Re-queue at the front so the missed command is sent first next time.
         await redis.lpush(queueKey, command);
         log.error(
           { command, err: publishErr.message },
           'sync.flush_queue_publish_failed — re-queued at front'
         );
-        break; 
+        break;
       }
     }
-
     log.info({ flushedCount }, 'sync.flush_queue_complete');
   } catch (err) {
     log.error({ err: err.message }, 'sync.flush_queue_error');
   }
 }
-
 export {
   injectMqttPublisher,
   routeDeltaToTerminal,

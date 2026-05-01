@@ -1,18 +1,1 @@
-import prisma from "../lib/prisma.js";
-
-const connectDB = async () => {
-  try {
-    await prisma.$connect();
-    console.log("DB Connected Successfully");
-  } catch (error) {
-    console.error("Database Connection Error:", error);
-    process.exit(1);
-  }
-};
-
-const disconnectDB = async () => {
-  await prisma.$disconnect();
-};
-
-export { prisma, connectDB, disconnectDB };
-export default connectDB;
+import prisma from "../lib/prisma.js";import logger from "./logger.js";const connectDB = async () => {  try {    await prisma.$connect();    logger.info('db.connected_successfully');  } catch (error) {    logger.error({ err: error.message }, "db.connection_error");    process.exit(1);  }};const disconnectDB = async () => {  await prisma.$disconnect();};export { prisma, connectDB, disconnectDB };export default connectDB;

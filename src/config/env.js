@@ -1,65 +1,70 @@
-'use strict';
-
+"use strict";
 import "dotenv/config";
-
-// ============================================================
-// ENVIRONMENT CONFIGURATION
-// All env vars are validated at startup.
-// The process exits immediately if any required var is missing.
-// This prevents silent misconfiguration in production.
-// ============================================================
-
 const REQUIRED_VARS = [
-  'HIVEMQ_HOST',
-  'HIVEMQ_PORT',
-  'HIVEMQ_USERNAME',
-  'HIVEMQ_PASSWORD',
-  'HIVEMQ_CLIENT_ID',
-  'DATABASE_URL',
-  'REDIS_HOST',
-  'REDIS_PORT',
-  'ADMIN_API_SECRET',
+  "HIVEMQ_HOST",
+  "HIVEMQ_PORT",
+  "HIVEMQ_USERNAME",
+  "HIVEMQ_PASSWORD",
+  "HIVEMQ_CLIENT_ID",
+  "DATABASE_URL",
+  "REDIS_URL",
+  "ADMIN_API_SECRET",
+  "JWT_SECRET",
+  "OTP_SECRET",
+  "MAIL_USER",
+  "MAIL_PASSWORD",
+  "ALLOWED_EMAIL_DOMAIN",
 ];
-
 const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
-
 if (missing.length > 0) {
-  // Use process.stderr directly — logger is not yet initialised at this point
   process.stderr.write(
     JSON.stringify({
-      level: 'fatal',
-      msg: 'Missing required environment variables. Halting.',
+      level: "fatal",
+      msg: "Missing required environment variables. Halting.",
       missing,
-    }) + '\n'
+    }) + "\n"
   );
   process.exit(1);
 }
-
+const parseIntSafe = (value, fallback) => {
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+const parseFloatSafe = (value, fallback) => {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 const env = {
-  NODE_ENV: process.env.NODE_ENV || 'production',
-  PORT: parseInt(process.env.PORT, 10) || 3000,
-
+  NODE_ENV: process.env.NODE_ENV || "production",
+  PORT: parseIntSafe(process.env.PORT, 3000),
   mqtt: {
     host: process.env.HIVEMQ_HOST,
-    port: parseInt(process.env.HIVEMQ_PORT, 10),
+    port: parseIntSafe(process.env.HIVEMQ_PORT, 8883),
     username: process.env.HIVEMQ_USERNAME,
     password: process.env.HIVEMQ_PASSWORD,
     clientId: process.env.HIVEMQ_CLIENT_ID,
   },
-
   redis: {
-    host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT, 10),
-    password: process.env.REDIS_PASSWORD || undefined,
+    url: process.env.REDIS_URL,
   },
-
   ledger: {
-    baseFare: parseFloat(process.env.BASE_FARE) || 150,
+    baseFare: parseFloatSafe(process.env.BASE_FARE, 150),
   },
-
   admin: {
     secret: process.env.ADMIN_API_SECRET,
   },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+  },
+  otp: {
+    secret: process.env.OTP_SECRET,
+  },
+  mail: {
+    user: process.env.MAIL_USER,
+    password: process.env.MAIL_PASSWORD,
+  },
+  auth: {
+    allowedEmailDomain: process.env.ALLOWED_EMAIL_DOMAIN,
+  },
 };
-
 export default env;

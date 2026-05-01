@@ -4,38 +4,13 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-}
-        
-
-model User {
-  id           String   @id @default(uuid())
-  firstname    String
-  lastname     String
-  email        String   @unique
-  matricNumber String   @unique
-  password     String
-  role         Role     @default(STUDENT)
-  isVerified Boolean  @default(false)
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model Transaction {
-  transaction_id   String   @id
-  type             String
-  amount           Int
-  terminal_id      String
-  device_timestamp DateTime
-  server_sync_time DateTime
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -44,3 +19,60 @@ enum Role {
   AGENT
 }
 
+model User {
+  id           String   @id @default(uuid())
+  firstname    String
+  lastname     String
+  email        String   @unique
+  matricNumber String   @unique @db.VarChar(20)
+  password     String
+  role         Role     @default(STUDENT)
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  wallet       Wallet?
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Wallet {
+  id          String   @id @default(uuid())
+  balance     Decimal  @default(0) @db.Decimal(10, 2)
+  is_linked   Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+
+  student_uid String   @unique @db.VarChar(20)
+  user        User     @relation(fields: [student_uid], references: [matricNumber])
+
+  @@map("wallets")
+}
+
+model Terminal {
+  terminal_id       String    @id @db.VarChar(20) 
+  status            String    @default("OFFLINE") @db.VarChar(20)
+  last_seen         DateTime? @db.Timestamptz(6)
+  active_driver_uid String?   @db.VarChar(20)
+  secret_key        String    @db.VarChar(64)
+
+  transactions Transaction[]
+
+  @@map("terminals")
+}
+
+model Transaction {
+  transaction_id   String   @id @db.VarChar(64)
+  type             String   @default("RIDE") @db.VarChar(10) 
+  terminal_id      String   @db.VarChar(20)
+  student_uid      String   @db.VarChar(20)
+  amount           Decimal  @db.Decimal(10, 2)
+  driver_uid       String?  @db.VarChar(20)
+  synced_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  user             User     @relation(fields: [student_uid], references: [matricNumber])
+  terminal         Terminal @relation(fields: [terminal_id], references: [terminal_id])
+
+  @@map("transactions")
+}

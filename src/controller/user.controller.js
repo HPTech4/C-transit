@@ -1,37 +1,1 @@
-import { getUserCount, getAllUsers } from "../services/user.service.js";
-
-export const fetchUserCount = async (req, res) => {
-  try {
-    const count = await getUserCount();
-
-    res.status(200).json({
-      success: true,
-      data: { count },
-    });
-  } catch (error) {
-    console.error("[fetchUserCount] Error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch user count",
-    });
-  }
-};
-
-export const fetchAllUsers = async (req, res) => {
-  try {
-    const users = await getAllUsers();
-
-    res.status(200).json({
-      success: true,
-      data: { users },
-    });
-  } catch (error) {
-    console.error("[fetchAllUsers] Error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch users",
-    });
-  }
-};
+import { getUserCount, getAllUsers } from "../services/user.service.js";import logger from "../config/logger.js";export const fetchUserCount = async (req, res) => {  try {    const count = await getUserCount();    logger.info({ count }, 'user.count_fetched');    res.status(200).json({      success: true,      data: { count },    });  } catch (error) {    logger.error({ err: error.message }, 'user.fetch_count_error');    res.status(500).json({      success: false,      message: "Failed to fetch user count",    });  }};export const fetchAllUsers = async (req, res) => {  try {    const users = await getAllUsers();    logger.info({ userCount: users.length }, 'user.all_users_fetched');    res.status(200).json({      success: true,      data: { users },    });  } catch (error) {    logger.error({ err: error.message }, 'user.fetch_all_users_error');    res.status(500).json({      success: false,      message: "Failed to fetch users",    });  }};

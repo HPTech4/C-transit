@@ -1,15 +1,6 @@
 'use strict';
-
 import pino from 'pino';
 import env from './env.js';
-
-// ============================================================
-// PINO LOGGER — STRUCTURED JSON ONLY
-// No console.log permitted anywhere in this codebase.
-// In production: pure JSON to stdout for log aggregators.
-// In development: pretty-printed for readability.
-// ============================================================
-
 const logger = pino(
   {
     level: env.NODE_ENV === 'production' ? 'info' : 'debug',
@@ -23,7 +14,6 @@ const logger = pino(
         return { level: label };
       },
     },
-    // Redact sensitive fields from logs if they accidentally appear
     redact: {
       paths: ['mqtt.password', 'redis.password', '*.secret_key'],
       censor: '[REDACTED]',
@@ -38,7 +28,6 @@ const logger = pino(
           ignore: 'pid,hostname,service',
         },
       })
-    : pino.destination({ sync: false }) // Async writes in production
+    : pino.destination({ sync: false })
 );
-
 export default logger;

@@ -48,6 +48,8 @@ export const submitKycData = async (req, res) => {
       "matricNumber",
       "school",
       "department",
+      "phoneNumber",
+      "faceImageUrl",
       "idCardImageUrl",
     ];
     const missing = requiredFields.filter((f) => !kycData[f]);
@@ -62,7 +64,6 @@ export const submitKycData = async (req, res) => {
 
     res.status(201).json({
       message: "KYC submitted successfully. Pending admin review.",
-      data: kyc,
     });
   } catch (error) {
     logger.error({ err: error.message }, "kyc.submit_error");
@@ -83,7 +84,7 @@ export const getKycStatus = async (req, res) => {
       return res.status(404).json({ message: "KYC not yet submitted" });
     }
 
-    res.status(200).json({ data: kyc });
+    res.status(200).json({ data: kyc.status, message: `Your KYC status is ${kyc.status}` });
   } catch (error) {
     logger.error({ err: error.message }, "kyc.status_error");
     res.status(500).json({ message: "Failed to fetch KYC status" });

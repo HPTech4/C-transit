@@ -104,6 +104,7 @@ model Kyc {
   matricNumber    String              // Validated against User.matricNumber in kyc.service.js
   school         String
   department      String
+  phoneNumber     String
   idCardImageUrl  String
   faceImageUrl    String?
   status          KycStatus @default(PENDING)

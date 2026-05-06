@@ -191,7 +191,6 @@ const parseIdCardText = (rawText) => {
     matricNumber: extractMatricNumber(),
     school: extractSchool(),
     department: extractDepartment(),
-    rawText,
   };
 
   logger.info({ parsed }, "ocr.fields_parsed");

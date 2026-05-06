@@ -91,6 +91,7 @@ const submitKyc = async (userId, kycData) => {
     matricNumber,
     school,
     department,
+    phoneNumber,
     idCardImageUrl,
     faceImageUrl,
   } = kycData;
@@ -112,6 +113,7 @@ const submitKyc = async (userId, kycData) => {
       matricNumber,
       school,
       department,
+      phoneNumber,
       idCardImageUrl,
       faceImageUrl: faceImageUrl || null,
       status: "PENDING", // Matches KycStatus Enum
@@ -125,6 +127,7 @@ const submitKyc = async (userId, kycData) => {
       matricNumber,
       school,
       department,
+      phoneNumber,
       idCardImageUrl,
       faceImageUrl: faceImageUrl || null,
       status: "PENDING", // Matches KycStatus Enum[cite: 4, 15]

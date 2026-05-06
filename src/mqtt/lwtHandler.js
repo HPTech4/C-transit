@@ -2,13 +2,19 @@
 import { prisma } from '../services/ledger.service.js';
 import { flushTerminalQueue } from '../services/sync.service.js';
 import logger from '../config/logger.js';
+
 async function handleLwtEvent(terminalId, statusPayload) {
   const status = statusPayload.trim().toUpperCase();
   const log = logger.child({ terminalId, status });
-  if (status !== 'ONLINE' && status !== 'OFFLINE') {
-    log.warn({ rawPayload: statusPayload }, 'lwt.unknown_status_payload — ignoring');
+
+  if (status !== "ONLINE" && status !== "OFFLINE") {
+    log.warn(
+      { rawPayload: statusPayload },
+      "lwt.unknown_status_payload — ignoring"
+    );
     return;
   }
+
   try {
     await prisma.terminal.upsert({
       where: { terminal_id: terminalId },

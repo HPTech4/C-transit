@@ -7,17 +7,26 @@ import logger from '../config/logger.js';
 import { prisma } from '../services/ledger.service.js';
 import { broadcastDeltaToFleet } from '../services/sync.service.js';
 import { publishToTerminal } from './downlinkQueue.js';
+
 function extractTerminalId(topic) {
-  const parts = topic.split('/');
-  if (parts.length !== 3 || parts[0] !== 'ctransit') return null;
-  return parts[1].toUpperCase();
+  const parts = topic.split("/");
+  if (parts.length !== 3 || parts[0] !== "ctransit") return null;
+
+  const id = parts[1].toUpperCase();
+
+  // RUTHLESS FIX: Prevent the server from treating itself as a terminal
+  if (id === "SERVER") return null;
+
+  return id;
 }
+
 async function routeUplinkMessage(topic, payloadBuffer) {
   const terminalId = extractTerminalId(topic);
   if (!terminalId) {
     logger.warn({ topic }, 'uplink.unrecognised_topic_format — discarding');
     return;
   }
+
   const log = logger.child({ terminalId, topic });
   const rawPayload = payloadBuffer.toString('utf8').trim();
   if (topic.endsWith('/status')) {
@@ -51,6 +60,7 @@ async function routeUplinkMessage(topic, payloadBuffer) {
       break;
   }
 }
+
 async function handleFullSyncRequest(terminalId, log) {
   log.info('uplink.full_sync_requested');
   const MAX_CHUNK_BYTES = 500;
@@ -101,4 +111,5 @@ async function handleFullSyncRequest(terminalId, log) {
     throw err;
   }
 }
+
 export { routeUplinkMessage };

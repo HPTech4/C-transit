@@ -34,6 +34,7 @@ async function processTransaction(tx, log) {
       await prismaTx.transaction.create({
         data: {
           transaction_id: tx.transaction_id,
+          type: 'RIDE',
           terminal_id: tx.terminal_id,
           student_uid: tx.student_uid,
           amount: tx.amount,

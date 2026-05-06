@@ -14,6 +14,9 @@ const REQUIRED_VARS = [
   "MAIL_USER",
   "MAIL_PASSWORD",
   "ALLOWED_EMAIL_DOMAIN",
+  "CLOUDINARY_CLOUD_NAME",
+  "CLOUDINARY_API_KEY",
+  "CLOUDINARY_API_SECRET",
 ];
 const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
 if (missing.length > 0) {
@@ -65,6 +68,11 @@ const env = {
   },
   auth: {
     allowedEmailDomain: process.env.ALLOWED_EMAIL_DOMAIN,
+  },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
 };
 export default env;

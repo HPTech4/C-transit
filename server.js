@@ -60,7 +60,6 @@ async function boot() {
 }
 
 // Graceful shutdown handler
-
 async function shutdown(signal) {
   if (isShuttingDown) return;
   isShuttingDown = true;

@@ -11,6 +11,7 @@ import healthRouter from './src/routes/health.routes.js';
 import adminRouter from './src/routes/admin.routes.js';
 import authRoutes from './src/routes/auth.routes.js';
 import userRoutes from './src/routes/user.routes.js';
+import kycRoutes from './src/routes/kyc.routes.js';
 import walletsRouter, { requireStudentAuth } from './src/controller/wallets.controller.js';
 import { authenticateToken } from './src/middleware/auth.middleware.js';
 
@@ -24,8 +25,8 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(cors({
   origin: [
-    "http://localhost:3000",
-    "http://localhost:3001",
+    "http://localhost:5173",
+    "http://localhost:5173",
     "https://c-transit.vercel.app"
   ],
   credentials: true,
@@ -61,6 +62,7 @@ app.use('/admin', adminRouter);
 app.use('/api/auth', authRoutes);
 
 app.use('/api/users', userRoutes);
+app.use('/api/kyc', kycRoutes);
 app.use('/api/wallets', authenticateToken, requireStudentAuth, walletsRouter);
 
 app.use((req, res) => {

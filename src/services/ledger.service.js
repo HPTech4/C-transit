@@ -2,22 +2,27 @@
 import { PrismaClient } from '@prisma/client';
 import logger from '../config/logger.js';
 import env from '../config/env.js';
+
 const prisma = new PrismaClient();
+
 async function deductFare(studentUid, amount, transactionId, dbClient = prisma) {
   const childLogger = logger.child({ transactionId, studentUid, amount });
   const wallet = await dbClient.wallet.findUnique({
     where: { student_uid: studentUid },
     select: { balance: true },
   });
+
   if (!wallet) {
     childLogger.warn('ledger.wallet_not_found — skipping deduction');
     return { newBalance: null, walletFound: false };
   }
+
   const updatedWallet = await dbClient.wallet.update({
     where: { student_uid: studentUid },
     data: { balance: { decrement: amount } },
     select: { balance: true },
   });
+
   const newBalance = parseFloat(updatedWallet.balance);
   childLogger.info({ previousBalance: parseFloat(wallet.balance), newBalance }, 'ledger.fare_deducted');
   return { newBalance, walletFound: true };
@@ -28,6 +33,7 @@ function isBelowThreshold(balance) {
 function hasCrossedAboveThreshold(previousBalance, newBalance) {
   return previousBalance < env.ledger.baseFare && newBalance >= env.ledger.baseFare;
 }
+
 async function activateWallet(studentUid) {
   await prisma.wallet.upsert({
     where: { student_uid: studentUid },
@@ -45,6 +51,7 @@ async function creditWallet(studentUid, amount, dbClient = prisma) {
     logger.warn({ studentUid }, 'ledger.credit_wallet_not_found');
     return null;
   }
+
   const updatedWallet = await dbClient.wallet.update({
     where: { student_uid: studentUid },
     data: { balance: { increment: amount } },
@@ -55,6 +62,7 @@ async function creditWallet(studentUid, amount, dbClient = prisma) {
   logger.info({ studentUid, previousBalance, newBalance, amount }, 'ledger.wallet_credited');
   return { previousBalance, newBalance };
 }
+
 export {
   deductFare,
   isBelowThreshold,

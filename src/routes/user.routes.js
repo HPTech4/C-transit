@@ -12,11 +12,9 @@ import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// ── Forgot Password Routes (No Authentication Required) ───────────────────────
 router.post("/forgot-password", requestForgotPassword);
 router.post("/reset-password", resetForgotPassword);
 
-// ── Protected Routes (Authentication Required) ────────────────────────────────
 router.use(authenticateToken);
 
 router.get("/count", fetchUserCount);

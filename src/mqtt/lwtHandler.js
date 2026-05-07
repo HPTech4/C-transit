@@ -7,13 +7,14 @@ async function handleLwtEvent(terminalId, statusPayload) {
   const status = statusPayload.trim().toUpperCase();
   const log = logger.child({ terminalId, status });
 
-  if (status !== "ONLINE" && status !== "OFFLINE") {
-    log.warn(
-      { rawPayload: statusPayload },
-      "lwt.unknown_status_payload — ignoring"
-    );
-    return;
-  }
+ const VALID_STATUSES = ["ONLINE", "OFFLINE", "LOCKED"];
+ if (!VALID_STATUSES.includes(status)) {
+   log.warn(
+     { rawPayload: statusPayload },
+     "lwt.unknown_status_payload — ignoring"
+   );
+   return;
+ }
 
   try {
     await prisma.terminal.upsert({

@@ -31,7 +31,7 @@ const getUserProfile = async (userId) => {
       firstname: true,
       lastname: true,
 
-      kyc: {
+      kyc_records: {
         select: {
           studentId: true,
           phoneNumber: true,
@@ -58,12 +58,12 @@ const getUserProfile = async (userId) => {
     lastName: user.lastname,
     fullname: `${user.firstname} ${user.lastname}`,
 
-    profilePicture: user.kyc?.faceImageUrl ?? null,
+    profilePicture: user.kyc_records?.faceImageUrl ?? null,
 
-    kyc: user.kyc
+    kyc_records: user.kyc_records
       ? {
-          studentId: user.kyc.studentId,
-          phoneNumber: user.kyc.phoneNumber,
+          studentId: user.kyc_records.studentId,
+          phoneNumber: user.kyc_records.phoneNumber,
         }
       : null,
 

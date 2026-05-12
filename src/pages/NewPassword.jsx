@@ -5,7 +5,7 @@ import axios from 'axios';
 import { FaArrowLeft, FaLock } from 'react-icons/fa';
 import { LoadingSpinner, LockIcon, EyeIcon, EyeOffIcon } from '../components/AnimatedIcons';
 import { validatePassword, passwordsMatch, getPasswordStrength } from '../utils/validation';
-import { AUTH_API_URL } from '../config/api';
+import { AUTH_API_URL, USER_API_URL } from '../config/api';
 import styles from './NewPassword.module.css';
 
 /**
@@ -23,7 +23,7 @@ export default function NewPassword() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || '';
-  const resetToken = location.state?.resetToken || '';
+  const otp = location.state?.otp || '';
 
   // State management
   const [passwords, setPasswords] = useState({
@@ -38,7 +38,7 @@ export default function NewPassword() {
   const [success, setSuccess] = useState(false);
 
   // Redirect if no email or token
-  if (!email || !resetToken) {
+  if (!email || !otp) {
     return (
       <motion.div className={styles.container}>
         <motion.div className={styles.card}>
@@ -108,10 +108,10 @@ export default function NewPassword() {
     setLoading(true);
 
     try {
-      // Call POST /api/users/resend-password
-      await axios.post(`${AUTH_API_URL}/resend-password`, {
+      // Call POST /api/users/reset-password
+      await axios.post(`${USER_API_URL}/users/reset-password`, {
         email,
-        resetToken,
+        otp,
         newPassword: passwords.newPassword,
       });
 

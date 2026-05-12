@@ -10,21 +10,6 @@ import {
 import { KYC_API_URL, USER_API_URL } from "../config/api";
 import styles from "./KYCModal.module.css";
 
-/**
- * KYCModal Component
- *
- * 2-step modal flow for KYC verification:
- * Step 1: Upload school ID card image
- * Step 2: Review extracted data (image on left, details on right)
- *
- * BACKEND INTEGRATION:
- * - POST /api/kyc/upload (upload ID card and extract data)
- * - Send: FormData with idCardImage
- * - Response: { success: true, extractedData: { name, photo, matricNumber, schoolId } }
- * - POST /api/kyc/submit (submit confirmation)
- * - Send: { idCardImage, extractedData }
- * - Response: { success: true, message: "KYC submitted for verification" }
- */
 export default function KYCModal({ onClose }) {
   const [step, setStep] = useState(1); // Step 1: Upload, Step 2: Review
   const [idCardImage, setIdCardImage] = useState(null);
@@ -73,17 +58,16 @@ export default function KYCModal({ onClose }) {
     setError("");
 
     try {
-      // POST /api/user/kyc/upload
-      // Send FormData with idCardImage
-      // Response: { success: true, extractedData: { name, photo, matricNumber, schoolId } }
       const formData = new FormData();
-      formData.append("idCard", idCardImage);
+      formData.append("idCard", idCardImage); // ✅ was 'idCardImage' — must match multer field name
 
+      // ✅ Correct endpoint: POST /api/kyc/upload
       const response = await fetch(`${KYC_API_URL}/upload`, {
         method: "POST",
         body: formData,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
+          // ✅ Do NOT set Content-Type for FormData — browser sets it with boundary
         },
       });
 
@@ -92,12 +76,12 @@ export default function KYCModal({ onClose }) {
       if (!response.ok) {
         throw new Error(result.message || "Failed to process ID card");
       }
+
+      // ✅ Backend returns { message, data: { studentName, studentId, matricNumber, school, department, idCardImageUrl, faceImageUrl } }
       setExtractedData(result.data);
       setStep(2);
     } catch (err) {
-      setError(
-        err.message || "Failed to extract data from ID card. Please try again."
-      );
+      setError(err.message || "Failed to process ID card. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -108,18 +92,13 @@ export default function KYCModal({ onClose }) {
     setError("");
 
     try {
-      // POST /api/user/kyc/confirm
-      // Send: FormData with idCardImage and extractedData
-      // Response: { success: true, message: "KYC submitted for verification" }
-      const formData = new FormData();
-      formData.append("idCard", idCardImage);
-      formData.append("extractedData", JSON.stringify(extractedData));
-
+      // ✅ Correct endpoint: POST /api/kyc/submit
+      // Backend expects JSON not FormData
       const response = await fetch(`${KYC_API_URL}/submit`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
+          "Content-Type": "application/json", // ✅ JSON body
         },
         body: JSON.stringify({
           studentName: extractedData.studentName,
@@ -135,15 +114,14 @@ export default function KYCModal({ onClose }) {
 
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
+      if (!response.ok) {
         throw new Error(result.message || "Failed to submit KYC");
       }
 
-      // Show success message
       onClose({
         success: true,
         message:
-          "We are working on your details. Your information has been sent to our team for verification.",
+          "KYC submitted successfully. Your information is under review.",
       });
     } catch (err) {
       setError(err.message || "Failed to submit KYC. Please try again.");

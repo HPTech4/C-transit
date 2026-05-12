@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import { FaArrowLeft } from 'react-icons/fa';
 import { LoadingSpinner } from '../components/AnimatedIcons';
-import { AUTH_API_URL } from '../config/api';
+import { AUTH_API_URL, USER_API_URL } from '../config/api';
 import styles from './PasswordResetOTP.module.css';
 
 /**
@@ -95,64 +95,35 @@ export default function PasswordResetOTP() {
 
   // Verify OTP - POST /api/auth/verify-otp
   const handleVerifyOtp = async () => {
-    const otpCode = otp.join('');
+    const otpCode = otp.join("");
 
     if (otpCode.length !== 6) {
-      setError('Please enter all 6 digits');
+      setError("Please enter all 6 digits");
       return;
     }
 
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await axios.post(`${AUTH_API_URL}/verify-otp`, {
-        email,
-        otp: otpCode,
-      });
-
-      // Success! Navigate to new password page
-      setTimeout(() => {
-        navigate('/reset-password', {
-          state: {
-            email,
-            resetToken: response.data.resetToken,
-          },
-        });
-      }, 800);
-    } catch (err) {
-      if (err.response?.status === 400) {
-        setError(err.response.data?.message || 'Invalid OTP code');
-      } else if (err.response?.status === 429) {
-        setError('Too many attempts. Please try again later.');
-      } else if (err.response?.status === 410) {
-        setError('OTP has expired. Please request a new one.');
-      } else {
-        setError(err.response?.data?.message || 'Verification failed');
-      }
-      console.error('OTP verification error:', err);
-    } finally {
-      setLoading(false);
-    }
+    // ✅ Just pass the OTP to the next page — backend verifies it during reset
+    navigate("/reset-password", {
+      state: { email, otp: otpCode },
+    });
   };
 
   // Resend OTP - POST /api/auth/resend-otp
   const handleResendOtp = async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      await axios.post(`${AUTH_API_URL}/resend-otp`, { email });
+      // ✅ Resend by calling forgot-password again — same endpoint
+      await axios.post(`${USER_API_URL}/users/forgot-password`, { email });
 
-      setOtp(['', '', '', '', '', '']);
+      setOtp(["", "", "", "", "", ""]);
       setResendCountdown(60);
       setResendSuccess(true);
-
       setTimeout(() => setResendSuccess(false), 2000);
       inputRefs.current[0]?.focus();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to resend OTP');
-      console.error('Resend OTP error:', err);
+      setError(err.response?.data?.message || "Failed to resend OTP");
     } finally {
       setLoading(false);
     }

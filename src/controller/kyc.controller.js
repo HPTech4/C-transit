@@ -49,7 +49,6 @@ export const submitKycData = async (req, res) => {
       "school",
       "department",
       "phoneNumber",
-      "faceImageUrl",
       "idCardImageUrl",
     ];
     const missing = requiredFields.filter((f) => !kycData[f]);

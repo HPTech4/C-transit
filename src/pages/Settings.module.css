@@ -4,52 +4,52 @@
   padding: 2rem 1rem;
 }
 
-:global(html[data-theme="dark"]) .settingsPage {
+::global(html[data-theme="dark"]) .settingsPage {
   background: linear-gradient(135deg, #0b1220 0%, #111827 100%);
 }
 
-:global(html[data-theme="dark"]) .header h1,
-:global(html[data-theme="dark"]) .settingsCard h2,
-:global(html[data-theme="dark"]) .sectionGroup h3,
-:global(html[data-theme="dark"]) .settingLabel label,
-:global(html[data-theme="dark"]) .toggleLabel label,
-:global(html[data-theme="dark"]) .actionItem label,
-:global(html[data-theme="dark"]) .modal h2 {
+::global(html[data-theme="dark"]) .header h1,
+::global(html[data-theme="dark"]) .settingsCard h2,
+::global(html[data-theme="dark"]) .sectionGroup h3,
+::global(html[data-theme="dark"]) .settingLabel label,
+::global(html[data-theme="dark"]) .toggleLabel label,
+::global(html[data-theme="dark"]) .actionItem label,
+::global(html[data-theme="dark"]) .modal h2 {
   color: #e2e8f0;
 }
 
-:global(html[data-theme="dark"]) .tabs,
-:global(html[data-theme="dark"]) .settingsCard,
-:global(html[data-theme="dark"]) .modal,
-:global(html[data-theme="dark"]) .backBtn,
-:global(html[data-theme="dark"]) .tab,
-:global(html[data-theme="dark"]) .themeBtn,
-:global(html[data-theme="dark"]) .select,
-:global(html[data-theme="dark"]) .actionItem,
-:global(html[data-theme="dark"]) .toggleItem,
-:global(html[data-theme="dark"]) .link {
+::global(html[data-theme="dark"]) .tabs,
+::global(html[data-theme="dark"]) .settingsCard,
+::global(html[data-theme="dark"]) .modal,
+::global(html[data-theme="dark"]) .backBtn,
+::global(html[data-theme="dark"]) .tab,
+::global(html[data-theme="dark"]) .themeBtn,
+::global(html[data-theme="dark"]) .select,
+::global(html[data-theme="dark"]) .actionItem,
+::global(html[data-theme="dark"]) .toggleItem,
+::global(html[data-theme="dark"]) .link {
   background: #111827;
   border-color: rgba(148, 163, 184, 0.22);
 }
 
-:global(html[data-theme="dark"]) .settingLabel p,
-:global(html[data-theme="dark"]) .toggleLabel p,
-:global(html[data-theme="dark"]) .actionItem p,
-:global(html[data-theme="dark"]) .header p,
-:global(html[data-theme="dark"]) .warningText,
-:global(html[data-theme="dark"]) .infoText {
+::global(html[data-theme="dark"]) .settingLabel p,
+::global(html[data-theme="dark"]) .toggleLabel p,
+::global(html[data-theme="dark"]) .actionItem p,
+::global(html[data-theme="dark"]) .header p,
+::global(html[data-theme="dark"]) .warningText,
+::global(html[data-theme="dark"]) .infoText {
   color: #94a3b8;
 }
 
-:global(html[data-theme="dark"]) .themeBtn.active,
-:global(html[data-theme="dark"]) .tab.active,
-:global(html[data-theme="dark"]) .actionBtn,
-:global(html[data-theme="dark"]) .submitBtn {
+::global(html[data-theme="dark"]) .themeBtn.active,
+::global(html[data-theme="dark"]) .tab.active,
+::global(html[data-theme="dark"]) .actionBtn,
+::global(html[data-theme="dark"]) .submitBtn {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #fff;
 }
 
-:global(html[data-theme="dark"]) .modalOverlay {
+::global(html[data-theme="dark"]) .modalOverlay {
   background: rgba(2, 6, 23, 0.78);
 }
 

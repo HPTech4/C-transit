@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../../platformio.ini"
+		},
+		{
+			"name": "Testing",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}

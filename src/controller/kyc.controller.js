@@ -7,11 +7,6 @@ import {
 } from "../services/kyc.service.js";
 import logger from "../config/logger.js";
 
-/**
- * POST /api/kyc/upload
- * Student uploads ID card — OCR runs and extracted fields are returned
- * for preview. Nothing is saved to the KYC table yet.
- */
 export const uploadIdCard = async (req, res) => {
   try {
     const userId = req.user.userId;

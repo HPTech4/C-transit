@@ -17,8 +17,6 @@ import walletsRouter, {
 } from "./src/controller/wallets.controller.js";
 import { authenticateToken } from "./src/middleware/auth.middleware.js";
 
-// Express app with MQTT and REST API endpoints
-
 const app = express();
 
 app.use(morgan("dev"));

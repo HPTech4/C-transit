@@ -8,6 +8,7 @@ import {
   verifyOTPToken,
   sendOTPEmail,
 } from "../services/otp.service.js";
+import { confirmRegistration } from "../services/registration.service.js";
 
 const isValidInstitutionEmail = (email) => {
   return email.toLowerCase().endsWith(env.auth.allowedEmailDomain);
@@ -173,5 +174,41 @@ export const loginStudent = async (req, res) => {
   } catch (error) {
     logger.error({ err: error.message }, 'auth.login_error');
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const confirmCard = async (req, res) => {
+  try {
+    const userId = req.user.userId;  
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP is required",
+      });
+    }
+
+    // Validate OTP format — must be exactly 6 digits
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP must be exactly 6 digits",
+      });
+    }
+
+    const result = await confirmRegistration(otp, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("[confirmCard] Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };

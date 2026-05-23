@@ -2,8 +2,6 @@
 
 import env from "./env.js";
 
-// src/config/mqtt.js
-
 const mqttConfig = {
   brokerUrl: `mqtts://${env.mqtt.host}:${env.mqtt.port}`,
 
@@ -11,7 +9,7 @@ const mqttConfig = {
     clientId: env.mqtt.clientId,
     username: env.mqtt.username,
     password: env.mqtt.password,
-    protocol: 'mqtts',
+    protocol: "mqtts",
     port: env.mqtt.port,
     rejectUnauthorized: true,
     keepalive: 60,
@@ -19,16 +17,16 @@ const mqttConfig = {
     reconnectPeriod: 5000,
     clean: false,
     will: {
-      topic: 'ctransit/server/status',
-      payload: 'OFFLINE',
+      topic: "ctransit/server/status",
+      payload: "OFFLINE",
       qos: 1,
-      retain: false,
+      retain: true,
     },
   },
 
   topics: {
-    uplinkWildcard: 'ctransit/+/tx',
-    statusWildcard: 'ctransit/+/status',
+    uplinkWildcard: "ctransit/+/tx",
+    statusWildcard: "ctransit/+/status",
     downlink: (terminalId) => `ctransit/${terminalId}/rx`,
   },
 

@@ -1,0 +1,226 @@
+@import "../../styles/tokens.css";
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  margin-bottom: 20px;
+}
+
+.backBtn,
+.moreBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.nfcCard {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.cardBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.cardNumber {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin: 0 0 16px 0;
+}
+
+.cardBottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.cardBottom p {
+  margin: 0;
+}
+
+.balanceDisplay {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.balanceAmount {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.actionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.actionBtn span {
+  margin-top: 4px;
+}
+
+.actionBtn:hover {
+  color: var(--primary);
+}
+
+.quickAmountSection {
+  margin-bottom: 24px;
+}
+
+.quickAmountLabel {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 10px 0;
+  font-weight: 500;
+}
+
+.amountPills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.amountPill {
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.amountPill:hover {
+  border-color: var(--primary);
+}
+
+.amountPillActive {
+  border-color: var(--primary);
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.transactionSection {
+  margin-bottom: 20px;
+}
+
+.transactionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.transactionList {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.transactionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.transactionRow:last-child {
+  border-bottom: none;
+}
+
+.txIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.txInfo {
+  flex: 1;
+}
+
+.txTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.txDate {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.txAmount {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.txCredit {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--success);
+  margin: 0;
+}
+
+.txDebit {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}

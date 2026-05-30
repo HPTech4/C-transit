@@ -1,0 +1,25 @@
+@import '../../styles/tokens.css';
+
+.shell {
+  max-width: 390px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: var(--bg-page);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.main {
+  padding: 0 16px 100px 16px;
+  overflow-y: auto;
+  padding-top: 56px;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 150;
+  max-width: 390px;
+  margin: 0 auto;
+}

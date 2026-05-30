@@ -1,0 +1,365 @@
+@import "../../styles/tokens.css";
+
+/* Greeting Section */
+.greeting {
+  padding: 20px 0 8px 0;
+}
+
+.greetingTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.greetingSubtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Wallet Card */
+.walletCard {
+  background-color: var(--primary);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin: 12px 0;
+}
+
+.walletLabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 6px 0;
+  font-weight: 500;
+}
+
+.walletBalance {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.walletAvailable {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 16px 0;
+}
+
+.walletActions {
+  display: flex;
+  gap: 10px;
+}
+
+.fundBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.fundBtn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.transferBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #ffffff;
+  color: var(--primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.transferBtn:hover {
+  background-color: #f0f7ff;
+}
+
+/* Stats Row */
+.statsRow {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin: 4px 0 16px 0;
+  scrollbar-width: none;
+}
+
+.statsRow::-webkit-scrollbar {
+  display: none;
+}
+
+.statsCard {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.statsLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.statsValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.statsSubValue {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0 0 6px 0;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.badge.green {
+  background-color: var(--success-light);
+  color: var(--success);
+}
+
+.badge.blue {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.badge.red {
+  background-color: var(--danger-light);
+  color: var(--danger);
+}
+
+.trendUp {
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+.trendDown {
+  font-size: 12px;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.secondaryTrend {
+  font-size: 11px;
+  color: var(--danger);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Section Styling */
+.section {
+  margin-bottom: 20px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.viewAll {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Tap Activity List */
+.tapActivityList {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.tapRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tapRow:last-child {
+  border-bottom: none;
+}
+
+.tapIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--primary);
+  font-size: 16px;
+}
+
+.tapInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.tapTerminal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tapTime {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.tapRight {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tapAmount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 3px 0;
+}
+
+.statusBadge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.success {
+  background-color: var(--success-light);
+  color: var(--success);
+}
+
+.failed {
+  background-color: var(--danger-light);
+  color: var(--danger);
+}
+
+.pending {
+  background-color: var(--warning-light);
+  color: var(--warning);
+}
+
+/* Chart Tabs */
+.tabs {
+  display: flex;
+  background-color: var(--bg-page);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tabActive {
+  background-color: var(--bg-card);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 12px;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Chart Card */
+.chartCard {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 8px 8px 8px;
+  margin-bottom: 12px;
+}
+
+/* Summary */
+.summary {
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.summaryItem {
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 0 3px 0;
+}
+
+.summaryValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}

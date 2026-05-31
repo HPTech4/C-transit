@@ -6,6 +6,7 @@ const PAYLOAD_TYPE = {
   TRANSACTION_BATCH: "TRANSACTION_BATCH",
   PENDING_LINK: "PENDING_LINK",
   SYS_FULL_SYNC: "SYS_FULL_SYNC",
+  DRIVER_EVENT: "DRIVER_EVENT",
   UNKNOWN: "UNKNOWN",
 };
 
@@ -13,6 +14,7 @@ function detectPayloadType(raw) {
   const trimmed = raw.trim();
   if (trimmed.startsWith("PENDING_LINK:")) return PAYLOAD_TYPE.PENDING_LINK;
   if (trimmed === "SYS:REQ_FULL_SYNC") return PAYLOAD_TYPE.SYS_FULL_SYNC;
+   if (trimmed.startsWith("DRV:")) return PAYLOAD_TYPE.DRIVER_EVENT;
   if (
     trimmed.startsWith("SYS:") ||
     trimmed.startsWith("ACK:") ||
@@ -22,6 +24,29 @@ function detectPayloadType(raw) {
     return PAYLOAD_TYPE.UNKNOWN;
   }
   return PAYLOAD_TYPE.TRANSACTION_BATCH;
+}
+
+function parseDriverEvent(raw) {
+  const body = raw.replace("DRV:", "").trim();
+  const parts = body.split(",").map((p) => p.trim());
+
+  if (parts.length !== 2) {
+    return { error: `DRV event expects 2 fields, got ${parts.length}` };
+  }
+
+  const [action, driverUid] = parts;
+
+  if (action !== "LOGIN" && action !== "LOGOUT") {
+    return {
+      error: `Unknown DRV action: "${action}". Expected LOGIN or LOGOUT`,
+    };
+  }
+
+  if (!driverUid || driverUid.length === 0) {
+    return { error: "driver_uid is empty" };
+  }
+
+  return { data: { action, driverUid } };
 }
 
 function parseTransactionBatch(raw, terminalId) {
@@ -104,7 +129,7 @@ function parseSingleTransaction(line, terminalId) {
     data: {
       transaction_id,
       terminal_id: terminalId,
-      student_uid, // Must be matricNumber — matches Wallet.student_uid -> User.matricNumber
+      student_uid,
       amount,
       driver_uid: driver_uid || null,
       synced_at,
@@ -144,5 +169,6 @@ export {
   detectPayloadType,
   parseTransactionBatch,
   parsePendingLink,
+  parseDriverEvent,
   buildDeltaCommand,
 };

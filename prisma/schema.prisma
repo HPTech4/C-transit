@@ -17,6 +17,7 @@ enum Role {
   STUDENT
   ADMIN
   AGENT
+  DRIVER
 }
 
 enum KycStatus {
@@ -117,4 +118,13 @@ model Kyc {
 
   @@index([status])
   @@map("kyc_records")
+}
+
+model Blacklist {
+  id           String   @id @default(uuid())
+  student_uid  String   @unique @db.VarChar(20)  // matricNumber
+  reason       String   @default("LOW_BALANCE")
+  blacklistedAt DateTime @default(now())
+
+  @@map("blacklist")
 }

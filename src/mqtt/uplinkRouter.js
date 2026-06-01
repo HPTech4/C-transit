@@ -3,6 +3,7 @@ import {
   PAYLOAD_TYPE,
   detectPayloadType,
   parsePendingLink,
+  parseDriverRegister,
   buildDeltaCommand,
 } from "../utils/parser.js";
 import { ingestTransactionBatch } from "../services/ingestion.service.js";
@@ -14,6 +15,7 @@ import { broadcastDeltaToFleet } from "../services/sync.service.js";
 import { publishToTerminal } from "./downlinkQueue.js";
 import { parseDriverEvent } from "../utils/parser.js";
 import {
+  handleDriverRegister,
   handleDriverLogin,
   handleDriverLogout,
 } from "../services/driver.service.js";
@@ -24,7 +26,7 @@ function extractTerminalId(topic) {
 
   const id = parts[1].toUpperCase();
 
-  // RUTHLESS FIX: Prevent the server from treating itself as a terminal
+  // Very Important: Prevent the server from treating itself as a terminal
   if (id === "SERVER") return null;
 
   return id;
@@ -56,6 +58,7 @@ async function routeUplinkMessage(topic, payloadBuffer) {
     case PAYLOAD_TYPE.TRANSACTION_BATCH:
       await ingestTransactionBatch(terminalId, rawPayload);
       break;
+
     case PAYLOAD_TYPE.PENDING_LINK: {
       const { data, error } = parsePendingLink(rawPayload);
       if (error) {
@@ -81,6 +84,15 @@ async function routeUplinkMessage(topic, payloadBuffer) {
         return;
       }
       await handleDriverEvent(terminalId, data, log);
+      break;
+    }
+    case PAYLOAD_TYPE.DRIVER_REGISTER: {
+      const { data, error } = parseDriverRegister(rawPayload);
+      if (error) {
+        log.warn({ error }, "uplink.driver_register_parse_error — discarding");
+        return;
+      }
+      await handleDriverRegisterEvent(terminalId, data, log);
       break;
     }
   }
@@ -163,6 +175,7 @@ async function handleDriverEvent(terminalId, data, log) {
 
   if (action === "LOGIN") {
     const result = await handleDriverLogin(terminalId, driverUid);
+
     // Send result back to terminal screen
     if (result.success) {
       await publishToTerminal(terminalId, `DRV:OK,${result.driverName}`);
@@ -178,13 +191,21 @@ async function handleDriverEvent(terminalId, data, log) {
   }
 }
 
-/**
- * Splits an array of UIDs into MQTT-safe chunks.
- * @param {string} prefix - e.g. "SYS:WL,"
- * @param {string[]} uids
- * @param {number} maxBytes
- * @returns {string[]}
- */
+async function handleDriverRegisterEvent(terminalId, data, log) {
+  const result = await handleDriverRegister(terminalId, data);
+
+  if (result.success) {
+    await publishToTerminal(terminalId, `DRV:REG_OK,${data.matricNumber}`);
+    log.info({ matricNumber: data.matricNumber }, "uplink.driver_registered");
+  } else {
+    await publishToTerminal(terminalId, `DRV:REG_FAIL,${result.message}`);
+    log.warn(
+      { matricNumber: data.matricNumber },
+      "uplink.driver_register_failed"
+    );
+  }
+}
+
 function buildChunks(prefix, uids, maxBytes) {
   const chunks = [];
   let currentChunk = [];

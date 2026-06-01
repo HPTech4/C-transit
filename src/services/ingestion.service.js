@@ -35,15 +35,75 @@ async function processTransaction(tx, terminalId, log) {
   });
 
   try {
+      // CHECK 1 — Is student whitelisted?
+    const wallet = await prisma.wallet.findUnique({
+      where: { student_uid: tx.student_uid },
+      select: { balance: true, is_linked: true },
+    });
+
+    if (!wallet || !wallet.is_linked) {
+      txLog.warn("ingestion.student_not_whitelisted");
+      await publishToTerminal(
+        terminalId,
+        `ACK:FAIL,${tx.student_uid},NOT_WHITELISTED`
+      );
+      return;
+    }
+
+    // CHECK 2 — Is student blacklisted?
+    const blacklisted = await prisma.blacklist.findUnique({
+      where: { student_uid: tx.student_uid },
+    });
+
+    if (blacklisted) {
+      txLog.warn("ingestion.student_is_blacklisted");
+      await publishToTerminal(
+        terminalId,
+        `ACK:FAIL,${tx.student_uid},INSUFFICIENT_FUNDS`
+      );
+      return;
+    }
+
+    // CHECK 3 — Does student have enough balance?
+    const currentBalance = parseFloat(wallet.balance);
+    if (currentBalance < tx.amount) {
+      txLog.warn(
+        { currentBalance, required: tx.amount },
+        "ingestion.insufficient_balance"
+      );
+      await publishToTerminal(
+        terminalId,
+        `ACK:FAIL,${tx.student_uid},INSUFFICIENT_FUNDS`
+      );
+
+      // Auto-blacklist if not already — balance is too low
+      await prisma.blacklist.upsert({
+        where: { student_uid: tx.student_uid },
+        update: { blacklistedAt: new Date() },
+        create: {
+          student_uid: tx.student_uid,
+          reason: "LOW_BALANCE",
+        },
+      });
+
+      await broadcastDeltaToFleet(
+        buildDeltaCommand("ADD", "BL", tx.student_uid)
+      );
+      return;
+    }
+
+    // Fetch active driver BEFORE transaction
     const terminal = await prisma.terminal.findUnique({
       where: { terminal_id: terminalId },
       select: { active_driver_uid: true },
     });
 
     const driverUid = tx.driver_uid || terminal?.active_driver_uid || null;
+
+    // All checks passed — deduct atomically 
     const result = await prisma.$transaction(
       async (tx_ctx) => {
-        // ── Idempotency check
+        // Idempotency — skip if already processed
         const existingTx = await tx_ctx.transaction.findUnique({
           where: { transaction_id: tx.transaction_id },
         });
@@ -53,17 +113,7 @@ async function processTransaction(tx, terminalId, log) {
           return { duplicate: true };
         }
 
-        const wallet = await tx_ctx.wallet.findUnique({
-          where: { student_uid: tx.student_uid },
-          select: { balance: true },
-        });
-
-        if (!wallet) {
-          txLog.warn("ingestion.wallet_not_found");
-          return { walletFound: false };
-        }
-
-        //  Record transaction 
+        // Record transaction
         await tx_ctx.transaction.create({
           data: {
             transaction_id: tx.transaction_id,
@@ -76,57 +126,45 @@ async function processTransaction(tx, terminalId, log) {
           },
         });
 
-        txLog.info(
-          { amount: tx.amount, driverUid },
-          "ingestion.transaction_inserted"
-        );
-
+        // Deduct fare
         const updatedWallet = await tx_ctx.wallet.update({
           where: { student_uid: tx.student_uid },
           data: { balance: { decrement: tx.amount } },
           select: { balance: true },
         });
 
-        const previousBalance = parseFloat(wallet.balance);
         const newBalance = parseFloat(updatedWallet.balance);
 
-        txLog.info({ previousBalance, newBalance }, "ingestion.fare_deducted");
+        txLog.info(
+          { previousBalance: currentBalance, newBalance, driverUid },
+          "ingestion.fare_deducted"
+        );
 
-        return { walletFound: true, newBalance, previousBalance };
+        return { duplicate: false, newBalance };
       },
-      {
-        timeout: 15000,
-      }
+      { timeout: 15000 }
     );
 
     if (result.duplicate) return;
 
-    if (!result.walletFound) {
-      await publishToTerminal(
-        terminalId,
-        `ACK:FAIL,${tx.student_uid},WALLET_NOT_FOUND`
-      );
-      return;
-    }
-
     const { newBalance } = result;
 
-    // Send ACK to terminal — includes new balance for display
+    //  Send ACK to terminal
     await publishToTerminal(
       terminalId,
       `ACK:OK,${tx.student_uid},${newBalance.toFixed(2)}`
     );
     txLog.info({ newBalance }, "ingestion.ack_sent_to_terminal");
 
-    // Blacklist if balance below threshold
+    // Post-deduction blacklist check
+    // Balance was sufficient but NOW dropped below threshold after deduction
     if (isBelowThreshold(newBalance)) {
       const blacklistCmd = buildDeltaCommand("ADD", "BL", tx.student_uid);
       txLog.info(
-        { newBalance, blacklistCmd },
-        "ingestion.threshold_breached — blacklisting"
+        { newBalance },
+        "ingestion.balance_now_below_threshold — blacklisting"
       );
 
-      // Add to blacklist table
       process.nextTick(async () => {
         try {
           await prisma.blacklist.upsert({
@@ -138,15 +176,17 @@ async function processTransaction(tx, terminalId, log) {
             },
           });
           await broadcastDeltaToFleet(blacklistCmd);
+          txLog.info({ blacklistCmd }, "ingestion.blacklist_broadcast_sent");
         } catch (err) {
-          txLog.error({ err: err.message }, "ingestion.blacklist_failed");
+          txLog.error(
+            { err: err.message },
+            "ingestion.post_deduction_blacklist_failed"
+          );
         }
       });
     }
   } catch (err) {
     txLog.error({ err: err.message }, "ingestion.transaction_processing_error");
-
-    // Send NACK to terminal
     try {
       await publishToTerminal(
         terminalId,

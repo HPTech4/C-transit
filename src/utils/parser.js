@@ -7,6 +7,7 @@ const PAYLOAD_TYPE = {
   PENDING_LINK: "PENDING_LINK",
   SYS_FULL_SYNC: "SYS_FULL_SYNC",
   DRIVER_EVENT: "DRIVER_EVENT",
+  DRIVER_REGISTER: "DRIVER_REGISTER",
   UNKNOWN: "UNKNOWN",
 };
 
@@ -14,6 +15,7 @@ function detectPayloadType(raw) {
   const trimmed = raw.trim();
   if (trimmed.startsWith("PENDING_LINK:")) return PAYLOAD_TYPE.PENDING_LINK;
   if (trimmed === "SYS:REQ_FULL_SYNC") return PAYLOAD_TYPE.SYS_FULL_SYNC;
+  if (trimmed.startsWith("DRV:REG,")) return PAYLOAD_TYPE.DRIVER_REGISTER;
    if (trimmed.startsWith("DRV:")) return PAYLOAD_TYPE.DRIVER_EVENT;
   if (
     trimmed.startsWith("SYS:") ||
@@ -159,6 +161,25 @@ function parsePendingLink(raw) {
   return { data: { uid, otp, agent_uid } };
 }
 
+function parseDriverRegister(raw) {
+  const body = raw.replace("DRV:REG,", "").trim();
+  const parts = body.split(",").map((p) => p.trim());
+
+  if (parts.length !== 3) {
+    return {
+      error: `DRV:REG expects 3 fields (firstname,lastname,matricNumber), got ${parts.length}`,
+    };
+  }
+
+  const [firstname, lastname, matricNumber] = parts;
+
+  if (!firstname) return { error: "firstname is empty" };
+  if (!lastname) return { error: "lastname is empty" };
+  if (!matricNumber) return { error: "matricNumber is empty" };
+
+  return { data: { firstname, lastname, matricNumber } };
+}
+
 function buildDeltaCommand(action, target, uid, extra = null) {
   const base = `${action}:${target},${uid}`;
   return extra ? `${base},${extra}` : base;
@@ -170,5 +191,6 @@ export {
   parseTransactionBatch,
   parsePendingLink,
   parseDriverEvent,
+  parseDriverRegister,
   buildDeltaCommand,
 };

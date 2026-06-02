@@ -1,15 +1,15 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import SharedAuthLayout from '../../components/Auth/SharedAuthLayout';
-import InputField from '../../components/Auth/InputField';
-import PasswordInput from '../../components/Auth/PasswordInput';
-import PhoneSelector from '../../components/Auth/PhoneSelector';
-import TermsCheckbox from '../../components/Auth/TermsCheckbox';
-import AuthButton from '../../components/Auth/AuthButton';
-import SocialAuthButtons from '../../components/Auth/SocialAuthButtons';
-import { validateEmail } from '../../utils/validation';
-import { calculatePasswordStrength, getPasswordStrengthLabel } from '../../utils/passwordUtils';
+import { AuthContext } from '../context/AuthContext';
+import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
+import InputField from '../components/Auth/InputField';
+import PasswordInput from '../components/Auth/PasswordInput';
+import PhoneSelector from '../components/Auth/PhoneSelector';
+import TermsCheckbox from '../components/Auth/TermsCheckbox';
+import AuthButton from '../components/Auth/AuthButton';
+import SocialAuthButtons from '../components/Auth/SocialAuthButtons';
+import { validateEmail } from '../utils/validation';
+import { calculatePasswordStrength, getPasswordStrengthLabel } from '../utils/passwordUtils';
 import styles from './Register.page.module.css';
 
 /**

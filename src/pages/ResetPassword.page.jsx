@@ -1,11 +1,11 @@
 import { useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import SharedAuthLayout from '../../components/Auth/SharedAuthLayout';
-import OTPInput from '../../components/Auth/OTPInput';
-import PasswordInput from '../../components/Auth/PasswordInput';
-import AuthButton from '../../components/Auth/AuthButton';
-import { calculatePasswordStrength, getPasswordStrengthLabel } from '../../utils/passwordUtils';
+import { AuthContext } from '../context/AuthContext';
+import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
+import OTPInput from '../components/Auth/OTPInput';
+import PasswordInput from '../components/Auth/PasswordInput';
+import AuthButton from '../components/Auth/AuthButton';
+import { calculatePasswordStrength, getPasswordStrengthLabel } from '../utils/passwordUtils';
 import styles from './ResetPassword.page.module.css';
 
 /**

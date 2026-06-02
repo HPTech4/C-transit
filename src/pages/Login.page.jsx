@@ -1,13 +1,13 @@
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import SharedAuthLayout from '../../components/Auth/SharedAuthLayout';
-import InputField from '../../components/Auth/InputField';
-import PasswordInput from '../../components/Auth/PasswordInput';
-import AuthButton from '../../components/Auth/AuthButton';
-import SocialAuthButtons from '../../components/Auth/SocialAuthButtons';
-import Toast from '../../components/Toast';
-import { validateEmail } from '../../utils/validation';
+import { AuthContext } from '../context/AuthContext';
+import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
+import InputField from '../components/Auth/InputField';
+import PasswordInput from '../components/Auth/PasswordInput';
+import AuthButton from '../components/Auth/AuthButton';
+import SocialAuthButtons from '../components/Auth/SocialAuthButtons';
+import Toast from '../components/Toast';
+import { validateEmail } from '../utils/validation';
 import styles from './Login.page.module.css';
 
 /**

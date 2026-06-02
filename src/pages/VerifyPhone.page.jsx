@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import SharedAuthLayout from '../../components/Auth/SharedAuthLayout';
-import OTPInput from '../../components/Auth/OTPInput';
-import AuthButton from '../../components/Auth/AuthButton';
+import { AuthContext } from '../context/AuthContext';
+import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
+import OTPInput from '../components/Auth/OTPInput';
+import AuthButton from '../components/Auth/AuthButton';
 import styles from './VerifyPhone.page.module.css';
 
 /**

@@ -1,13 +1,13 @@
 import { useState, useContext, useEffect } from 'react';
-import { AuthContext } from '../../context/AuthContext';
-import DashboardLayout from '../../components/Dashboard/DashboardLayout';
-import DashboardHome from './DashboardHome';
-import WalletPage from './WalletPage';
-import TapHistoryPage from './TapHistoryPage';
-import NfcCardPage from './NfcCardPage';
-import NotificationsPage from './NotificationsPage';
-import ProfilePage from './ProfilePage';
-import SettingsPage from './SettingsPage';
+import { AuthContext } from '../context/AuthContext';
+import DashboardLayout from '../components/Dashboard/DashboardLayout';
+import DashboardHome from './dashboard/DashboardHome';
+import WalletPage from './dashboard/WalletPage';
+import TapHistoryPage from './dashboard/TapHistoryPage';
+import NfcCardPage from './dashboard/NfcCardPage';
+import NotificationsPage from './dashboard/NotificationsPage';
+import ProfilePage from './dashboard/ProfilePage';
+import SettingsPage from './dashboard/SettingsPage';
 import axios from 'axios';
 
 export default function DashboardWrapper() {

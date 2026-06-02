@@ -1,11 +1,11 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import SharedAuthLayout from '../../components/Auth/SharedAuthLayout';
-import InputField from '../../components/Auth/InputField';
-import AuthButton from '../../components/Auth/AuthButton';
+import { AuthContext } from '../context/AuthContext';
+import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
+import InputField from '../components/Auth/InputField';
+import AuthButton from '../components/Auth/AuthButton';
 import { FaCheckCircle } from 'react-icons/fa';
-import { validateEmail } from '../../utils/validation';
+import { validateEmail } from '../utils/validation';
 import styles from './ForgotPassword.page.module.css';
 
 /**

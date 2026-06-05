@@ -28,6 +28,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://c-transit.vercel.app",
+      "https://c-transit-pink.vercel.app",
       "https://ctransit-v2.vercel.app",
     ],
     credentials: true,

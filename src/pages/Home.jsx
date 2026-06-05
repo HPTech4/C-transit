@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import register from './Register.page';
 import { FaWifi, FaCreditCard, FaWallet, FaChartLine, FaShieldAlt, FaLightbulb, FaCheck, FaChartBar, FaBus, FaRedo, FaTwitter, FaInstagram, FaLinkedin, FaFacebook, FaBars, FaTimes, FaStar } from 'react-icons/fa';
 import styles from './Home.module.css';
 
@@ -50,12 +51,9 @@ export default function Home() {
 
           {/* Nav Links (hidden on mobile) */}
           <div className={styles.navLinks}>
-            <a href="#features">Features</a>
             <a href="#how-it-works">How It Works</a>
             <a href="#wallet">Wallet</a>
             <a href="#why-ctransit">Solutions</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#about">About</a>
           </div>
 
           {/* Get Started Button */}
@@ -76,7 +74,6 @@ export default function Home() {
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
             <a href="#wallet" onClick={() => setMobileMenuOpen(false)}>Wallet</a>
             <a href="#solutions" onClick={() => setMobileMenuOpen(false)}>Solutions</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <a href="#about" onClick={() => setMobileMenuOpen(false)}>About</a>
             <Link to="/register" className={styles.mobileGetStarted}>Get Started</Link>
           </div>
@@ -99,7 +96,6 @@ export default function Home() {
             </p>
             <div className={styles.heroButtons}>
               <Link to="/register" className={styles.primaryBtn}>Get Started</Link>
-              <button className={styles.ghostBtn}>Fund Wallet</button>
             </div>
           </div>
 
@@ -119,7 +115,7 @@ export default function Home() {
                     <div className={styles.nfcRing} style={{ animationDelay: '1s' }}></div>
                   </div>
                   <p className={styles.tapText}>TAP YOUR CARD</p>
-                  <p className={styles.tapSubtext}>Place your NFC card on the reader</p>
+                  <p className={styles.tapSubtext}>Place your C-transit card on the terminal</p>
                 </div>
               </div>
               <div className={styles.phoneGlow}></div>
@@ -131,14 +127,6 @@ export default function Home() {
       {/* ==================== FEATURES STRIP ==================== */}
       <section id="features" className={styles.featuresStrip}>
         <div className={styles.featuresContainer}>
-          <div className={styles.featureItem}>
-            <div className={styles.featureIcon}>
-              <FaWifi />
-            </div>
-            <h4>NFC Tap & Ride</h4>
-            <p>Tap your card and go</p>
-          </div>
-
           <div className={styles.featureItem}>
             <div className={styles.featureIcon}>
               <FaCreditCard />
@@ -361,16 +349,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ==================== CTA BANNER ==================== */}
-      <section className={styles.ctaBanner}>
-        <h2>Ready to Tap & Ride?</h2>
-        <p>Join millions of riders enjoying seamless and smart travel.</p>
-        <div className={styles.ctaButtonRow}>
-          <Link to="/register" className={styles.primaryBtn}>Get Started</Link>
-          <button className={styles.ghostBtn}>Learn More</button>
-        </div>
-      </section>
-
       {/* ==================== FOOTER ==================== */}
       <footer className={styles.footer}>
         <div className={styles.footerContainer}>
@@ -393,19 +371,14 @@ export default function Home() {
           <div className={styles.footerColumn}>
             <h5>Product</h5>
             <a href="#features">Features</a>
-            <a href="#pricing">Pricing</a>
             <a href="#how-it-works">How It Works</a>
             <a href="#wallet">Wallet</a>
-            <a href="#nfc">NFC Cards</a>
           </div>
 
           {/* Company Column */}
           <div className={styles.footerColumn}>
             <h5>Company</h5>
             <a href="#about">About Us</a>
-            <a href="#careers">Careers</a>
-            <a href="#blog">Blog</a>
-            <a href="#press">Press</a>
             <a href="#contact">Contact</a>
           </div>
 
@@ -416,14 +389,14 @@ export default function Home() {
             <a href="#privacy">Privacy Policy</a>
             <a href="#terms">Terms of Service</a>
             <a href="#status">Status</a>
-            <a href="#api">API Docs</a>
+
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className={styles.footerBottom}>
           <p>© 2025 C-Transit. All rights reserved.</p>
-          <p>Made with care for Nigerian commuters</p>
+          <p>Made with care for Nigerian University</p>
         </div>
       </footer>
     </main>

@@ -1,17 +1,22 @@
 import { useState } from 'react';
 import { FaArrowLeft, FaEdit, FaCheck, FaTimes, FaTrash } from 'react-icons/fa';
+import axios from 'axios';
 import styles from './ProfilePage.module.css';
+
+const User_API_URL = '/api';
 
 export default function ProfilePage({ userData, onBack }) {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: userData?.firstName || 'John',
-    lastName: userData?.lastName || 'Doe',
-    email: userData?.email || 'john@example.com',
-    phoneNumber: '+234 701 234 5678',
-    matricNumber: 'MTN-2024-001',
-    address: 'Abuja, Nigeria',
+    firstName: userData?.firstName || '',
+    lastName: userData?.lastName || '',
+    email: userData?.email || '',
+    phoneNumber: userData?.phoneNumber || '',
+    matricNumber: userData?.matricNumber || '',
+    address: userData?.address || '',
   });
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   const handleInputChange = (field, value) => {
     setFormData({
@@ -20,14 +25,37 @@ export default function ProfilePage({ userData, onBack }) {
     });
   };
 
-  const handleSave = () => {
-    setEditMode(false);
-    // Save data logic here
+  const handleSave = async () => {
+    try {
+      setSaveLoading(true);
+      setSaveError(null);
+      const token = localStorage.getItem('authToken');
+      await axios.put(`${User_API_URL}/users/myprofile`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setEditMode(false);
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setSaveError('Failed to save changes. Please try again.');
+    } finally {
+      setSaveLoading(false);
+    }
   };
 
   const handleCancel = () => {
+    // Reset form back to original userData values
+    setFormData({
+      firstName: userData?.firstName || '',
+      lastName: userData?.lastName || '',
+      email: userData?.email || '',
+      phoneNumber: userData?.phoneNumber || '',
+      matricNumber: userData?.matricNumber || '',
+      address: userData?.address || '',
+    });
+    setSaveError(null);
     setEditMode(false);
-    // Reset form to original values
   };
 
   return (
@@ -58,6 +86,7 @@ export default function ProfilePage({ userData, onBack }) {
       {/* Profile Info Form */}
       <div className={styles.infoSection}>
         <h3 className={styles.sectionTitle}>Personal Information</h3>
+
         <div className={styles.formGroup}>
           <label className={styles.label}>First Name</label>
           <input
@@ -125,14 +154,27 @@ export default function ProfilePage({ userData, onBack }) {
         </div>
       </div>
 
+      {/* Save Error Message */}
+      {saveError && (
+        <p className={styles.errorMessage}>{saveError}</p>
+      )}
+
       {/* Edit Mode Actions */}
       {editMode && (
         <div className={styles.editActions}>
-          <button className={styles.saveBtn} onClick={handleSave}>
+          <button
+            className={styles.saveBtn}
+            onClick={handleSave}
+            disabled={saveLoading}
+          >
             <FaCheck size={16} />
-            Save Changes
+            {saveLoading ? 'Saving...' : 'Save Changes'}
           </button>
-          <button className={styles.cancelBtn} onClick={handleCancel}>
+          <button
+            className={styles.cancelBtn}
+            onClick={handleCancel}
+            disabled={saveLoading}
+          >
             <FaTimes size={16} />
             Cancel
           </button>

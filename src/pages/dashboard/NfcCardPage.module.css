@@ -1,11 +1,13 @@
 @import "../../styles/tokens.css";
 
+/* ================= HEADER ================= */
 .pageHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 0;
   margin-bottom: 20px;
+  gap: 10px;
 }
 
 .backBtn,
@@ -21,16 +23,19 @@
 }
 
 .pageTitle {
-  font-size: 20px;
+  font-size: clamp(16px, 4vw, 20px);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+  text-align: center;
+  flex: 1;
 }
 
+/* ================= NFC CARD ================= */
 .nfcCard {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 18px;
   margin-bottom: 20px;
   color: white;
 }
@@ -39,49 +44,54 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  gap: 10px;
 }
 
 .cardBadge {
-  display: inline-block;
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
   background-color: rgba(255, 255, 255, 0.2);
-  color: white;
 }
 
 .cardNumber {
-  font-size: 18px;
+  font-size: clamp(14px, 4vw, 18px);
   font-weight: 700;
-  letter-spacing: 0.15em;
-  margin: 0 0 16px 0;
+  letter-spacing: 0.12em;
+  margin-bottom: 14px;
+  word-break: break-all;
 }
 
 .cardBottom {
   font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .cardBottom p {
   margin: 0;
 }
 
+/* ================= BALANCE ================= */
 .balanceDisplay {
   text-align: center;
   margin-bottom: 24px;
 }
 
 .balanceAmount {
-  font-size: 28px;
+  font-size: clamp(22px, 6vw, 28px);
   font-weight: 800;
   color: var(--text-primary);
-  margin: 0 0 16px 0;
+  margin-bottom: 16px;
 }
 
+/* ================= ACTION BUTTONS ================= */
 .actionButtons {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -99,6 +109,8 @@
   font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
+  flex: 1 1 80px;
+  max-width: 120px;
 }
 
 .actionBtn:hover {
@@ -106,6 +118,7 @@
   color: var(--primary);
 }
 
+/* ================= ACTIVITY ================= */
 .activitySection {
   margin-bottom: 24px;
 }
@@ -113,8 +126,7 @@
 .activityTitle {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 12px 0;
+  margin-bottom: 12px;
 }
 
 .activityList {
@@ -127,7 +139,7 @@
 .activityRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border-light);
 }
@@ -156,23 +168,24 @@
 .activityTerminal {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 2px 0;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .activityTime {
   font-size: 10px;
   color: var(--text-secondary);
-  margin: 0;
 }
 
 .activityAmount {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
+  white-space: nowrap;
 }
 
+/* ================= SETTINGS ================= */
 .settingsSection {
   margin-bottom: 20px;
 }
@@ -180,8 +193,7 @@
 .settingsTitle {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 12px 0;
+  margin-bottom: 12px;
 }
 
 .settingsList {
@@ -197,11 +209,10 @@
   justify-content: space-between;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border-light);
-  background: none;
-  border: none;
   cursor: pointer;
   width: 100%;
   text-align: left;
+  gap: 10px;
 }
 
 .settingRow:last-child {
@@ -211,26 +222,19 @@
 .settingLabel {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
 }
 
 .settingSubtext {
   font-size: 11px;
   color: var(--text-secondary);
-  margin: 2px 0 0 0;
 }
 
 .toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 0;
 }
 
 .activeBadge {
-  display: inline-block;
   font-size: 11px;
   font-weight: 600;
   padding: 3px 8px;
@@ -241,7 +245,6 @@
 
 .linkRow {
   justify-content: flex-start;
-  border-top: 1px solid var(--border-light);
 }
 
 .settingLink {
@@ -249,4 +252,47 @@
   font-weight: 600;
   color: var(--primary);
   text-decoration: none;
+}
+
+/* ================= RESPONSIVE ================= */
+
+/* Tablet */
+@media (min-width: 600px) {
+  .nfcCard {
+    padding: 22px;
+  }
+
+  .activityRow {
+    padding: 14px 16px;
+  }
+
+  .actionBtn {
+    flex: 1 1 100px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+  .pageHeader {
+    max-width: 800px;
+    margin: 0 auto 20px;
+  }
+
+  .nfcCard,
+  .activitySection,
+  .settingsSection,
+  .balanceDisplay {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .actionButtons {
+    justify-content: space-between;
+  }
+
+  .actionBtn {
+    flex: 1;
+    max-width: none;
+  }
 }

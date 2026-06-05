@@ -31,18 +31,15 @@ function StatsCard({ label, value, subValue, badge, badgeColor, trend, secondary
 
 // TapRow Component
 function TapRow({ tap }) {
-  const statusStyles = {
-    success: styles.success,
-    failed: styles.failed,
-    pending: styles.pending,
-  };
+  
 
-  const statusLabels = {
-    success: 'Success',
-    failed: 'Failed',
-    pending: 'Pending',
-  };
+// normalize the status before lookup
+const normalizedStatus = tap.status?.toLowerCase();
 
+// Then use normalizedStatus in the JSX:
+<span className={`${styles.statusBadge} ${statusStyles[normalizedStatus] ?? ''}`}>
+  {statusLabels[normalizedStatus] ?? tap.status}
+</span>
   return (
     <div className={styles.tapRow}>
       <div className={styles.tapIcon}>
@@ -53,7 +50,9 @@ function TapRow({ tap }) {
         <p className={styles.tapTime}>{tap.time}</p>
       </div>
       <div className={styles.tapRight}>
-        <p className={styles.tapAmount}>-₦{tap.amount.toLocaleString('en-NG')}</p>
+        <p className={styles.tapAmount}>
+          -₦{Number(tap.amount || 0).toLocaleString('en-NG')}
+        </p>
         <span className={`${styles.statusBadge} ${statusStyles[tap.status]}`}>
           {statusLabels[tap.status]}
         </span>
@@ -62,46 +61,39 @@ function TapRow({ tap }) {
   );
 }
 
-export default function DashboardHome({ userData, walletBalance, recentTaps, onFundWallet, onTransfer, onViewAll }) {
-  const [activeChartTab, setActiveChartTab] = useState('month');
-  const [chartData, setChartData] = useState([]);
+export default function DashboardHome({
+  userData,
+  walletBalance,
+  recentTaps,
+  chartData,
+  stats,
+  onFundWallet,
+  onTransfer,
+  onViewAll,
+}) {
+  // 
 
-  // Sample chart data
-  const fareChartData = {
-    week: [
-      { date: 'Mon', amount: 150 },
-      { date: 'Tue', amount: 250 },
-      { date: 'Wed', amount: 100 },
-      { date: 'Thu', amount: 300 },
-      { date: 'Fri', amount: 200 },
-      { date: 'Sat', amount: 400 },
-      { date: 'Sun', amount: 160 },
-    ],
-    month: [
-      { date: '7 May', amount: 300 },
-      { date: '8 May', amount: 450 },
-      { date: '15 May', amount: 200 },
-      { date: '22 May', amount: 600 },
-      { date: '29 May', amount: 400 },
-    ],
-    year: [
-      { date: 'Jan', amount: 1800 },
-      { date: 'Feb', amount: 2100 },
-      { date: 'Mar', amount: 1600 },
-      { date: 'Apr', amount: 2800 },
-      { date: 'May', amount: 4560 },
-    ],
-  };
+  const [activeChartTab, setActiveChartTab] = useState('month');
+  const [activeChartData, setActiveChartData] = useState([]);
 
   useEffect(() => {
-    setChartData(fareChartData[activeChartTab]);
-  }, [activeChartTab]);
+    if (chartData?.[activeChartTab]) {
+      setActiveChartData(chartData[activeChartTab]);
+    } else {
+      setActiveChartData([]);
+    }
+  }, [activeChartTab, chartData]);
+
+  // ✅ SAFE ARRAY FIX (prevents crash)
+  const safeTaps = Array.isArray(recentTaps) ? recentTaps : [];
 
   return (
     <>
       {/* Greeting Section */}
       <div className={styles.greeting}>
-        <p className={styles.greetingTitle}>Hello, {userData?.firstName || 'John'} 👋</p>
+        <p className={styles.greetingTitle}>
+          Hello, {userData?.firstName || ''} 👋
+        </p>
         <p className={styles.greetingSubtitle}>Welcome back to C-Transit</p>
       </div>
 
@@ -109,7 +101,7 @@ export default function DashboardHome({ userData, walletBalance, recentTaps, onF
       <div className={styles.walletCard}>
         <p className={styles.walletLabel}>Wallet Balance</p>
         <p className={styles.walletBalance}>
-          ₦{(walletBalance || 2350.50).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+          ₦{(walletBalance || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
         </p>
         <p className={styles.walletAvailable}>Available Balance</p>
         <div className={styles.walletActions}>
@@ -128,22 +120,26 @@ export default function DashboardHome({ userData, walletBalance, recentTaps, onF
       <div className={styles.statsRow}>
         <StatsCard
           label="Total Trips"
-          value="32"
+          value={stats?.totalTrips ?? '-'}
           subValue="This Month"
         />
         <StatsCard
           label="Active Card"
-          value="**** 5678"
+          value={stats?.cardNumber ?? '-'}
           subValue="Virtual NFC Card"
-          badge="Active"
+          badge={stats?.cardStatus ?? null}
           badgeColor="green"
         />
         <StatsCard
           label="Monthly Spending"
-          value="₦4,560.00"
+          value={
+            stats?.monthlySpending != null
+              ? `₦${Number(stats.monthlySpending).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`
+              : '-'
+          }
           subValue="This Month"
-          trend={12}
-          secondaryTrend={-8}
+          trend={stats?.spendingTrend}
+          secondaryTrend={stats?.secondaryTrend}
         />
       </div>
 
@@ -157,9 +153,13 @@ export default function DashboardHome({ userData, walletBalance, recentTaps, onF
         </div>
 
         <div className={styles.tapActivityList}>
-          {(recentTaps || []).slice(0, 5).map(tap => (
-            <TapRow key={tap.id} tap={tap} />
-          ))}
+          {safeTaps.length > 0 ? (
+            safeTaps.slice(0, 5).map(tap => (
+              <TapRow key={tap.id} tap={tap} />
+            ))
+          ) : (
+            <p className={styles.emptyState}>No recent tap activity</p>
+          )}
         </div>
       </div>
 
@@ -181,40 +181,28 @@ export default function DashboardHome({ userData, walletBalance, recentTaps, onF
         </div>
 
         <div className={styles.chartCard}>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="date" fontSize={10} stroke="#9CA3AF" />
-              <YAxis fontSize={10} stroke="#9CA3AF" />
-              <Tooltip
-                formatter={(value) => `₦${value}`}
-                labelFormatter={(label) => [`₦${label}`, 'Fare']}
-                contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="amount"
-                stroke="#1A56DB"
-                strokeWidth={2.5}
-                dot={{ fill: '#1A56DB', r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className={styles.summary}>
-          <div className={styles.summaryItem}>
-            <p className={styles.summaryLabel}>Top Route</p>
-            <p className={styles.summaryValue}>Lekki - VI</p>
-          </div>
-          <div className={styles.summaryItem}>
-            <p className={styles.summaryLabel}>Total Spent</p>
-            <p className={styles.summaryValue}>₦4,560.00</p>
-          </div>
-          <div className={styles.summaryItem}>
-            <p className={styles.summaryLabel}>Avg. Per Trip</p>
-            <p className={styles.summaryValue}>₦142.50</p>
-          </div>
+          {activeChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={activeChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis dataKey="date" fontSize={10} stroke="#9CA3AF" />
+                <YAxis fontSize={10} stroke="#9CA3AF" />
+                <Tooltip
+                  formatter={(value) => `₦${value}`}
+                  contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="amount"
+                  stroke="#1A56DB"
+                  strokeWidth={2.5}
+                  dot={{ fill: '#1A56DB', r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className={styles.emptyState}>No analytics data available</p>
+          )}
         </div>
       </div>
     </>

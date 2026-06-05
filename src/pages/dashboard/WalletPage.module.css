@@ -1,11 +1,12 @@
 @import "../../styles/tokens.css";
 
+/* ---------- HEADER ---------- */
 .pageHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
-  margin-bottom: 20px;
+  padding: clamp(12px, 3vw, 16px) 0;
+  margin-bottom: clamp(16px, 4vw, 20px);
 }
 
 .backBtn,
@@ -21,16 +22,19 @@
 }
 
 .pageTitle {
-  font-size: 20px;
+  font-size: clamp(16px, 4vw, 20px);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+  text-align: center;
+  flex: 1;
 }
 
+/* ---------- NFC CARD ---------- */
 .nfcCard {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: clamp(16px, 4vw, 20px);
   margin-bottom: 20px;
   color: white;
 }
@@ -39,75 +43,75 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: clamp(16px, 4vw, 24px);
 }
 
 .cardBadge {
-  display: inline-block;
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
   background-color: rgba(255, 255, 255, 0.2);
-  color: white;
 }
 
 .cardNumber {
-  font-size: 18px;
+  font-size: clamp(14px, 4vw, 18px);
   font-weight: 700;
   letter-spacing: 0.15em;
-  margin: 0 0 16px 0;
+  margin-bottom: 12px;
+  word-break: break-all;
 }
 
 .cardBottom {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: clamp(10px, 3vw, 12px);
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.cardBottom p {
-  margin: 0;
-}
-
+/* ---------- BALANCE ---------- */
 .balanceDisplay {
   text-align: center;
   margin-bottom: 24px;
 }
 
 .balanceAmount {
-  font-size: 28px;
+  font-size: clamp(22px, 6vw, 28px);
   font-weight: 800;
   color: var(--text-primary);
-  margin: 0 0 16px 0;
+  margin-bottom: 16px;
 }
 
+/* ---------- ACTION BUTTONS ---------- */
 .actionButtons {
   display: flex;
-  justify-content: space-around;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .actionBtn {
+  flex: 1;
+  min-width: 70px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: none;
   border: none;
   cursor: pointer;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
-}
-
-.actionBtn span {
-  margin-top: 4px;
+  text-align: center;
 }
 
 .actionBtn:hover {
   color: var(--primary);
 }
 
+/* ---------- QUICK AMOUNT ---------- */
 .quickAmountSection {
   margin-bottom: 24px;
 }
@@ -115,7 +119,7 @@
 .quickAmountLabel {
   font-size: 13px;
   color: var(--text-muted);
-  margin: 0 0 10px 0;
+  margin-bottom: 10px;
   font-weight: 500;
 }
 
@@ -126,9 +130,12 @@
 }
 
 .amountPill {
+  flex: 1;
+  min-width: 70px;
+  text-align: center;
   border: 1.5px solid var(--border);
   border-radius: 999px;
-  padding: 8px 16px;
+  padding: 8px 12px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -147,15 +154,16 @@
   color: var(--primary);
 }
 
+/* ---------- TRANSACTIONS ---------- */
 .transactionSection {
   margin-bottom: 20px;
 }
 
 .transactionTitle {
-  font-size: 16px;
+  font-size: clamp(14px, 4vw, 16px);
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 12px 0;
+  margin-bottom: 12px;
 }
 
 .transactionList {
@@ -168,8 +176,8 @@
 .transactionRow {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 10px;
+  padding: clamp(12px, 3vw, 14px);
   border-bottom: 1px solid var(--border-light);
 }
 
@@ -178,8 +186,8 @@
 }
 
 .txIcon {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background-color: var(--primary-light);
   display: flex;
@@ -191,19 +199,22 @@
 
 .txInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .txTitle {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 2px 0;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .txDate {
   font-size: 11px;
   color: var(--text-secondary);
-  margin: 0;
 }
 
 .txAmount {
@@ -215,12 +226,56 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--success);
-  margin: 0;
 }
 
 .txDebit {
   font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0;
+}
+
+/* ---------- MOBILE ---------- */
+@media (max-width: 480px) {
+  .pageHeader {
+    flex-direction: row;
+  }
+
+  .actionButtons {
+    justify-content: space-between;
+  }
+
+  .transactionRow {
+    padding: 12px;
+  }
+
+  .cardBottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ---------- TABLET ---------- */
+@media (min-width: 768px) {
+  .pageHeader {
+    padding: 20px 0;
+  }
+
+  .nfcCard {
+    padding: 24px;
+  }
+
+  .transactionRow {
+    padding: 16px;
+  }
+}
+
+/* ---------- LARGE SCREENS ---------- */
+@media (min-width: 1024px) {
+  .balanceAmount {
+    font-size: 32px;
+  }
+
+  .pageTitle {
+    font-size: 22px;
+  }
 }

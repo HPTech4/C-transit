@@ -2,12 +2,6 @@ import React, { createContext, useState, useCallback, useEffect, useContext } fr
 import axios from 'axios';
 import { AUTH_API_URL, USER_API_URL } from '../config/api';
 
-/**
- * AuthContext - Global authentication state and methods
- * 
- * Usage:
- * const { user, login, register, isLoading } = useContext(AuthContext);
- */
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -16,7 +10,6 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Initialize auth state from localStorage
   useEffect(() => {
     const initializeAuth = () => {
       try {
@@ -24,11 +17,22 @@ export function AuthProvider({ children }) {
         const storedUser = localStorage.getItem('authUser');
 
         if (storedToken && storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setIsAuthenticated(true);
-          // Set default authorization header
-          axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+          try {
+            const payload = JSON.parse(atob(storedToken.split('.')[1]));
+            const isExpired = payload.exp * 1000 < Date.now();
+            if (isExpired) {
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('authUser');
+              return;
+            }
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+            setIsAuthenticated(true);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+          } catch {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('authUser');
+          }
         }
       } catch (err) {
         console.error('Error initializing auth:', err);
@@ -40,12 +44,6 @@ export function AuthProvider({ children }) {
     initializeAuth();
   }, []);
 
-  /**
-   * Login user with email/phone and password
-   * @param {string} emailOrPhone - User email or phone number
-   * @param {string} password - User password
-   * @returns {object} Login result with user data
-   */
   const login = useCallback(async (emailOrPhone, password) => {
     setIsLoading(true);
     setError(null);
@@ -59,11 +57,8 @@ export function AuthProvider({ children }) {
 
       const { token, user: userData } = response.data;
 
-      // Store token and user
       localStorage.setItem('authToken', token);
       localStorage.setItem('authUser', JSON.stringify(userData));
-
-      // Set axios default header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       setUser(userData);
@@ -79,27 +74,38 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  /**
-   * Register new user
-   * @param {object} data - Registration data { name, email, phone, password }
-   * @returns {object} Registration result
-   */
+  // ✅ UPDATED — with debug logs to find field name mismatch
   const register = useCallback(async (data) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await axios.post(`${AUTH_API_URL}/register`, {
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
-      });
+      const payload = {
+  firstname: data.firstName,
+  lastname: data.lastName,
+  email: data.email,
+  matricNumber: data.matricNumber,
+  password: data.password,
+      };
 
-      // Return success - user should verify phone next
+      // DEBUG — check what we're sending and what comes back
+      console.log('📤 Sending to backend:', payload);
+
+      const response = await axios.post(`${AUTH_API_URL}/register`, payload);
+
+      console.log('✅ Register success:', response.data);
+
       return { success: true, data: response.data };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+      // DEBUG — this tells us exactly what the server rejected
+      console.log('❌ Server rejected with:', err.response?.data);
+      console.log('❌ Status code:', err.response?.status);
+      console.log('❌ Full error:', err.response);
+
+      const errorMessage = err.response?.data?.message 
+        || err.response?.data?.error
+        || err.response?.data?.msg
+        || 'Registration failed. Please try again.';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -107,12 +113,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  /**
-   * Verify OTP after registration or phone change
-   * @param {string} phone - User phone number
-   * @param {string} otp - 6-digit OTP code
-   * @returns {object} Verification result
-   */
   const verifyOTP = useCallback(async (phone, otp) => {
     setIsLoading(true);
     setError(null);
@@ -125,11 +125,8 @@ export function AuthProvider({ children }) {
 
       const { token, user: userData } = response.data;
 
-      // Store token and user
       localStorage.setItem('authToken', token);
       localStorage.setItem('authUser', JSON.stringify(userData));
-
-      // Set axios default header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       setUser(userData);
@@ -145,20 +142,12 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  /**
-   * Resend OTP code
-   * @param {string} phone - User phone number
-   * @returns {object} Resend result
-   */
   const resendOTP = useCallback(async (phone) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await axios.post(`${AUTH_API_URL}/resend-otp`, {
-        phone,
-      });
-
+      const response = await axios.post(`${AUTH_API_URL}/resend-otp`, { phone });
       return { success: true, data: response.data };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again.';
@@ -169,22 +158,16 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  /**
-   * Initiate forgot password flow
-   * @param {string} emailOrPhone - User email or phone number
-   * @returns {object} Result
-   */
   const forgotPassword = useCallback(async (emailOrPhone) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const payload = emailOrPhone.includes('@') 
+      const payload = emailOrPhone.includes('@')
         ? { email: emailOrPhone }
         : { phone: emailOrPhone };
 
       const response = await axios.post(`${USER_API_URL}/users/forgot-password`, payload);
-
       return { success: true, data: response.data };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to process request. Please try again.';
@@ -195,13 +178,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  /**
-   * Reset password with OTP and new password
-   * @param {string} emailOrPhone - User email or phone
-   * @param {string} otp - 6-digit OTP code
-   * @param {string} newPassword - New password
-   * @returns {object} Reset result
-   */
   const resetPassword = useCallback(async (emailOrPhone, otp, newPassword) => {
     setIsLoading(true);
     setError(null);
@@ -227,9 +203,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  /**
-   * Logout user
-   */
   const logout = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
@@ -240,13 +213,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = {
-    // State
     user,
     isAuthenticated,
     isLoading,
     error,
-
-    // Methods
     login,
     register,
     verifyOTP,
@@ -254,18 +224,12 @@ export function AuthProvider({ children }) {
     forgotPassword,
     resetPassword,
     logout,
-
-    // Helpers
     setError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-/**
- * Custom hook to use AuthContext
- * Usage: const { user, login } = useAuth();
- */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

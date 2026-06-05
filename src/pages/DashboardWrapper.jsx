@@ -1,4 +1,5 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import DashboardLayout from '../components/Dashboard/DashboardLayout';
 import DashboardHome from './dashboard/DashboardHome';
@@ -10,8 +11,12 @@ import ProfilePage from './dashboard/ProfilePage';
 import SettingsPage from './dashboard/SettingsPage';
 import axios from 'axios';
 
+import { USER_API_URL } from './../config/api';
+
 export default function DashboardWrapper() {
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [currentPage, setCurrentPage] = useState('home');
   const [userData, setUserData] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -19,46 +24,59 @@ export default function DashboardWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const User_API_URL = '/api';
+  // ✅ defined first so fetchDashboardData can reference it
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('authToken');
+    logout();
+    navigate('/auth/login');
+  }, [logout, navigate]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
+
       const token = localStorage.getItem('authToken');
+
+      if (!token) {
+        navigate('/auth/login');
+        return;
+      }
+
       const headers = {
         Authorization: `Bearer ${token}`,
       };
 
-      // Fetch user profile
-      const userResponse = await axios.get(`${User_API_URL}/users/myprofile`, { headers });
-      setUserData(userResponse.data);
-      setWalletBalance(userResponse.data.wallet?.balance || 0);
+      const userResponse = await axios.get(
+        `${USER_API_URL}/users/myprofile`,
+        { headers }
+      );
 
-      // Fetch recent trips/taps
-      const tripsResponse = await axios.get(`${User_API_URL}/transfers/history`, { headers });
-      setRecentTaps(tripsResponse.data.slice(0, 5) || []);
+      setUserData(userResponse.data);
+      setWalletBalance(userResponse.data?.wallet?.balance || 0);
+
+     
 
       setError(null);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
+
+      if (err.response?.status === 401) {
+        handleLogout();
+        return;
+      }
+
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, handleLogout]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    logout();
-    // Navigate to login would be handled by parent router
   };
 
   const pageProps = {
@@ -96,6 +114,15 @@ export default function DashboardWrapper() {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <p>{error}</p>
+        <button onClick={fetchDashboardData}>Retry</button>
       </div>
     );
   }

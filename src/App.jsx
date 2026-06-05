@@ -28,14 +28,9 @@ import { isAdminAuthenticated } from './config/adminAuth';
 
 const isAgentAuthenticated = () => Boolean(localStorage.getItem('agentSession'));
 
-const isAuthenticated = () => Boolean(localStorage.getItem('token'));
-
-function ProtectedRoute({ children }) {
-  return isAuthenticated() ? children : <Navigate to="/auth/login" replace />;
-}
-
 function PublicAuthRoute({ children }) {
-  return isAuthenticated() ? <Navigate to="/dashboard" replace /> : children;
+  const isAuthenticated = Boolean(localStorage.getItem('authToken'));
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 }
 
 function ProtectedAdminRoute({ children }) {
@@ -61,6 +56,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Home />} />
+
             {/* New Auth Routes */}
             <Route
               path="/auth/login"
@@ -102,108 +98,121 @@ function App() {
                 </PublicAuthRoute>
               }
             />
-            
-            {/* Legacy routes for backward compatibility (redirect to new auth screens) */}
+
+            {/* Legacy routes for backward compatibility */}
             <Route path="/login" element={<Navigate to="/auth/login" replace />} />
             <Route path="/register" element={<Navigate to="/auth/register" replace />} />
             <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
             <Route path="/password-reset-otp" element={<Navigate to="/auth/reset-password" replace />} />
 
-            {/* Protected Routes */}
+            {/* Protected Routes — now using AuthGuard instead of ProtectedRoute */}
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
+                <AuthGuard>
                   <DashboardWrapper />
-                </ProtectedRoute>
+                </AuthGuard>
               }
             />
-        <Route
-          path="/kyc"
-          element={(
-            <ProtectedRoute>
-              <KYC />
-            </ProtectedRoute>
-          )}
-        />
-        <Route
-          path="/card-linking"
-          element={<Navigate to="/dashboard" replace />}
-        />
-        <Route
-          path="/history"
-          element={(
-            <ProtectedRoute>
-              <TransferHistory />
-            </ProtectedRoute>
-          )}
-        />
-        <Route
-          path="/report-dispute"
-          element={(
-            <ProtectedRoute>
-              <ReportDispute />
-            </ProtectedRoute>
-          )}
-        />
-        <Route
-          path="/profile"
-          element={(
-            <ProtectedRoute>
-              <UserProfile />
-            </ProtectedRoute>
-          )}
-        />
-        <Route
-          path="/settings"
-          element={(
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          )}
-        />
-        <Route
-          path="/admin/login"
-          element={(
-            <PublicAdminRoute>
-              <AdminLogin />
-            </PublicAdminRoute>
-          )}
-        />
-        <Route
-          path="/admin/dashboard"
-          element={(
-            <ProtectedAdminRoute>
-              <AdminDashboard />
-            </ProtectedAdminRoute>
-          )}
-        />
-        <Route
-          path="/admin"
-          element={<Navigate to={isAdminAuthenticated() ? '/admin/dashboard' : '/admin/login'} replace />}
-        />
-        <Route
-          path="/agent/login"
-          element={(
-            <PublicAgentRoute>
-              <AgentLogin />
-            </PublicAgentRoute>
-          )}
-        />
-        <Route
-          path="/agent/dashboard"
-          element={(
-            <ProtectedAgentRoute>
-              <AgentDashboard />
-            </ProtectedAgentRoute>
-          )}
-        />
-        <Route
-          path="/agent"
-          element={<Navigate to={isAgentAuthenticated() ? '/agent/dashboard' : '/agent/login'} replace />}
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+            <Route
+              path="/kyc"
+              element={
+                <AuthGuard>
+                  <KYC />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/card-linking"
+              element={<Navigate to="/dashboard" replace />}
+            />
+            <Route
+              path="/history"
+              element={
+                <AuthGuard>
+                  <TransferHistory />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/report-dispute"
+              element={
+                <AuthGuard>
+                  <ReportDispute />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <AuthGuard>
+                  <UserProfile />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <AuthGuard>
+                  <Settings />
+                </AuthGuard>
+              }
+            />
+
+            {/* Admin Routes */}
+            <Route
+              path="/admin/login"
+              element={
+                <PublicAdminRoute>
+                  <AdminLogin />
+                </PublicAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminDashboard />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <PublicAdminRoute>
+                  <Navigate to="/admin/dashboard" replace />
+                </PublicAdminRoute>
+              }
+            />
+
+            {/* Agent Routes */}
+            <Route
+              path="/agent/login"
+              element={
+                <PublicAgentRoute>
+                  <AgentLogin />
+                </PublicAgentRoute>
+              }
+            />
+            <Route
+              path="/agent/dashboard"
+              element={
+                <ProtectedAgentRoute>
+                  <AgentDashboard />
+                </ProtectedAgentRoute>
+              }
+            />
+            <Route
+              path="/agent"
+              element={
+                <PublicAgentRoute>
+                  <Navigate to="/agent/dashboard" replace />
+                </PublicAgentRoute>
+              }
+            />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </Router>
       </AuthProvider>
     </ToastProvider>
@@ -211,4 +220,3 @@ function App() {
 }
 
 export default App;
-

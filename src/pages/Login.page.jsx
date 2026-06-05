@@ -18,10 +18,11 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login, isLoading, error, setError } = useContext(AuthContext);
 
-  const [formData, setFormData] = useState({
-    emailOrPhone: 'admin@st.futminna.edu',
-    password: '',
-  });
+
+const [formData, setFormData] = useState({
+  emailOrPhone: '',
+  password: '',
+});
 
   const [errors, setErrors] = useState({});
   const [toasts, setToasts] = useState([]);

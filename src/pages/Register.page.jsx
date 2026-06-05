@@ -4,29 +4,24 @@ import { AuthContext } from '../context/AuthContext';
 import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
 import InputField from '../components/Auth/InputField';
 import PasswordInput from '../components/Auth/PasswordInput';
-import PhoneSelector from '../components/Auth/PhoneSelector';
-import TermsCheckbox from '../components/Auth/TermsCheckbox';
 import AuthButton from '../components/Auth/AuthButton';
 import SocialAuthButtons from '../components/Auth/SocialAuthButtons';
+import TermsCheckbox from '../components/Auth/TermsCheckbox';
 import { validateEmail } from '../utils/validation';
 import { calculatePasswordStrength, getPasswordStrengthLabel } from '../utils/passwordUtils';
 import styles from './Register.page.module.css';
 
-/**
- * Register Screen
- * Route: /auth/register
- */
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register, isLoading, error, setError } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstname: '',
+    lastname: '',
     email: '',
-    countryCode: '+234',
-    phoneNumber: '',
+    matricNumber: '',
     password: '',
-    confirmPassword: '',
+    confirmPassword: '',          
     termsAccepted: false,
   });
 
@@ -44,98 +39,61 @@ export default function RegisterPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Update password strength meter
     if (name === 'password') {
-      const strength = calculatePasswordStrength(value);
-      setPasswordStrength(strength);
+      setPasswordStrength(calculatePasswordStrength(value));
     }
 
-    // Clear error for this field
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: '',
-      }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
-  };
-
-  const handlePhoneChange = (data) => {
-    setFormData(prev => ({
-      ...prev,
-      countryCode: data.countryCode,
-      phoneNumber: data.phoneNumber,
-    }));
-    if (errors.phoneNumber) {
-      setErrors(prev => ({
-        ...prev,
-        phoneNumber: '',
-      }));
-    }
-  };
-
-  const handlePhoneCountryChange = (code) => {
-    setFormData(prev => ({
-      ...prev,
-      countryCode: code,
-    }));
   };
 
   const handleTermsChange = (checked) => {
-    setFormData(prev => ({
-      ...prev,
-      termsAccepted: checked,
-    }));
+    setFormData(prev => ({ ...prev, termsAccepted: checked }));
     if (errors.termsAccepted) {
-      setErrors(prev => ({
-        ...prev,
-        termsAccepted: '',
-      }));
+      setErrors(prev => ({ ...prev, termsAccepted: '' }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    // Full name validation
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = 'Full name must be at least 2 characters';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    } else if (formData.firstName.trim().length < 2) {
+      newErrors.firstName = 'First name must be at least 2 characters';
     }
 
-    // Email validation
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    } else if (formData.lastName.trim().length < 2) {
+      newErrors.lastName = 'Last name must be at least 2 characters';
+    }
+
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'School email is required';
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = 'Please enter a valid school email';
     }
 
-    // Phone validation
-    const phoneDigits = formData.phoneNumber.replace(/\D/g, '');
-    if (!phoneDigits) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (phoneDigits.length < 10) {
-      newErrors.phoneNumber = 'Phone number must be at least 10 digits';
+    if (!formData.matricNumber.trim()) {
+      newErrors.matricNumber = 'Matric number is required';
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
     }
 
-    // Confirm password validation
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    // Terms checkbox
     if (!formData.termsAccepted) {
       newErrors.termsAccepted = 'You must accept the terms and conditions';
     }
@@ -151,18 +109,18 @@ export default function RegisterPage() {
     if (!validateForm()) return;
 
     const result = await register({
-      fullName: formData.fullName,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
       email: formData.email,
-      phone: `${formData.countryCode}${formData.phoneNumber.replace(/\D/g, '')}`,
+      matricNumber: formData.matricNumber,
       password: formData.password,
     });
 
     if (result.success) {
       addToast('Account created successfully!', 'success');
       setTimeout(() => {
-        // Navigate to verify phone screen
         navigate('/auth/verify-phone', {
-          state: { phone: `${formData.countryCode}${formData.phoneNumber.replace(/\D/g, '')}` },
+          state: { email: formData.email },
         });
       }, 1500);
     } else {
@@ -174,17 +132,9 @@ export default function RegisterPage() {
     addToast(`${provider.charAt(0).toUpperCase() + provider.slice(1)} signup coming soon!`, 'info');
   };
 
-  const handleFooterLink = () => {
-    navigate('/auth/login');
-  };
-
-  const handleTermsClick = () => {
-    alert('Terms & Conditions (Coming Soon)');
-  };
-
-  const handlePrivacyClick = () => {
-    alert('Privacy Policy (Coming Soon)');
-  };
+  const handleFooterLink = () => navigate('/auth/login');
+  const handleTermsClick = () => addToast('Terms & Conditions coming soon!', 'info');
+  const handlePrivacyClick = () => addToast('Privacy Policy coming soon!', 'info');
 
   return (
     <SharedAuthLayout
@@ -201,20 +151,33 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <InputField
-          label="Full Name"
-          placeholder="John Doe"
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleChange}
-          error={errors.fullName}
-          required
-          autoComplete="name"
-        />
+        {/* First Name and Last Name side by side */}
+        <div className={styles.nameRow}>
+          <InputField
+            label="First Name"
+            placeholder="John"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            error={errors.firstName}
+            required
+            autoComplete="given-name"
+          />
+          <InputField
+            label="Last Name"
+            placeholder="Doe"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            error={errors.lastName}
+            required
+            autoComplete="family-name"
+          />
+        </div>
 
         <InputField
-          label="Email Address"
-          placeholder="admin@st.futminna.edu"
+          label="School Email"
+          placeholder="e.g. joe.m12345@st.futminna.edu.ng"
           name="email"
           type="email"
           value={formData.email}
@@ -225,13 +188,15 @@ export default function RegisterPage() {
           autoComplete="email"
         />
 
-        <PhoneSelector
-          countryCode={formData.countryCode}
-          phoneNumber={formData.phoneNumber}
-          onChange={handlePhoneChange}
-          onCountryChange={handlePhoneCountryChange}
-          error={errors.phoneNumber}
+        <InputField
+          label="Matric Number"
+          placeholder="e.g. 2021/1/12345EE"
+          name="matricNumber"
+          value={formData.matricNumber}
+          onChange={handleChange}
+          error={errors.matricNumber}
           required
+          autoComplete="off"
         />
 
         <PasswordInput
@@ -258,6 +223,9 @@ export default function RegisterPage() {
           required
           autoComplete="new-password"
         />
+
+        {/* Role is hidden — always student by default */}
+        <input type="hidden" name="role" value={formData.role} />
 
         <TermsCheckbox
           checked={formData.termsAccepted}

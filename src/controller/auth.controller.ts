@@ -1,4 +1,4 @@
-import pkg from "express";
+import { type Request, type Response} from "express";
 import prisma from "../lib/prisma.ts";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -11,13 +11,11 @@ import {
 } from "../services/otp.service.ts";
 import { confirmRegistration } from "../services/registration.service.ts";
 
-const { Request, Response } = pkg;
-
 // Interface to handle routes protected by auth middleware
 export interface AuthenticatedRequest extends Request {
   user?: {
-    userId: string,
-    role?: string,
+    userId: string;
+    role?: string;
   };
 }
 

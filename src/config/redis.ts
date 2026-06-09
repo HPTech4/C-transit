@@ -1,10 +1,13 @@
-import Redis, { type RedisOptions } from "ioredis";
+import * as IORedisPkg from "ioredis";
+import { type RedisOptions } from "ioredis";
 import env from "./env.ts";
 import logger from "./logger.ts";
 
-let redisClient: Redis | null = null;
+const Redis = IORedisPkg.default;
 
-function getRedisClient(): Redis {
+let redisClient: any = null;
+
+function getRedisClient(): any {
   if (redisClient) return redisClient;
 
   const options: RedisOptions = {
@@ -23,6 +26,7 @@ function getRedisClient(): Redis {
     lazyConnect: false,
   };
 
+  // @ts-ignore - ioredis has complex module exports
   redisClient = new Redis(env.redis.url, options);
 
   redisClient.on("connect", () => logger.info("redis.connected"));

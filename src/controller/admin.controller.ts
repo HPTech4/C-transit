@@ -1,4 +1,5 @@
-import pkg from "express";
+import express from "express";
+import { type Request, type Response, type NextFunction } from "express";
 import logger from "../config/logger.ts";
 import env from "../config/env.ts";
 import {
@@ -14,8 +15,7 @@ import {
 import { buildDeltaCommand } from "../utils/parser.ts";
 import { getRedisClient, redisKeys } from "../config/redis.ts";
 
-const router = pkg.Router();
-const { Request, Response, NextFunction } = pkg;
+const router = express.Router();
 
 function requireAdminSecret(req: Request, res: Response, next: NextFunction) {
   const secret = req.headers["x-admin-secret"];
@@ -92,7 +92,7 @@ router.post(
 router.post(
   "/confirm-registration",
   async (
-    req: Request<{}, {}, { otp: string, studentId: string }>,
+    req: Request<{}, {}, { otp: string; studentId: string }>,
     res: Response
   ) => {
     const { otp, studentId } = req.body;
@@ -131,7 +131,7 @@ router.post(
 router.post(
   "/monnify-webhook",
   async (
-    req: Request<{}, {}, { studentUid: string, amount: string | number }>,
+    req: Request<{}, {}, { studentUid: string; amount: string | number }>,
     res: Response
   ) => {
     res.status(200).json({ received: true });
@@ -175,7 +175,7 @@ router.post(
 router.post(
   "/terminal/register",
   async (
-    req: Request<{}, {}, { terminalId: string, secretKey: string }>,
+    req: Request<{}, {}, { terminalId: string; secretKey: string }>,
     res: Response
   ) => {
     const { terminalId, secretKey } = req.body;

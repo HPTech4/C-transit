@@ -1,0 +1,91 @@
+import mqtt, { type MqttClient, type IConnackPacket, type Packet, type ISubscriptionMap } from "mqtt";
+import mqttConfig from "../config/mqtt.ts";
+import logger from "../config/logger.ts";
+import { routeUplinkMessage } from "./uplinkRouter.ts";
+import { injectClient, publishToTerminal } from "./downlinkQueue.ts";
+import { injectMqttPublisher } from "../services/sync.service.ts";
+
+let client: MqttClient | null = null;
+
+function connectMqtt(): Promise<MqttClient> {
+  return new Promise((resolve, reject) => {
+    logger.info(
+      "mqtt.connecting"
+    );
+
+    client = mqtt.connect(mqttConfig.brokerUrl, {
+      ...mqttConfig.options,
+    });
+
+    client.on("connect", (connack: IConnackPacket) => {
+      logger.info({ sessionPresent: connack.sessionPresent }, "mqtt.connected");
+
+      if (client) {
+        injectClient(client);
+        injectMqttPublisher(publishToTerminal);
+      }
+
+      const topics: ISubscriptionMap = {
+        [mqttConfig.topics.uplinkWildcard]: { qos: mqttConfig.qos.uplink },
+        [mqttConfig.topics.statusWildcard]: { qos: mqttConfig.qos.uplink },
+      };
+
+      client?.subscribe(topics, (err, granted) => {
+        if (err) {
+          logger.fatal({ err: err.message }, "mqtt.subscribe_failed");
+          return reject(err);
+        }
+        logger.info({ granted }, "mqtt.subscribed");
+        if (client) resolve(client);
+      });
+    });
+
+    client.on(
+      "message",
+      async (topic: string, payload: Buffer, packet: Packet) => {
+        const topicLog = logger.child({
+          topic,
+        });
+        topicLog.debug("mqtt.message_received");
+
+        try {
+          await routeUplinkMessage(topic, payload);
+          topicLog.debug("mqtt.message_processed");
+        } catch (error) {
+          const errMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          topicLog.error({ err: errMessage }, "mqtt.message_processing_failed");
+        }
+      }
+    );
+
+    client.on("error", (err: Error) => {
+      logger.error({ err: err.message }, "mqtt.error");
+      if (client && !client.connected) reject(err);
+    });
+
+    client.on("reconnect", () => logger.warn("mqtt.reconnecting"));
+    client.on("offline", () =>
+      logger.warn("mqtt.offline — broker unreachable")
+    );
+    client.on("close", () => logger.warn("mqtt.connection_closed"));
+    client.on("disconnect", (packet: Packet & { reasonCode?: number }) => {
+      logger.warn(
+        { reasonCode: packet.reasonCode },
+        "mqtt.disconnected_by_broker"
+      );
+    });
+  });
+}
+
+function disconnectMqtt(): Promise<void> {
+  return new Promise((resolve) => {
+    if (!client) return resolve();
+    client.end(false, {}, () => {
+      logger.info("mqtt.disconnected_gracefully");
+      resolve();
+    });
+  });
+}
+
+export { connectMqtt, disconnectMqtt };

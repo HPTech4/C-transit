@@ -4,18 +4,18 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import "dotenv/config";
-import logger from "./src/config/logger.js";
-import connectDB from "./src/config/db.js";
+import logger from "./src/config/logger.ts";
+import connectDB from "./src/config/db.ts";
 
-import healthRouter from "./src/routes/health.routes.js";
-import adminRouter from "./src/routes/admin.routes.js";
-import authRoutes from "./src/routes/auth.routes.js";
-import userRoutes from "./src/routes/user.routes.js";
-import kycRoutes from "./src/routes/kyc.routes.js";
+import healthRouter from "./src/routes/health.routes.ts";
+import adminRouter from "./src/routes/admin.routes.ts";
+import authRoutes from "./src/routes/auth.routes.ts";
+import userRoutes from "./src/routes/user.routes.ts";
+import kycRoutes from "./src/routes/kyc.routes.ts";
 import walletsRouter, {
   requireStudentAuth,
-} from "./src/controller/wallets.controller.js";
-import { authenticateToken } from "./src/middleware/auth.middleware.js";
+} from "./src/controller/wallets.controller.ts";
+import { authenticateToken } from "./src/middleware/auth.middleware.ts";
 
 const app = express();
 
@@ -28,7 +28,6 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://c-transit-new.vercel.app",
-      "https://c-transit-pink.vercel.app",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],

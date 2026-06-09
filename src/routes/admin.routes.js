@@ -1,1 +1,0 @@
-'use strict';import adminRouter from '../controller/admin.controller.js';export default adminRouter;

@@ -1,15 +1,15 @@
 'use strict';
 
 // Load and validate environment variables first — before any other import
-import './src/config/env.js';
+import './src/config/env.ts';
 
 import http from 'http';
 import app from './app.js';
-import { connectMqtt, disconnectMqtt } from './src/mqtt/client.js';
-import { getRedisClient } from './src/config/redis.js';
-import { prisma } from './src/services/ledger.service.js';
-import logger from './src/config/logger.js';
-import env from './src/config/env.js';
+import { connectMqtt, disconnectMqtt } from './src/mqtt/client.ts';
+import { getRedisClient } from './src/config/redis.ts';
+import { prisma } from './src/services/ledger.service.ts';
+import logger from './src/config/logger.ts';
+import env from './src/config/env.ts';
 
 // HTTP server with boot/shutdown sequence for Redis, PostgreSQL, and MQTT
 

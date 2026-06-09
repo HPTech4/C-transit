@@ -1,13 +1,14 @@
-import mqtt, { type MqttClient, type IConnackPacket, type Packet, type ISubscriptionMap } from "mqtt";
+import mqtt from "mqtt";
+import type { IConnackPacket, Packet } from "mqtt";
 import mqttConfig from "../config/mqtt.ts";
 import logger from "../config/logger.ts";
 import { routeUplinkMessage } from "./uplinkRouter.ts";
 import { injectClient, publishToTerminal } from "./downlinkQueue.ts";
 import { injectMqttPublisher } from "../services/sync.service.ts";
 
-let client: MqttClient | null = null;
+let client: any = null;
 
-function connectMqtt(): Promise<MqttClient> {
+function connectMqtt(): Promise<any> {
   return new Promise((resolve, reject) => {
     logger.info(
       "mqtt.connecting"
@@ -25,12 +26,12 @@ function connectMqtt(): Promise<MqttClient> {
         injectMqttPublisher(publishToTerminal);
       }
 
-      const topics: ISubscriptionMap = {
+      const topics: Record<string, { qos: number }> = {
         [mqttConfig.topics.uplinkWildcard]: { qos: mqttConfig.qos.uplink },
         [mqttConfig.topics.statusWildcard]: { qos: mqttConfig.qos.uplink },
       };
 
-      client?.subscribe(topics, (err, granted) => {
+      client?.subscribe(topics, (err: Error | null, granted: any[]) => {
         if (err) {
           logger.fatal({ err: err.message }, "mqtt.subscribe_failed");
           return reject(err);

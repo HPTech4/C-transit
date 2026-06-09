@@ -1,6 +1,7 @@
 "use strict";
 
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import logger from "../config/logger.ts";
 import env from "../config/env.ts";
 

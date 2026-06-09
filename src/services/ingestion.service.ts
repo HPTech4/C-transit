@@ -1,6 +1,7 @@
 "use strict";
 
 import { prisma, isBelowThreshold } from "./ledger.service.ts";
+import type { Prisma } from "@prisma/client";
 import logger from "../config/logger.ts";
 import {
   parseTransactionBatch,
@@ -115,7 +116,7 @@ async function processTransaction(
 
     // All checks passed — deduct atomically
     const result = await prisma.$transaction(
-      async (tx_ctx) => {
+      async (tx_ctx: Prisma.TransactionClient) => {
         // Idempotency — skip if already processed
         const existingTx = await tx_ctx.transaction.findUnique({
           where: { transaction_id: tx.transaction_id },

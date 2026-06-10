@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
-import logger from "../config/logger.ts";
-import env from "../config/env.ts";
+import logger from "../config/logger.js";
+import env from "../config/env.js";
 
 // Define the expected structure of your JWT payload
 export interface UserJwtPayload extends JwtPayload {

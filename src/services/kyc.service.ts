@@ -1,9 +1,9 @@
 "use strict";
 
-import prisma from "../lib/prisma.ts";
-import cloudinary from "../config/cloudinary.ts";
-import { extractTextFromImage, parseIdCardText } from "./ocr.service.ts";
-import logger from "../config/logger.ts";
+import prisma from "../lib/prisma.js";
+import cloudinary from "../config/cloudinary.js";
+import { extractTextFromImage, parseIdCardText } from "./ocr.service.js";
+import logger from "../config/logger.js";
 
 export interface KycSubmissionData {
   studentName: string;

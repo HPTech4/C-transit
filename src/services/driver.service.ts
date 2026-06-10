@@ -1,8 +1,8 @@
 "use strict";
 
-import { prisma } from "./ledger.service.ts";
+import { prisma } from "./ledger.service.js";
 import bcrypt from "bcryptjs";
-import logger from "../config/logger.ts";
+import logger from "../config/logger.js";
 
 export interface DriverRegisterData {
   firstname: string;

@@ -1,10 +1,10 @@
 import mqtt from "mqtt";
 import type { IConnackPacket, Packet } from "mqtt";
-import mqttConfig from "../config/mqtt.ts";
-import logger from "../config/logger.ts";
-import { routeUplinkMessage } from "./uplinkRouter.ts";
-import { injectClient, publishToTerminal } from "./downlinkQueue.ts";
-import { injectMqttPublisher } from "../services/sync.service.ts";
+import mqttConfig from "../config/mqtt.js";
+import logger from "../config/logger.js";
+import { routeUplinkMessage } from "./uplinkRouter.js";
+import { injectClient, publishToTerminal } from "./downlinkQueue.js";
+import { injectMqttPublisher } from "../services/sync.service.js";
 
 let client: any = null;
 

@@ -3,9 +3,9 @@ import {
   uploadIdCard,
   submitKycData,
   getKycStatus,
-} from "../controller/kyc.controller.ts";
-import { authenticateToken } from "../middleware/auth.middleware.ts";
-import upload from "../middleware/upload.middleware.ts";
+} from "../controller/kyc.controller.js";
+import { authenticateToken } from "../middleware/auth.middleware.js";
+import upload from "../middleware/upload.middleware.js";
 
 const router = Router();
 

@@ -1,9 +1,9 @@
 import { Router, type Response, type NextFunction } from "express";
-import { confirmRegistration } from "../services/registration.service.ts";
-import logger from "../config/logger.ts";
+import { confirmRegistration } from "../services/registration.service.js";
+import logger from "../config/logger.js";
 
 // Replicating the CustomAuthRequest structure from your auth middleware
-import { type CustomAuthRequest } from "../middleware/auth.middleware.ts";
+import { type CustomAuthRequest } from "../middleware/auth.middleware.js";
 
 const router = Router();
 

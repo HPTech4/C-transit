@@ -1,5 +1,5 @@
 import type { IClientOptions } from "mqtt";
-import env from "./env.ts";
+import env from "./env.js";
 
 // Define a strict interface for your MQTT setup
 interface MqttConfig {

@@ -1,15 +1,15 @@
 "use strict";
 
-import { prisma, isBelowThreshold } from "./ledger.service.ts";
+import { prisma, isBelowThreshold } from "./ledger.service.js";
 import type { Prisma } from "@prisma/client";
-import logger from "../config/logger.ts";
+import logger from "../config/logger.js";
 import {
   parseTransactionBatch,
   buildDeltaCommand,
   type ParsedTransaction,
-} from "../utils/parser.ts";
-import { broadcastDeltaToFleet } from "./sync.service.ts";
-import { publishToTerminal } from "../mqtt/downlinkQueue.ts";
+} from "../utils/parser.js";
+import { broadcastDeltaToFleet } from "./sync.service.js";
+import { publishToTerminal } from "../mqtt/downlinkQueue.js";
 
 type LoggerInstance = typeof logger;
 

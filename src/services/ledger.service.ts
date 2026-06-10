@@ -2,8 +2,8 @@
 
 import { PrismaClient } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
-import logger from "../config/logger.ts";
-import env from "../config/env.ts";
+import logger from "../config/logger.js";
+import env from "../config/env.js";
 
 const prisma = new PrismaClient();
 

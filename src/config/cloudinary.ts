@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
-import env from "./env.ts";
-import logger from "./logger.ts";
+import env from "./env.js";
+import logger from "./logger.js";
 
 // Configure Cloudinary with credentials from .env
 cloudinary.config({

@@ -1,6 +1,6 @@
 import speakeasy from "speakeasy";
 import nodemailer from "nodemailer";
-import env from "../config/env.ts";
+import env from "../config/env.js";
 
 const generateOTP = (email: string): string => {
   const secret = `${env.otp.secret}_${email}`;

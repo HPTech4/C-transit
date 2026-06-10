@@ -1,3 +1,3 @@
-import healthRouter from "../controller/health.controller.ts";
+import healthRouter from "../controller/health.controller.js";
 
 export default healthRouter;

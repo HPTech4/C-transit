@@ -1,6 +1,6 @@
 import type { MqttClient } from "mqtt";
-import mqttConfig from "../config/mqtt.ts";
-import logger from "../config/logger.ts";
+import mqttConfig from "../config/mqtt.js";
+import logger from "../config/logger.js";
 
 let _client: MqttClient | null = null;
 

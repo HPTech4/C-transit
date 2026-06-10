@@ -1,5 +1,5 @@
-import prisma from "../lib/prisma.ts";
-import logger from "./logger.ts";
+import prisma from "../lib/prisma.js";
+import logger from "./logger.js";
 
 const connectDB = async (): Promise<void> => {
   try {

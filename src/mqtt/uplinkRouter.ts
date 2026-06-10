@@ -4,19 +4,19 @@ import {
   parsePendingLink,
   parseDriverRegister,
   parseDriverEvent,
-} from "../utils/parser.ts";
-import { ingestTransactionBatch } from "../services/ingestion.service.ts";
-import { handlePendingLink } from "../services/registration.service.ts";
-import { handleLwtEvent } from "./lwtHandler.ts";
-import logger from "../config/logger.ts";
+} from "../utils/parser.js";
+import { ingestTransactionBatch } from "../services/ingestion.service.js";
+import { handlePendingLink } from "../services/registration.service.js";
+import { handleLwtEvent } from "./lwtHandler.js";
+import logger from "../config/logger.js";
 import type { Logger } from "pino";
-import { prisma } from "../services/ledger.service.ts";
-import { publishToTerminal } from "./downlinkQueue.ts";
+import { prisma } from "../services/ledger.service.js";
+import { publishToTerminal } from "./downlinkQueue.js";
 import {
   handleDriverRegister,
   handleDriverLogin,
   handleDriverLogout,
-} from "../services/driver.service.ts";
+} from "../services/driver.service.js";
 
 // Type definition matching your pino child log structure
 type ChildLogger = Logger;

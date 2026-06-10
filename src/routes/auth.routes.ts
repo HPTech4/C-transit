@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { registerStudent, verifyOTP, resendOTP, loginStudent, logoutStudent, confirmCard } from '../controller/auth.controller.ts';
-import { authenticateToken } from '../middleware/auth.middleware.ts';
+import { registerStudent, verifyOTP, resendOTP, loginStudent, logoutStudent, confirmCard } from '../controller/auth.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 

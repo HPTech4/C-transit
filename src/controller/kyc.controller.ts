@@ -3,9 +3,9 @@ import {
   processIdCard,
   submitKyc,
   getKycByUserId,
-} from "../services/kyc.service.ts";
-import logger from "../config/logger.ts";
-import type { AuthenticatedRequest } from "./auth.controller.ts";
+} from "../services/kyc.service.js";
+import logger from "../config/logger.js";
+import type { AuthenticatedRequest } from "./auth.controller.js";
 
 // Interface to support Multer's file injection
 export interface KycUploadRequest extends AuthenticatedRequest {

@@ -1,11 +1,11 @@
 "use strict";
 
-import { getRedisClient, redisKeys, OTP_TTL_SECONDS } from "../config/redis.ts";
-import { activateWallet, prisma } from "./ledger.service.ts";
-import { buildDeltaCommand, type PendingLinkData } from "../utils/parser.ts";
-import { routeDeltaToTerminal } from "./sync.service.ts";
-import { publishToTerminal } from "../mqtt/downlinkQueue.ts";
-import logger from "../config/logger.ts";
+import { getRedisClient, redisKeys, OTP_TTL_SECONDS } from "../config/redis.js";
+import { activateWallet, prisma } from "./ledger.service.js";
+import { buildDeltaCommand, type PendingLinkData } from "../utils/parser.js";
+import { routeDeltaToTerminal } from "./sync.service.js";
+import { publishToTerminal } from "../mqtt/downlinkQueue.js";
+import logger from "../config/logger.js";
 
 export interface ConfirmRegistrationResult {
   success: boolean;

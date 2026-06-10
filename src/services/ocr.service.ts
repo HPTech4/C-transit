@@ -2,7 +2,7 @@
 
 import Tesseract from "tesseract.js";
 import sharp from "sharp";
-import logger from "../config/logger.ts";
+import logger from "../config/logger.js";
 
 export interface ParsedIdCard {
   studentName: string | null;

@@ -1,15 +1,15 @@
 import { type Request, type Response} from "express";
-import prisma from "../lib/prisma.ts";
+import prisma from "../lib/prisma.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import logger from "../config/logger.ts";
-import env from "../config/env.ts";
+import logger from "../config/logger.js";
+import env from "../config/env.js";
 import {
   generateOTP,
   verifyOTPToken,
   sendOTPEmail,
-} from "../services/otp.service.ts";
-import { confirmRegistration } from "../services/registration.service.ts";
+} from "../services/otp.service.js";
+import { confirmRegistration } from "../services/registration.service.js";
 
 // Interface to handle routes protected by auth middleware
 export interface AuthenticatedRequest extends Request {

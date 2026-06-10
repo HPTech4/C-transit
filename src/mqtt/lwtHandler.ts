@@ -1,6 +1,6 @@
-import { prisma } from "../services/ledger.service.ts";
-import { flushTerminalQueue } from "../services/sync.service.ts";
-import logger from "../config/logger.ts";
+import { prisma } from "../services/ledger.service.js";
+import { flushTerminalQueue } from "../services/sync.service.js";
+import logger from "../config/logger.js";
 import type { TerminalStatus } from "@prisma/client";
 
 async function handleLwtEvent(

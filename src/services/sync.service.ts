@@ -1,8 +1,8 @@
 "use strict";
 
-import { getRedisClient, redisKeys } from "../config/redis.ts";
-import logger from "../config/logger.ts";
-import { prisma } from "./ledger.service.ts";
+import { getRedisClient, redisKeys } from "../config/redis.js";
+import logger from "../config/logger.js";
+import { prisma } from "./ledger.service.js";
 
 export type MqttPublishFn = (
   terminalId: string,

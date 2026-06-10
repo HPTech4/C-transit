@@ -1,3 +1,3 @@
-import adminRouter from "../controller/admin.controller.ts";
+import adminRouter from "../controller/admin.controller.js";
 
 export default adminRouter;

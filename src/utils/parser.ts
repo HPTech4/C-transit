@@ -1,6 +1,6 @@
 "use strict";
 
-import logger from "../config/logger.ts";
+import logger from "../config/logger.js";
 
 // Utility type for strict error handling across all parsers
 export type ParseResult<T> = 

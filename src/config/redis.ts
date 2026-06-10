@@ -1,7 +1,7 @@
 import * as IORedisPkg from "ioredis";
 import { type RedisOptions } from "ioredis";
-import env from "./env.ts";
-import logger from "./logger.ts";
+import env from "./env.js";
+import logger from "./logger.js";
 
 const Redis = IORedisPkg.default;
 

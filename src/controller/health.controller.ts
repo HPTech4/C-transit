@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
-import { getRedisClient } from "../config/redis.ts";
-import { prisma } from "../services/ledger.service.ts";
-import logger from "../config/logger.ts";
+import { getRedisClient } from "../config/redis.js";
+import { prisma } from "../services/ledger.service.js";
+import logger from "../config/logger.js";
 
 const router = Router();
 

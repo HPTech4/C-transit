@@ -7,14 +7,14 @@ import {
   changeUserPassword,
   requestPasswordReset,
   resetPasswordWithOTP,
-} from "../services/user.service.ts";
+} from "../services/user.service.js";
 import {
   generateOTP,
   verifyOTPToken,
   sendOTPEmail,
-} from "../services/otp.service.ts";
-import logger from "../config/logger.ts";
-import type { AuthenticatedRequest } from "./auth.controller.ts";
+} from "../services/otp.service.js";
+import logger from "../config/logger.js";
+import type { AuthenticatedRequest } from "./auth.controller.js";
 
 export const fetchUserCount = async (req: Request, res: Response) => {
   try {

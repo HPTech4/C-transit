@@ -1,19 +1,19 @@
 import express from "express";
 import { type Request, type Response, type NextFunction } from "express";
-import logger from "../config/logger.ts";
-import env from "../config/env.ts";
+import logger from "../config/logger.js";
+import env from "../config/env.js";
 import {
   routeDeltaToTerminal,
   broadcastDeltaToFleet,
-} from "../services/sync.service.ts";
-import { confirmRegistration } from "../services/registration.service.ts";
+} from "../services/sync.service.js";
+import { confirmRegistration } from "../services/registration.service.js";
 import {
   creditWallet,
   hasCrossedAboveThreshold,
   prisma,
-} from "../services/ledger.service.ts";
-import { buildDeltaCommand } from "../utils/parser.ts";
-import { getRedisClient, redisKeys } from "../config/redis.ts";
+} from "../services/ledger.service.js";
+import { buildDeltaCommand } from "../utils/parser.js";
+import { getRedisClient, redisKeys } from "../config/redis.js";
 
 const router = express.Router();
 

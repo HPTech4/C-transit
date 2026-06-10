@@ -1,21 +1,21 @@
 "use strict";
 
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import "dotenv/config";
-import logger from "./src/config/logger.ts";
-import connectDB from "./src/config/db.ts";
+import logger from "./src/config/logger.js";
+import connectDB from "./src/config/db.js";
 
-import healthRouter from "./src/routes/health.routes.ts";
-import adminRouter from "./src/routes/admin.routes.ts";
-import authRoutes from "./src/routes/auth.routes.ts";
-import userRoutes from "./src/routes/user.routes.ts";
-import kycRoutes from "./src/routes/kyc.routes.ts";
+import healthRouter from "./src/routes/health.routes.js";
+import adminRouter from "./src/routes/admin.routes.js";
+import authRoutes from "./src/routes/auth.routes.js";
+import userRoutes from "./src/routes/user.routes.js";
+import kycRoutes from "./src/routes/kyc.routes.js";
 import walletsRouter, {
   requireStudentAuth,
-} from "./src/controller/wallets.controller.ts";
-import { authenticateToken } from "./src/middleware/auth.middleware.ts";
+} from "./src/controller/wallets.controller.js";
+import { authenticateToken } from "./src/middleware/auth.middleware.js";
 
 const app = express();
 
@@ -25,10 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://c-transit-new.vercel.app",
-    ],
+    origin: ["http://localhost:5173", "https://c-transit-new.vercel.app"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
@@ -36,7 +33,7 @@ app.use(
 
 connectDB();
 
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   res.on("finish", () => {
     logger.info(
@@ -53,7 +50,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.send("C-transit server is running");
 });
 
@@ -66,10 +63,13 @@ app.use("/api/users", userRoutes);
 app.use("/api/kyc", kycRoutes);
 app.use("/api/wallets", authenticateToken, requireStudentAuth, walletsRouter);
 
-app.use((req, res) => {
+// 404 handler
+app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Not found" });
 });
-app.use((err, req, res, next) => {
+
+// Global error handler (must have 4 arguments for Express to recognize it)
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   logger.error({ err: err.message, path: req.path }, "http.unhandled_error");
   res.status(500).json({ error: "Internal server error" });
 });

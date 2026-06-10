@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "prisma generate",
+    "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "tsx watch server.ts",
-    "build": "tsc"
+    "dev": "tsx watch server.ts"
   },
   "keywords": [],
   "author": "",

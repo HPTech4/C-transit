@@ -9,7 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": false,
     "skipLibCheck": true,
-    "types": [ "node", "express"]
+    "types": [ "node", "express", "multer"]
   },
   "include": ["src/**/*", "server.ts", "app.ts"],
   "exclude": ["node_modules", "dist"]

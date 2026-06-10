@@ -6,6 +6,7 @@ import {
 } from "../services/kyc.service.js";
 import logger from "../config/logger.js";
 import type { AuthenticatedRequest } from "./auth.controller.js";
+import "multer";
 
 // Interface to support Multer's file injection
 export interface KycUploadRequest extends AuthenticatedRequest {

@@ -5,8 +5,10 @@ import logger from "./logger.js";
 
 const Redis = IORedisPkg.default;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let redisClient: any = null;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getRedisClient(): any {
   if (redisClient) return redisClient;
 
@@ -25,16 +27,15 @@ function getRedisClient(): any {
     maxRetriesPerRequest: null,
     lazyConnect: false,
   };
-
-  // @ts-ignore - ioredis has complex module exports
+  // @ts-expect-error - ioredis has complex module exports
   redisClient = new Redis(env.redis.url, options);
 
-  redisClient.on("connect", () => logger.info("redis.connected"));
-  redisClient.on("ready", () => logger.info("redis.ready"));
-  redisClient.on("error", (err: Error) =>
+  (redisClient as IORedisPkg.Redis).on("connect", () => logger.info("redis.connected"));
+  (redisClient as IORedisPkg.Redis).on("ready", () => logger.info("redis.ready"));
+  (redisClient as IORedisPkg.Redis).on("error", (err: Error) =>
     logger.error({ err: err.message }, "redis.error")
   );
-  redisClient.on("close", () => logger.warn("redis.connection_closed"));
+  (redisClient as IORedisPkg.Redis).on("close", () => logger.warn("redis.connection_closed"));
 
   return redisClient;
 }

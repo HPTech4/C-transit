@@ -21,8 +21,9 @@ const mqttConfig: MqttConfig = {
 
   options: {
     clientId: env.mqtt.clientId,
-    // Cast to 'any' or string based on whether you add these to your env.ts file
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     username: (env.mqtt as any).username,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     password: (env.mqtt as any).password,
     protocol: "mqtt",
     port: env.mqtt.port,

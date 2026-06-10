@@ -30,7 +30,7 @@ router.use(requireAdminSecret);
 
 router.post(
   "/poison-pill",
-  async (req: Request<{}, {}, { terminalId: string }>, res: Response) => {
+  async (req: Request<object, object, { terminalId: string }>, res: Response) => {
     const { terminalId } = req.body;
     if (!terminalId) {
       return res.status(400).json({ error: "terminalId is required" });
@@ -45,7 +45,8 @@ router.post(
       });
 
       const poisonCmd = "CMD:POISON_PILL";
-      const redis = getRedisClient();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const redis = getRedisClient() as any;
       await redis.lpush(redisKeys.terminalQueue(terminalId), poisonCmd);
       await routeDeltaToTerminal(terminalId, poisonCmd);
 
@@ -65,7 +66,7 @@ router.post(
 
 router.post(
   "/ota",
-  async (req: Request<{}, {}, { firmwareUrl: string }>, res: Response) => {
+  async (req: Request<object, object, { firmwareUrl: string }>, res: Response) => {
     const { firmwareUrl } = req.body;
 
     if (!firmwareUrl || !firmwareUrl.startsWith("https://")) {
@@ -92,7 +93,7 @@ router.post(
 router.post(
   "/confirm-registration",
   async (
-    req: Request<{}, {}, { otp: string; studentId: string }>,
+    req: Request<object, object, { otp: string; studentId: string }>,
     res: Response
   ) => {
     const { otp, studentId } = req.body;
@@ -131,7 +132,7 @@ router.post(
 router.post(
   "/monnify-webhook",
   async (
-    req: Request<{}, {}, { studentUid: string; amount: string | number }>,
+    req: Request<object, object, { studentUid: string; amount: string | number }>,
     res: Response
   ) => {
     res.status(200).json({ received: true });
@@ -175,7 +176,7 @@ router.post(
 router.post(
   "/terminal/register",
   async (
-    req: Request<{}, {}, { terminalId: string; secretKey: string }>,
+    req: Request<object, object, { terminalId: string; secretKey: string }>,
     res: Response
   ) => {
     const { terminalId, secretKey } = req.body;

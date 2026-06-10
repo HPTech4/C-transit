@@ -6,8 +6,10 @@ import { routeUplinkMessage } from "./uplinkRouter.js";
 import { injectClient, publishToTerminal } from "./downlinkQueue.js";
 import { injectMqttPublisher } from "../services/sync.service.js";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: any = null;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function connectMqtt(): Promise<any> {
   return new Promise((resolve, reject) => {
     logger.info(
@@ -31,7 +33,7 @@ function connectMqtt(): Promise<any> {
         [mqttConfig.topics.statusWildcard]: { qos: mqttConfig.qos.uplink },
       };
 
-      client?.subscribe(topics, (err: Error | null, granted: any[]) => {
+      client?.subscribe(topics, (err: Error | null, granted?: unknown[]) => {
         if (err) {
           logger.fatal({ err: err.message }, "mqtt.subscribe_failed");
           return reject(err);
@@ -43,7 +45,7 @@ function connectMqtt(): Promise<any> {
 
     client.on(
       "message",
-      async (topic: string, payload: Buffer, packet: Packet) => {
+      async (topic: string, payload: Buffer) => {
         const topicLog = logger.child({
           topic,
         });

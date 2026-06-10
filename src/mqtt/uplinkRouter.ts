@@ -4,6 +4,8 @@ import {
   parsePendingLink,
   parseDriverRegister,
   parseDriverEvent,
+  type DriverEventData,
+  type DriverRegisterData,
 } from "../utils/parser.js";
 import { ingestTransactionBatch } from "../services/ingestion.service.js";
 import { handlePendingLink } from "../services/registration.service.js";
@@ -191,13 +193,13 @@ async function handleFullSyncRequest(
 
 async function handleDriverEvent(
   terminalId: string,
-  data: any,
+  data: DriverEventData,
   log: ChildLogger
 ): Promise<void> {
   const { action, driverUid } = data;
 
   if (action === "LOGIN") {
-    const result = await handleDriverLogin(terminalId, driverUid);
+    const result = await handleDriverLogin(terminalId, driverUid as string);
 
     if (result.success) {
       await publishToTerminal(terminalId, `DRV:OK,${result.driverName}`);
@@ -207,7 +209,7 @@ async function handleDriverEvent(
       log.warn({ driverUid }, "uplink.driver_login_failed");
     }
   } else if (action === "LOGOUT") {
-    await handleDriverLogout(terminalId, driverUid);
+    await handleDriverLogout(terminalId, driverUid as string);
     await publishToTerminal(terminalId, "DRV:BYE");
     log.info({ driverUid }, "uplink.driver_logout");
   }
@@ -215,7 +217,7 @@ async function handleDriverEvent(
 
 async function handleDriverRegisterEvent(
   terminalId: string,
-  data: any,
+  data: DriverRegisterData,
   log: ChildLogger
 ): Promise<void> {
   const result = await handleDriverRegister(terminalId, data);

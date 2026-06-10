@@ -22,7 +22,7 @@ async function boot(): Promise<void> {
   );
 
   try {
-    const redis = getRedisClient();
+    const redis = getRedisClient() as any;
     await redis.ping();
     logger.info("server.redis_ready");
   } catch (err) {
@@ -88,7 +88,7 @@ async function shutdown(signal: string): Promise<void> {
 
   try {
     const redis = getRedisClient();
-    await redis.quit();
+    await (redis as any).quit();
     logger.info("server.redis_disconnected");
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);

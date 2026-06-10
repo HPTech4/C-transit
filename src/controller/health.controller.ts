@@ -28,7 +28,8 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const redis = getRedisClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const redis = getRedisClient() as any;
     await redis.ping();
     checks.redis = "OK";
   } catch (error) {

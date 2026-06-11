@@ -81,8 +81,7 @@ export default function ResetPasswordPage() {
     setCurrentStep('change_password');
     addToast('Code checked! Please set your new password.', 'success');
   };
-
-  // --- STEP 3: Submitting everything to backend ---
+// --- STEP 3: Submitting everything to backend ---
   const handleSubmitFinalReset = async (e) => {
     e.preventDefault();
     setError('');
@@ -90,11 +89,16 @@ export default function ResetPasswordPage() {
     const otpCode = otp.join('');
     const sanitizedEmail = email.trim().toLowerCase();
 
-    // 🔴 DEBUG LOG: Inspect exactly what frontend is packaging up
-    console.log("=== DEBUG: SUBMITTING PASSWORD RESET ===");
-    console.log("1. Target Email:", sanitizedEmail);
-    console.log("2. Code Collected:", otpCode);
-    console.log("3. New Password Length:", newPassword.length);
+    // 🟢 FRONTEND PAYLOAD MONITOR
+    console.log("=========================================");
+    console.log("NETWORK MONITOR: PREPARING OUTGOING PAYLOAD");
+    console.log("The frontend is packaging up these exact values:");
+    console.log({
+      email: sanitizedEmail,
+      otp: otpCode,
+      newPassword: newPassword
+    });
+    console.log("=========================================");
 
     if (!newPassword || newPassword.length < 6) {
       setError('Password must be at least 6 characters long.');
@@ -106,27 +110,20 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    console.log("4. Validation clean. Dispatching Axios PUT request...");
-
-    // Submit payload to the production backend endpoint
+    // Call context handler
     const result = await resetPassword(sanitizedEmail, otpCode, newPassword);
 
-    // 🔴 DEBUG LOG: Inspect the returned object from AuthContext
-    console.log("=== DEBUG: CONTEXT RESPONSE RECEIVED ===");
-    console.log("Result Status:", result);
+    console.log("WIZARD STATE MANAGER: Processing result object:", result);
 
     if (result.success) {
-      console.log("✅ Success block triggered. Queueing toast and navigation...");
       addToast('Password updated successfully!', 'success');
       setTimeout(() => {
         navigate('/auth/login', { replace: true });
       }, 1500);
     } else {
-      console.error("❌ Error block triggered. Bounce-back initialized.");
-      console.error("Failure Reason:", result.error);
-      
+      console.warn("WIZARD STATE MANAGER: Action rejected by server. Bouncing back to OTP step.");
       setError(result.error || 'Reset failed. Your verification code may be invalid or expired.');
-      setCurrentStep('verify_otp'); // Bounce back to the OTP step if server rejects it
+      setCurrentStep('verify_otp'); 
     }
   };
 

@@ -19,7 +19,7 @@ import AgentDashboard from './pages/AgentDashboard';
 // New Auth Screens
 import LoginPage from './pages/Login.page';
 import RegisterPage from './pages/Register.page';
-import VerifyPhonePage from './pages/VerifyPhone.page';
+import VerifyPhonePage from './pages/VerifyPhone.page'; // Your OTP page
 import ForgotPasswordPage from './pages/ForgotPassword.page';
 import ResetPasswordPage from './pages/ResetPassword.page';
 import AuthGuard from './components/Auth/AuthGuard';
@@ -74,14 +74,14 @@ function App() {
                 </PublicAuthRoute>
               }
             />
+            
+            {/* 🛠️ FIXED FOR PRODUCTION */}
+            {/* Removed PublicAuthRoute wrapper so authentication hooks don't forcefully boot the user out to the dashboard */}
             <Route
               path="/auth/verify-phone"
-              element={
-                <PublicAuthRoute>
-                  <VerifyPhonePage />
-                </PublicAuthRoute>
-              }
+              element={<VerifyPhonePage />}
             />
+            
             <Route
               path="/auth/forgot-password"
               element={
@@ -105,7 +105,7 @@ function App() {
             <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
             <Route path="/password-reset-otp" element={<Navigate to="/auth/reset-password" replace />} />
 
-            {/* Protected Routes — now using AuthGuard instead of ProtectedRoute */}
+            {/* Protected Routes — using AuthGuard */}
             <Route
               path="/dashboard"
               element={

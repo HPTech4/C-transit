@@ -90,6 +90,7 @@ export const registerStudent = async (req: Request, res: Response) => {
 
 export const verifyOTP = async (req: AuthenticatedRequest, res: Response) => {
   try {
+    // 1. Grab the userId directly from the auth token
     const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -100,27 +101,23 @@ export const verifyOTP = async (req: AuthenticatedRequest, res: Response) => {
       return res.status(400).json({ message: "OTP is required" });
     }
 
+    // 2. Look up the user by their ID instead of email
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!user) {
-      logger.warn(
-        { id: userId },
-        "auth.verify_otp_user_not_found"
-      );
+      logger.warn({ userId }, "auth.verify_otp_user_not_found");
       return res.status(404).json({ message: "User not found" });
     }
     if (user.isVerified) {
       return res.status(400).json({ message: "Email already verified" });
     }
 
+    // 3. Pass the user's stored email into the verification service
     const isValid = verifyOTPToken(user.email, otp);
     if (!isValid) {
-      logger.warn(
-        { email: user.email },
-        "auth.verify_otp_invalid_or_expired"
-      );
+      logger.warn({ email: user.email }, "auth.verify_otp_invalid_or_expired");
       return res.status(400).json({
         message: "Invalid or expired OTP. Please request a new one.",
       });
@@ -131,10 +128,7 @@ export const verifyOTP = async (req: AuthenticatedRequest, res: Response) => {
       data: { isVerified: true },
     });
 
-    logger.info(
-      { email: user.email },
-      "auth.otp_verified_successfully"
-    );
+    logger.info({ email: user.email }, "auth.otp_verified_successfully");
     res.status(200).json({
       message: "Email verified successfully. You can now log in.",
     });

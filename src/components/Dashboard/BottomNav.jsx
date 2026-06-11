@@ -17,16 +17,7 @@ export default function BottomNav({ activePage = 'home', onTabChange }) {
         const isActive = activePage === tab.id;
 
         if (tab.special) {
-          return (
-            <button
-              key={tab.id}
-              className={styles.nfcTab}
-              onClick={() => onTabChange(tab.id)}
-              aria-label={tab.label}
-            >
-              <Icon size={24} color="white" />
-            </button>
-          );
+         
         }
 
         return (

@@ -81,27 +81,17 @@ export function AuthProvider({ children }) {
 
     try {
       const payload = {
-  firstname: data.firstName,
-  lastname: data.lastName,
-  email: data.email,
-  matricNumber: data.matricNumber,
-  password: data.password,
+        firstname: data.firstName,
+        lastname: data.lastName,
+        email: data.email,
+        matricNumber: data.matricNumber,
+        password: data.password,
       };
 
-      // DEBUG — check what we're sending and what comes back
-      console.log('📤 Sending to backend:', payload);
-
       const response = await axios.post(`${AUTH_API_URL}/register`, payload);
-
-      console.log('✅ Register success:', response.data);
-
       return { success: true, data: response.data };
     } catch (err) {
-      // DEBUG — this tells us exactly what the server rejected
-      console.log('❌ Server rejected with:', err.response?.data);
-      console.log('❌ Status code:', err.response?.status);
-      console.log('❌ Full error:', err.response);
-
+     
       const errorMessage = err.response?.data?.message 
         || err.response?.data?.error
         || err.response?.data?.msg
@@ -113,13 +103,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const verifyOTP = useCallback(async (phone, otp) => {
+// OTP verification and resend functions
+  const verifyOTP = useCallback(async (email, otp) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await axios.post(`${AUTH_API_URL}/verify-otp`, {
-        phone,
+        email,
         otp,
       });
 
@@ -142,12 +133,12 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const resendOTP = useCallback(async (phone) => {
+  const resendOTP = useCallback(async (email) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await axios.post(`${AUTH_API_URL}/resend-otp`, { phone });
+      const response = await axios.post(`${AUTH_API_URL}/resend-otp`, { email });
       return { success: true, data: response.data };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again.';

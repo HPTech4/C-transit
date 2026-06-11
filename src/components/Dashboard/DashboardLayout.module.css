@@ -1,8 +1,13 @@
 @import '../../styles/tokens.css';
 
+/* ==========================================================================
+   DESKTOP BASE (≥ 1024px) — full-width app shell with sidebar space
+   ========================================================================== */
+
 .shell {
-  max-width: 390px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   min-height: 100vh;
   background-color: var(--bg-page);
   position: relative;
@@ -10,9 +15,13 @@
 }
 
 .main {
-  padding: 0 16px 100px 16px;
+  flex: 1;
+  padding: 80px 32px 40px 32px; /* top clears HeaderBar, no bottom nav on desktop */
   overflow-y: auto;
-  padding-top: 56px;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .overlay {
@@ -20,6 +29,34 @@
   inset: 0;
   background-color: rgba(0, 0, 0, 0.45);
   z-index: 150;
-  max-width: 390px;
-  margin: 0 auto;
+}
+
+/* ==========================================================================
+   TABLET (max-width: 1023px)
+   ========================================================================== */
+@media (max-width: 1023px) {
+  .main {
+    padding: 72px 20px 40px 20px;
+    max-width: 100%;
+  }
+}
+
+/* ==========================================================================
+   MOBILE (max-width: 768px) — restore phone shell behaviour
+   ========================================================================== */
+@media (max-width: 768px) {
+  .shell {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .main {
+    padding: 56px 16px 100px 16px; /* bottom clears BottomNav */
+    max-width: 100%;
+  }
+
+  .overlay {
+    max-width: 480px;
+    margin: 0 auto;
+  }
 }

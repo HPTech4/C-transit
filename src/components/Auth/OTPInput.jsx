@@ -8,7 +8,6 @@ export default function OTPInput({
   otp,
   onChange,
   error,
-  demoOTP = '248719',
   disabled = false,
   onComplete,
 }) {
@@ -55,13 +54,7 @@ export default function OTPInput({
       }
     }
 
-    // Arrow keys for navigation
-    if (e.key === 'ArrowLeft' && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-    if (e.key === 'ArrowRight' && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
+  
   };
 
   const handlePaste = (e) => {
@@ -118,12 +111,6 @@ export default function OTPInput({
       {error && (
         <p className={styles.errorMessage} role="alert">
           {error}
-        </p>
-      )}
-
-      {demoOTP && !error && (
-        <p className={styles.demoHint}>
-          Demo code: <code>{demoOTP}</code>
         </p>
       )}
     </div>

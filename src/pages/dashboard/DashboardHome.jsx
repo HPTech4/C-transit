@@ -3,7 +3,20 @@ import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContai
 import { FaWallet, FaArrowRight, FaWifi } from 'react-icons/fa';
 import styles from './DashboardHome.module.css';
 
-// StatsCard Component
+// ─── Status config (defined once, shared across component) ────────────────────
+const statusStyles = {
+  success: styles.statusSuccess,
+  failed:  styles.statusFailed,
+  pending: styles.statusPending,
+};
+
+const statusLabels = {
+  success: 'Success',
+  failed:  'Failed',
+  pending: 'Pending',
+};
+
+// ─── StatsCard ────────────────────────────────────────────────────────────────
 function StatsCard({ label, value, subValue, badge, badgeColor, trend, secondaryTrend }) {
   return (
     <div className={styles.statsCard}>
@@ -11,7 +24,7 @@ function StatsCard({ label, value, subValue, badge, badgeColor, trend, secondary
       <p className={styles.statsValue}>{value}</p>
       {subValue && <p className={styles.statsSubValue}>{subValue}</p>}
       {badge && (
-        <span className={`${styles.badge} ${styles[badgeColor]}`}>
+        <span className={`${styles.badge} ${styles[badgeColor] ?? ''}`}>
           {badge}
         </span>
       )}
@@ -29,17 +42,11 @@ function StatsCard({ label, value, subValue, badge, badgeColor, trend, secondary
   );
 }
 
-// TapRow Component
+// ─── TapRow ───────────────────────────────────────────────────────────────────
 function TapRow({ tap }) {
-  
+  // Normalise status so casing differences don't break lookups
+  const normalizedStatus = tap.status?.toLowerCase();
 
-// normalize the status before lookup
-const normalizedStatus = tap.status?.toLowerCase();
-
-// Then use normalizedStatus in the JSX:
-<span className={`${styles.statusBadge} ${statusStyles[normalizedStatus] ?? ''}`}>
-  {statusLabels[normalizedStatus] ?? tap.status}
-</span>
   return (
     <div className={styles.tapRow}>
       <div className={styles.tapIcon}>
@@ -53,14 +60,15 @@ const normalizedStatus = tap.status?.toLowerCase();
         <p className={styles.tapAmount}>
           -₦{Number(tap.amount || 0).toLocaleString('en-NG')}
         </p>
-        <span className={`${styles.statusBadge} ${statusStyles[tap.status]}`}>
-          {statusLabels[tap.status]}
+        <span className={`${styles.statusBadge} ${statusStyles[normalizedStatus] ?? ''}`}>
+          {statusLabels[normalizedStatus] ?? tap.status}
         </span>
       </div>
     </div>
   );
 }
 
+// ─── DashboardHome ────────────────────────────────────────────────────────────
 export default function DashboardHome({
   userData,
   walletBalance,
@@ -71,8 +79,6 @@ export default function DashboardHome({
   onTransfer,
   onViewAll,
 }) {
-  // 
-
   const [activeChartTab, setActiveChartTab] = useState('month');
   const [activeChartData, setActiveChartData] = useState([]);
 
@@ -84,20 +90,21 @@ export default function DashboardHome({
     }
   }, [activeChartTab, chartData]);
 
-  // ✅ SAFE ARRAY FIX (prevents crash)
+  // Guard: always use a safe array
   const safeTaps = Array.isArray(recentTaps) ? recentTaps : [];
 
   return (
-    <>
-      {/* Greeting Section */}
+    <div className={styles.dashboardHome}>
+
+      {/* ── Greeting ─────────────────────────────────────────────────────── */}
       <div className={styles.greeting}>
         <p className={styles.greetingTitle}>
-          Hello, {userData?.firstName || ''} 👋
+          Hello, {userData?.firstName || ''}
         </p>
         <p className={styles.greetingSubtitle}>Welcome back to C-Transit</p>
       </div>
 
-      {/* Wallet Card */}
+      {/* ── Wallet Card ───────────────────────────────────────────────────── */}
       <div className={styles.walletCard}>
         <p className={styles.walletLabel}>Wallet Balance</p>
         <p className={styles.walletBalance}>
@@ -105,18 +112,18 @@ export default function DashboardHome({
         </p>
         <p className={styles.walletAvailable}>Available Balance</p>
         <div className={styles.walletActions}>
-          <button className={styles.fundBtn} onClick={onFundWallet || (() => {})}>
+          <button className={styles.fundBtn} onClick={onFundWallet ?? (() => {})}>
             <FaWallet size={14} />
             Fund Wallet
           </button>
-          <button className={styles.transferBtn} onClick={onTransfer || (() => {})}>
+          <button className={styles.transferBtn} onClick={onTransfer ?? (() => {})}>
             <FaArrowRight size={14} />
             Transfer
           </button>
         </div>
       </div>
 
-      {/* Stats Row */}
+      {/* ── Stats Row ─────────────────────────────────────────────────────── */}
       <div className={styles.statsRow}>
         <StatsCard
           label="Total Trips"
@@ -143,11 +150,11 @@ export default function DashboardHome({
         />
       </div>
 
-      {/* Tap Activity Section */}
+      {/* ── Recent Tap Activity ───────────────────────────────────────────── */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>Recent Tap Activity</h3>
-          <button className={styles.viewAll} onClick={onViewAll || (() => {})}>
+          <button className={styles.viewAll} onClick={onViewAll ?? (() => {})}>
             View All
           </button>
         </div>
@@ -163,7 +170,7 @@ export default function DashboardHome({
         </div>
       </div>
 
-      {/* Fare Analytics Section */}
+      {/* ── Fare Analytics ────────────────────────────────────────────────── */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>Fare Analytics</h3>
@@ -205,6 +212,7 @@ export default function DashboardHome({
           )}
         </div>
       </div>
-    </>
+
+    </div>
   );
 }

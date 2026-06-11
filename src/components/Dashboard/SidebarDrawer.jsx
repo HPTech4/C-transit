@@ -1,75 +1,101 @@
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { FaTimes, FaHome, FaWallet, FaHistory, FaCreditCard, FaBell, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import {
+FaTimes,
+FaHome,
+FaWallet,
+FaHistory,
+FaCreditCard,
+FaBell,
+FaUser,
+FaCog,
+FaSignOutAlt
+} from 'react-icons/fa';
 import styles from './SidebarDrawer.module.css';
 
-export default function SidebarDrawer({ isOpen, onClose, activePage, onNavigate }) {
-  const { user, logout } = useContext(AuthContext);
+export default function SidebarDrawer({
+isOpen,
+onClose,
+activePage,
+onNavigate
+}) {
+const { user, logout } = useContext(AuthContext);
 
-  // Get user initials
-  const userInitials = (user?.name || 'User')
-    .split(' ')
-    .slice(0, 2)
-    .map(n => n[0].toUpperCase())
-    .join('');
+const userInitials = (user?.name || 'User')
+.split(' ')
+.slice(0, 2)
+.map(n => n[0].toUpperCase())
+.join('');
 
-  const navItems = [
-    { id: 'home', label: 'Dashboard', icon: FaHome },
-    { id: 'wallet', label: 'Wallet', icon: FaWallet },
-    { id: 'history', label: 'Tap History', icon: FaHistory },
-    { id: 'card', label: 'NFC Card', icon: FaCreditCard },
-    { id: 'notifications', label: 'Notifications', icon: FaBell },
-    { id: 'profile', label: 'Profile', icon: FaUser },
-    { id: 'settings', label: 'Settings', icon: FaCog },
-  ];
+const navItems = [
+{ id: 'home', label: 'Dashboard', icon: FaHome },
+{ id: 'wallet', label: 'Wallet', icon: FaWallet },
+{ id: 'history', label: 'Tap History', icon: FaHistory },
+{ id: 'notifications', label: 'Notifications', icon: FaBell },
+{ id: 'profile', label: 'Profile', icon: FaUser },
+{ id: 'settings', label: 'Settings', icon: FaCog },
+];
 
-  const handleLogout = () => {
-    logout();
-    onClose();
-  };
+const handleLogout = () => {
+logout();
+onClose();
+};
 
-  return (
-    <>
-      <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}>
-        {/* Close Button */}
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Close sidebar">
-          <FaTimes />
-        </button>
+return (
+<>
+{isOpen && ( <div className={styles.overlay} onClick={onClose} />
+)}
 
-        {/* User Section */}
-        <div className={styles.userSection}>
-          <div className={styles.avatar}>{userInitials}</div>
-          <p className={styles.userName}>{user?.name || 'User'}</p>
-          <p className={styles.userEmail}>{user?.email || 'user@ctransit.com'}</p>
-          <span className={styles.roleBadge}>Passenger</span>
-        </div>
+```
+  <aside className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}>
+    <button
+      className={styles.closeBtn}
+      onClick={onClose}
+      aria-label="Close sidebar"
+    >
+      <FaTimes />
+    </button>
 
-        {/* Navigation Section */}
-        <nav className={styles.navSection}>
-          {navItems.map(item => {
-            const Icon = item.icon;
-            const isActive = activePage === item.id;
-            return (
-              <button
-                key={item.id}
-                className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-                onClick={() => onNavigate(item.id)}
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+    <div className={styles.userSection}>
+      <div className={styles.avatar}>{userInitials}</div>
+      <p className={styles.userName}>{user?.name || 'User'}</p>
+      <p className={styles.userEmail}>
+        {user?.email || 'user@ctransit.com'}
+      </p>
+      <span className={styles.roleBadge}>Passenger</span>
+    </div>
 
-        {/* Logout Section */}
-        <div className={styles.logoutSection}>
-          <button className={styles.logoutBtn} onClick={handleLogout}>
-            <FaSignOutAlt size={20} />
-            <span>Logout</span>
+    <nav className={styles.navSection}>
+      {navItems.map(item => {
+        const Icon = item.icon;
+        const isActive = activePage === item.id;
+
+        return (
+          <button
+            key={item.id}
+            className={`${styles.navItem} ${
+              isActive ? styles.navItemActive : ''
+            }`}
+            onClick={() => {
+              onNavigate(item.id);
+              onClose();
+            }}
+          >
+            <Icon size={20} />
+            <span>{item.label}</span>
           </button>
-        </div>
-      </div>
-    </>
-  );
+        );
+      })}
+    </nav>
+
+    <div className={styles.logoutSection}>
+      <button className={styles.logoutBtn} onClick={handleLogout}>
+        <FaSignOutAlt size={20} />
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+</>
+
+);
 }

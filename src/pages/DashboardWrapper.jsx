@@ -24,7 +24,7 @@ export default function DashboardWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ defined first so fetchDashboardData can reference it
+  // ✅ Defined first so fetchDashboardData can reference it
   const handleLogout = useCallback(() => {
     localStorage.removeItem('authToken');
     logout();
@@ -46,6 +46,7 @@ export default function DashboardWrapper() {
         Authorization: `Bearer ${token}`,
       };
 
+      // 1. Fetch Profile Data (Core requirement)
       const userResponse = await axios.get(
         `${USER_API_URL}/users/myprofile`,
         { headers }
@@ -53,12 +54,31 @@ export default function DashboardWrapper() {
 
       setUserData(userResponse.data);
       setWalletBalance(userResponse.data?.wallet?.balance || 0);
+      setError(null); // Profile loaded successfully, clear global error
 
-     
+      // 2. Fetch Trip History (Isolated so a backend 404 won't break the dashboard)
+      try {
+        const tripsResponse = await axios.get(
+          `${USER_API_URL}/transfers/history`,
+          { headers }
+        );
 
-      setError(null);
+        const tripsData = tripsResponse.data;
+
+        if (Array.isArray(tripsData)) {
+          setRecentTaps(tripsData.slice(0, 5));
+        } else {
+          console.error('Trips data is not an array:', tripsData);
+          setRecentTaps([]);
+        }
+      } catch (tripErr) {
+        // Log the 404 warning silently and fallback to an empty array
+        console.warn('Trip history endpoint not found/available yet:', tripErr.message);
+        setRecentTaps([]); 
+      }
+
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
+      console.error('Error fetching core dashboard data:', err);
 
       if (err.response?.status === 401) {
         handleLogout();

@@ -61,10 +61,10 @@ export default function VerifyPhonePage() {
 
     if (result.success) {
       // Animate boxes turning green
-      addToast('Phone verified successfully!', 'success');
+      addToast('OTP verified successfully!', 'success');
       setTimeout(() => {
         // Navigate to role selection or dashboard
-        navigate('/dashboard');
+        navigate('/login');
       }, 800);
     } else {
       setError(result.error || 'Invalid OTP. Please try again.');
@@ -95,7 +95,7 @@ export default function VerifyPhonePage() {
 
   return (
     <SharedAuthLayout
-      title="Verify Your Phone"
+      title="Verify Your one-time code"
       subtitle={`Enter the 6-digit code sent to ${phone}`}
     >
       <div className={styles.container}>

@@ -1,21 +1,47 @@
 @import "../../styles/tokens.css";
 
+/* ==========================================================================
+   DESKTOP BASE (≥ 1024px) — sidebar handles navigation, hide bottom nav
+   ========================================================================== */
+
 .nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 390px;
-  background-color: var(--bg-card);
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  padding: 8px 0 16px 0;
-  z-index: 200;
+  display: none; /* hidden on desktop — sidebar/header handles nav */
 }
 
+/* ==========================================================================
+   TABLET (max-width: 1023px) — show bottom nav, full width
+   ========================================================================== */
+@media (max-width: 1023px) {
+  .nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border);
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 8px 0 16px 0;
+    z-index: 200;
+  }
+}
+
+/* ==========================================================================
+   MOBILE (max-width: 768px) — constrain to match shell width
+   ========================================================================== */
+@media (max-width: 768px) {
+  .nav {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+  }
+}
+
+/* ── Tabs (shared across all sizes that show the nav) ───────────────────── */
 .tab {
   display: flex;
   flex-direction: column;
@@ -51,6 +77,7 @@
   background-color: var(--primary);
 }
 
+/* ── NFC centre button ───────────────────────────────────────────────────── */
 .nfcTab {
   width: 56px;
   height: 56px;

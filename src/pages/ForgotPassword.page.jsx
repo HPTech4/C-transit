@@ -88,6 +88,13 @@ export default function ResetPasswordPage() {
     setError('');
 
     const otpCode = otp.join('');
+    const sanitizedEmail = email.trim().toLowerCase();
+
+    // 🔴 DEBUG LOG: Inspect exactly what frontend is packaging up
+    console.log("=== DEBUG: SUBMITTING PASSWORD RESET ===");
+    console.log("1. Target Email:", sanitizedEmail);
+    console.log("2. Code Collected:", otpCode);
+    console.log("3. New Password Length:", newPassword.length);
 
     if (!newPassword || newPassword.length < 6) {
       setError('Password must be at least 6 characters long.');
@@ -99,15 +106,25 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    console.log("4. Validation clean. Dispatching Axios PUT request...");
+
     // Submit payload to the production backend endpoint
-    const result = await resetPassword(email.trim().toLowerCase(), otpCode, newPassword);
+    const result = await resetPassword(sanitizedEmail, otpCode, newPassword);
+
+    // 🔴 DEBUG LOG: Inspect the returned object from AuthContext
+    console.log("=== DEBUG: CONTEXT RESPONSE RECEIVED ===");
+    console.log("Result Status:", result);
 
     if (result.success) {
+      console.log("✅ Success block triggered. Queueing toast and navigation...");
       addToast('Password updated successfully!', 'success');
       setTimeout(() => {
         navigate('/auth/login', { replace: true });
       }, 1500);
     } else {
+      console.error("❌ Error block triggered. Bounce-back initialized.");
+      console.error("Failure Reason:", result.error);
+      
       setError(result.error || 'Reset failed. Your verification code may be invalid or expired.');
       setCurrentStep('verify_otp'); // Bounce back to the OTP step if server rejects it
     }

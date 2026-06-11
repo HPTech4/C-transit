@@ -1,22 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaArrowLeft, FaEdit, FaCheck, FaTimes, FaTrash } from 'react-icons/fa';
 import axios from 'axios';
 import styles from './ProfilePage.module.css';
 
-const User_API_URL = '/api';
+import { USER_API_URL } from './../../config/api';
 
 export default function ProfilePage({ userData, onBack }) {
   const [editMode, setEditMode] = useState(false);
+  
+  // Real parameters only: No dummy placeholder parameters
   const [formData, setFormData] = useState({
     firstName: userData?.firstName || '',
     lastName: userData?.lastName || '',
     email: userData?.email || '',
-    phoneNumber: userData?.phoneNumber || '',
     matricNumber: userData?.matricNumber || '',
-    address: userData?.address || '',
   });
+  
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState(null);
+
+  // Auto synchronizes values immediately after profile background load completes
+  useEffect(() => {
+    if (userData) {
+      setFormData({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        matricNumber: userData.matricNumber || '',
+      });
+    }
+  }, [userData]);
 
   const handleInputChange = (field, value) => {
     setFormData({
@@ -30,7 +43,14 @@ export default function ProfilePage({ userData, onBack }) {
       setSaveLoading(true);
       setSaveError(null);
       const token = localStorage.getItem('authToken');
-      await axios.put(`${User_API_URL}/users/myprofile`, formData, {
+      
+      // Submit specific parameters payload to backend router
+      await axios.put(`${USER_API_URL}/users/myprofile`, {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        matricNumber: formData.matricNumber.trim(),
+      }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -38,21 +58,18 @@ export default function ProfilePage({ userData, onBack }) {
       setEditMode(false);
     } catch (err) {
       console.error('Error saving profile:', err);
-      setSaveError('Failed to save changes. Please try again.');
+      setSaveError(err.response?.data?.message || 'Failed to save changes. Please try again.');
     } finally {
       setSaveLoading(false);
     }
   };
 
   const handleCancel = () => {
-    // Reset form back to original userData values
     setFormData({
       firstName: userData?.firstName || '',
       lastName: userData?.lastName || '',
       email: userData?.email || '',
-      phoneNumber: userData?.phoneNumber || '',
       matricNumber: userData?.matricNumber || '',
-      address: userData?.address || '',
     });
     setSaveError(null);
     setEditMode(false);
@@ -67,8 +84,12 @@ export default function ProfilePage({ userData, onBack }) {
         </button>
         <h1 className={styles.pageTitle}>Profile</h1>
         <button
+          type="button"
           className={styles.editBtn}
-          onClick={() => setEditMode(!editMode)}
+          onClick={() => {
+            if (editMode) handleCancel();
+            else setEditMode(true);
+          }}
         >
           {editMode ? <FaTimes size={20} /> : <FaEdit size={20} />}
         </button>
@@ -77,15 +98,18 @@ export default function ProfilePage({ userData, onBack }) {
       {/* Profile Avatar Section */}
       <div className={styles.avatarSection}>
         <div className={styles.avatar}>
-          {formData.firstName?.charAt(0)}{formData.lastName?.charAt(0)}
+          {formData.firstName?.charAt(0).toUpperCase()}
+          {formData.lastName?.charAt(0).toUpperCase()}
         </div>
-        <p className={styles.userInitials}>{formData.firstName} {formData.lastName}</p>
-        <p className={styles.userRole}>Passenger</p>
+        <p className={styles.userInitials}>
+          {userData?.fullname || `${formData.firstName} ${formData.lastName}`}
+        </p>
+        <p className={styles.userRole}>C-Transit Passenger Account</p>
       </div>
 
       {/* Profile Info Form */}
       <div className={styles.infoSection}>
-        <h3 className={styles.sectionTitle}>Personal Information</h3>
+        <h3 className={styles.sectionTitle}>Account Registration Data</h3>
 
         <div className={styles.formGroup}>
           <label className={styles.label}>First Name</label>
@@ -110,23 +134,12 @@ export default function ProfilePage({ userData, onBack }) {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Email</label>
+          <label className={styles.label}>Email Address</label>
           <input
             type="email"
             className={styles.input}
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
-            disabled={!editMode}
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Phone Number</label>
-          <input
-            type="tel"
-            className={styles.input}
-            value={formData.phoneNumber}
-            onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
             disabled={!editMode}
           />
         </div>
@@ -141,17 +154,6 @@ export default function ProfilePage({ userData, onBack }) {
             disabled={!editMode}
           />
         </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Address</label>
-          <input
-            type="text"
-            className={styles.input}
-            value={formData.address}
-            onChange={(e) => handleInputChange('address', e.target.value)}
-            disabled={!editMode}
-          />
-        </div>
       </div>
 
       {/* Save Error Message */}
@@ -163,6 +165,7 @@ export default function ProfilePage({ userData, onBack }) {
       {editMode && (
         <div className={styles.editActions}>
           <button
+            type="button"
             className={styles.saveBtn}
             onClick={handleSave}
             disabled={saveLoading}
@@ -171,6 +174,7 @@ export default function ProfilePage({ userData, onBack }) {
             {saveLoading ? 'Saving...' : 'Save Changes'}
           </button>
           <button
+            type="button"
             className={styles.cancelBtn}
             onClick={handleCancel}
             disabled={saveLoading}
@@ -180,15 +184,6 @@ export default function ProfilePage({ userData, onBack }) {
           </button>
         </div>
       )}
-
-      {/* Danger Zone */}
-      <div className={styles.dangerZone}>
-        <h3 className={styles.dangerTitle}>Account Management</h3>
-        <button className={styles.deleteAccountBtn}>
-          <FaTrash size={16} />
-          Delete Account
-        </button>
-      </div>
     </>
   );
 }

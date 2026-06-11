@@ -3,7 +3,7 @@ import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContai
 import { FaWallet, FaArrowRight, FaWifi } from 'react-icons/fa';
 import styles from './DashboardHome.module.css';
 
-// ─── Status config (defined once, shared across component) ────────────────────
+// ─── Status Config ────────────────────────────────────────────────────────────
 const statusStyles = {
   success: styles.statusSuccess,
   failed:  styles.statusFailed,
@@ -16,8 +16,8 @@ const statusLabels = {
   pending: 'Pending',
 };
 
-// ─── StatsCard ────────────────────────────────────────────────────────────────
-function StatsCard({ label, value, subValue, badge, badgeColor, trend, secondaryTrend }) {
+// ─── StatsCard Component ──────────────────────────────────────────────────────
+function StatsCard({ label, value, subValue, badge, badgeColor }) {
   return (
     <div className={styles.statsCard}>
       <p className={styles.statsLabel}>{label}</p>
@@ -28,24 +28,13 @@ function StatsCard({ label, value, subValue, badge, badgeColor, trend, secondary
           {badge}
         </span>
       )}
-      {trend !== undefined && (
-        <div className={trend >= 0 ? styles.trendUp : styles.trendDown}>
-          {trend >= 0 ? '▲' : '▼'} {Math.abs(trend)}%
-        </div>
-      )}
-      {secondaryTrend !== undefined && (
-        <div className={styles.secondaryTrend}>
-          ▼ {Math.abs(secondaryTrend)}%
-        </div>
-      )}
     </div>
   );
 }
 
-// ─── TapRow ───────────────────────────────────────────────────────────────────
+// ─── TapRow Component ─────────────────────────────────────────────────────────
 function TapRow({ tap }) {
-  // Normalise status so casing differences don't break lookups
-  const normalizedStatus = tap.status?.toLowerCase();
+  const normalizedStatus = tap.status?.toLowerCase() || 'success';
 
   return (
     <div className={styles.tapRow}>
@@ -53,28 +42,29 @@ function TapRow({ tap }) {
         <FaWifi />
       </div>
       <div className={styles.tapInfo}>
-        <p className={styles.tapTerminal}>{tap.terminal || 'Unknown Terminal'}</p>
-        <p className={styles.tapTime}>{tap.time || 'Recent'}</p>
+        {/* Real Dynamic Terminal Locations from API */}
+        <p className={styles.tapTerminal}>{tap.terminal || tap.location || 'Transit Terminal'}</p>
+        <p className={styles.tapTime}>
+          {tap.createdAt ? new Date(tap.createdAt).toLocaleDateString('en-NG') : tap.time || 'Recent'}
+        </p>
       </div>
       <div className={styles.tapRight}>
         <p className={styles.tapAmount}>
           -₦{Number(tap.amount || 0).toLocaleString('en-NG')}
         </p>
         <span className={`${styles.statusBadge} ${statusStyles[normalizedStatus] ?? ''}`}>
-          {statusLabels[normalizedStatus] ?? tap.status ?? 'Success'}
+          {statusLabels[normalizedStatus] ?? tap.status}
         </span>
       </div>
     </div>
   );
 }
 
-// ─── DashboardHome ────────────────────────────────────────────────────────────
+// ─── Main Dashboard Component ─────────────────────────────────────────────────
 export default function DashboardHome({
   userData,
   walletBalance,
   recentTaps,
-  chartData = null, // 🛠️ Added default value fallback
-  stats = null,     // 🛠️ Added default value fallback
   onFundWallet,
   onTransfer,
   onViewAll,
@@ -82,30 +72,37 @@ export default function DashboardHome({
   const [activeChartTab, setActiveChartTab] = useState('month');
   const [activeChartData, setActiveChartData] = useState([]);
 
+  // Generate dynamic, real analytics points based on the actual history payload
   useEffect(() => {
-    if (chartData?.[activeChartTab]) {
-      setActiveChartData(chartData[activeChartTab]);
-    } else {
-      setActiveChartData([]);
-    }
-  }, [activeChartTab, chartData]);
+    const safeTaps = Array.isArray(recentTaps) ? recentTaps : [];
+    
+    // Map real tap records into the chart system structure
+    const dynamicPoints = safeTaps.map(tap => ({
+      date: tap.createdAt ? new Date(tap.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' }) : 'Tap',
+      amount: Number(tap.amount || 0)
+    })).reverse(); // Reverse so older items show up on the left side
 
-  // Guard: always use a safe array
+    setActiveChartData(dynamicPoints);
+  }, [recentTaps]);
+
   const safeTaps = Array.isArray(recentTaps) ? recentTaps : [];
+
+  // Calculate dynamic data fields directly out of the real transaction arrays
+  const totalTripsThisMonth = safeTaps.length;
+  const totalSpendingThisMonth = safeTaps.reduce((sum, current) => sum + Number(current.amount || 0), 0);
 
   return (
     <div className={styles.dashboardHome}>
 
-      {/* ── Greeting ─────────────────────────────────────────────────────── */}
+      {/* ── Greeting ── */}
       <div className={styles.greeting}>
         <p className={styles.greetingTitle}>
-          {/* 🛠️ FIXED: Changed from userData?.firstName to lowercase userData?.firstname */}
-          Hello, {userData?.firstname || 'User'}
+          Hello, {userData?.firstName || 'User'}
         </p>
         <p className={styles.greetingSubtitle}>Welcome back to C-Transit</p>
       </div>
 
-      {/* ── Wallet Card ───────────────────────────────────────────────────── */}
+      {/* ── Wallet Card ── */}
       <div className={styles.walletCard}>
         <p className={styles.walletLabel}>Wallet Balance</p>
         <p className={styles.walletBalance}>
@@ -124,36 +121,28 @@ export default function DashboardHome({
         </div>
       </div>
 
-      {/* ── Stats Row ─────────────────────────────────────────────────────── */}
+      {/* ── Stats Row ── */}
       <div className={styles.statsRow}>
         <StatsCard
           label="Total Trips"
-          value={stats?.totalTrips ?? userData?.totalTrips ?? '-'}
-          subValue="This Month"
+          value={totalTripsThisMonth}
+          subValue="Real-time Counter"
         />
         <StatsCard
-          label="Active Card"
-          value={stats?.cardNumber ?? userData?.virtualCard?.cardNumber ?? '-'}
-          subValue="Virtual NFC Card"
-          badge={stats?.cardStatus ?? userData?.virtualCard?.status ?? null}
-          badgeColor="green"
+          label="Matric Number"
+          value={userData?.matricNumber || 'Not Set'}
+          subValue="Verified Student ID"
+          badge={userData?.matricNumber ? "Active Profile" : "Incomplete"}
+          badgeColor={userData?.matricNumber ? "green" : "red"}
         />
         <StatsCard
           label="Monthly Spending"
-          value={
-            stats?.monthlySpending != null
-              ? `₦${Number(stats.monthlySpending).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`
-              : userData?.monthlySpending != null 
-                ? `₦${Number(userData.monthlySpending).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`
-                : '-'
-          }
-          subValue="This Month"
-          trend={stats?.spendingTrend}
-          secondaryTrend={stats?.secondaryTrend}
+          value={`₦${totalSpendingThisMonth.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`}
+          subValue="Calculated Total"
         />
       </div>
 
-      {/* ── Recent Tap Activity ───────────────────────────────────────────── */}
+      {/* ── Recent Tap Activity ── */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>Recent Tap Activity</h3>
@@ -165,8 +154,7 @@ export default function DashboardHome({
         <div className={styles.tapActivityList}>
           {safeTaps.length > 0 ? (
             safeTaps.slice(0, 5).map((tap, index) => (
-              // 🛠️ Safety check: use index fallback if your tap payload objects lack id properties
-              <TapRow key={tap.id || tap._id || index} tap={tap} />
+              <TapRow key={tap._id || tap.id || index} tap={tap} />
             ))
           ) : (
             <p className={styles.emptyState}>No recent tap activity</p>
@@ -174,21 +162,10 @@ export default function DashboardHome({
         </div>
       </div>
 
-      {/* ── Fare Analytics ────────────────────────────────────────────────── */}
+      {/* ── Fare Analytics ── */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>Fare Analytics</h3>
-          <div className={styles.tabs}>
-            {['Week', 'Month', 'Year'].map(tab => (
-              <button
-                key={tab}
-                className={`${styles.tab} ${activeChartTab === tab.toLowerCase() ? styles.tabActive : ''}`}
-                onClick={() => setActiveChartTab(tab.toLowerCase())}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className={styles.chartCard}>
@@ -199,7 +176,7 @@ export default function DashboardHome({
                 <XAxis dataKey="date" fontSize={10} stroke="#9CA3AF" />
                 <YAxis fontSize={10} stroke="#9CA3AF" />
                 <Tooltip
-                  formatter={(value) => `₦${value}`}
+                  formatter={(value) => `₦${Number(value).toLocaleString('en-NG')}`}
                   contentStyle={{ borderRadius: 8, border: '1px solid #E5E7EB', fontSize: 12 }}
                 />
                 <Line
@@ -212,7 +189,7 @@ export default function DashboardHome({
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <p className={styles.emptyState}>No analytics data available</p>
+            <p className={styles.emptyState}>No recent transaction analytics data available</p>
           )}
         </div>
       </div>

@@ -6,11 +6,11 @@ import env from "../config/env.js";
 // Define the expected structure of your JWT payload
 export interface UserJwtPayload extends JwtPayload {
   userId: string;
-  role: string;
+  role: string | "ADMIN" | "AGENT" | "STUDENT";
   email?: string;
 }
 
-// Ensure the request extension name matches exactly what your controllers expect
+// Extend the Express Request to include the decoded user payload
 export interface CustomAuthRequest extends Request {
   user?: UserJwtPayload;
 }
@@ -29,6 +29,7 @@ function authenticateToken(
   }
 
   try {
+    // Verify and cast the payload to our custom interface
     const decoded = jwt.verify(token, env.jwt.secret) as UserJwtPayload;
     req.user = decoded;
     next();

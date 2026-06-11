@@ -5,7 +5,7 @@ import { authenticateToken } from '../middleware/auth.middleware.js';
 const router = Router();
 
 router.post('/register', registerStudent);
-router.post('/verify-otp', verifyOTP);
+router.post('/verify-otp', authenticateToken, verifyOTP);
 router.post('/resend-otp', resendOTP);
 router.post('/login', loginStudent);
 router.post('/logout', authenticateToken, logoutStudent); // NOT TESTED YET

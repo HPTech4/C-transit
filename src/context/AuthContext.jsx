@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
       setIsLoading(false);
     }
   }, []);
-  
+
 // OTP verification and related functions
   const verifyOTP = useCallback(async (email, otp) => {
     setIsLoading(true);
@@ -190,6 +190,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  
   const logout = useCallback(() => {
     clearSession();
   }, [clearSession]);

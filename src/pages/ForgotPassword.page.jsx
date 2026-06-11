@@ -1,27 +1,31 @@
-import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useContext } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
 import InputField from '../components/Auth/InputField';
+import OTPInput from '../components/Auth/OTPInput';
 import AuthButton from '../components/Auth/AuthButton';
-import { FaCheckCircle } from 'react-icons/fa';
-import { validateEmail } from '../utils/validation';
-import styles from './ForgotPassword.page.module.css';
+import styles from './ResetPassword.page.module.css';
 
-/**
- * Forgot Password Screen - Two states
- * State 1: Input email/phone + send button
- * State 2: Success confirmation with checkmark
- * Route: /auth/forgot-password
- */
-export default function ForgotPasswordPage() {
+export default function ResetPasswordPage() {
   const navigate = useNavigate();
-  const { forgotPassword, isLoading } = useContext(AuthContext);
+  const location = useLocation();
+  const { resetPassword, isLoading } = useContext(AuthContext);
 
-  const [state, setState] = useState('input'); // 'input' or 'success'
-  const [emailOrPhone, setEmailOrPhone] = useState('');
+  // Read the validated email from location state
+  const email = location.state?.email || '';
+  
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [toasts, setToasts] = useState([]);
+
+  useEffect(() => {
+    if (!email) {
+      setError('Session context lost. Please restart the forgot password process.');
+    }
+  }, [email]);
 
   const addToast = (message, type = 'info') => {
     const id = Math.random();
@@ -31,159 +35,106 @@ export default function ForgotPasswordPage() {
     }, 3500);
   };
 
-  const validateInput = () => {
-    setError('');
-
-    if (!emailOrPhone.trim()) {
-      setError('Email or phone is required');
-      return false;
-    }
-
-    if (emailOrPhone.includes('@')) {
-      if (!validateEmail(emailOrPhone)) {
-        setError('Please enter a valid email');
-        return false;
-      }
-    } else {
-      const phoneDigits = emailOrPhone.replace(/\D/g, '');
-      if (phoneDigits.length < 10) {
-        setError('Please enter a valid phone number');
-        return false;
-      }
-    }
-
-    return true;
-  };
-
-  const handleChange = (e) => {
-    setEmailOrPhone(e.target.value);
+  const handleOtpChange = (newOtp) => {
+    setOtp(newOtp);
     if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
-    if (!validateInput()) return;
+    const otpCode = otp.join('');
 
-    const result = await forgotPassword(emailOrPhone);
+    if (!email) {
+      setError('Unable to process: Missing email identity.');
+      return;
+    }
+
+    if (otpCode.length !== 6) {
+      setError('Please enter the full 6-digit validation OTP.');
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    // Call sanitized production hook
+    const result = await resetPassword(email, otpCode, newPassword);
 
     if (result.success) {
-      // Show success state
-      setState('success');
-      addToast('Reset code sent! Check your email or phone.', 'success');
-
-      // Auto redirect after 3 seconds
+      addToast('Password reset successful!', 'success');
       setTimeout(() => {
-        handleResetPassword();
-      }, 3000);
+        // Direct route to the correct nested route
+        navigate('/auth/login', { replace: true });
+      }, 1500);
     } else {
-      setError(result.error || 'Failed to send reset code. Please try again.');
-      addToast(result.error || 'Failed to send reset code', 'error');
+      setError(result.error || 'Password reset failed. Please check your code.');
     }
   };
 
-  const handleResetPassword = () => {
-    navigate('/auth/reset-password', {
-      state: { emailOrPhone },
-    });
-  };
-
-  const handleBack = () => {
-    if (state === 'success') {
-      setState('input');
-      setEmailOrPhone('');
-      setError('');
-    } else {
-      navigate('/auth/login');
-    }
-  };
-
-  // State 1: Input form
-  if (state === 'input') {
-    return (
-      <SharedAuthLayout
-        title="Forgot Password?"
-        subtitle="Enter your email or phone to reset it"
-      >
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <InputField
-            label="Email or Phone"
-            placeholder="admin@st.futminna.edu"
-            value={emailOrPhone}
-            onChange={handleChange}
-            error={error}
-            required
-            inputMode="email"
-            autoComplete="email"
-          />
-
-          <AuthButton
-            type="submit"
-            isLoading={isLoading}
-            disabled={isLoading}
-          >
-            Send Reset Code
-          </AuthButton>
-
-          <button
-            type="button"
-            onClick={handleBack}
-            className={styles.backButton}
-            disabled={isLoading}
-          >
-            ← Back to Login
-          </button>
-        </form>
-
-        {toasts.length > 0 && (
-          <div className={styles.toastContainer}>
-            {toasts.map(toast => (
-              <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
-                {toast.message}
-              </div>
-            ))}
-          </div>
-        )}
-      </SharedAuthLayout>
-    );
-  }
-
-  // State 2: Success confirmation
   return (
     <SharedAuthLayout
-      title="Check Your Email"
-      subtitle="Password reset code sent successfully"
+      title="Reset Your Password"
+      subtitle={`Enter the code sent to ${email || 'your email'} and choose a new password`}
     >
-      <div className={styles.successContainer}>
-        <div className={styles.successAnimation}>
-          <FaCheckCircle className={styles.successIcon} />
+      <form onSubmit={handleSubmit} className={styles.form}>
+        {error && <div className={styles.errorMessage}>{error}</div>}
+
+        <div className={styles.otpGroup}>
+          <label className={styles.label}>Verification Code</label>
+          <OTPInput
+            otp={otp}
+            onChange={handleOtpChange}
+            disabled={isLoading || !email}
+          />
         </div>
 
-        <p className={styles.successMessage}>
-          We've sent a password reset code to <strong>{emailOrPhone}</strong>
-        </p>
+        <InputField
+          label="New Password"
+          type="password"
+          placeholder="••••••••"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          required
+          disabled={isLoading || !email}
+        />
 
-        <p className={styles.successSubtext}>
-          The code will expire in 30 minutes. Please check your email or SMS.
-        </p>
+        <InputField
+          label="Confirm New Password"
+          type="password"
+          placeholder="••••••••"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+          disabled={isLoading || !email}
+        />
 
         <AuthButton
-          type="button"
-          onClick={handleResetPassword}
-          disabled={isLoading}
+          type="submit"
+          isLoading={isLoading}
+          disabled={isLoading || !email || otp.some(digit => digit === '')}
         >
-          Continue to Reset Password
+          Update Password
         </AuthButton>
+      </form>
 
-        <button
-          type="button"
-          onClick={handleBack}
-          className={styles.backButton}
-          disabled={isLoading}
-        >
-          ← Change Email/Phone
-        </button>
-      </div>
+      {toasts.length > 0 && (
+        <div className={styles.toastContainer}>
+          {toasts.map(toast => (
+            <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
+              {toast.message}
+            </div>
+          ))}
+        </div>
+      )}
     </SharedAuthLayout>
   );
 }

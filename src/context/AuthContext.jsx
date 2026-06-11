@@ -108,10 +108,11 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     setError(null);
 
+    console.log("DEBUG: Sending OTP verification with:", { email, otp });
     try {
       const response = await axios.post(`${AUTH_API_URL}/verify-otp`, {
-        email,
-        otp,
+        email: email?.trim().toLowercase(),
+        otp: otp?.trim(),
       });
 
       const { token, user: userData } = response.data;
@@ -141,6 +142,7 @@ export function AuthProvider({ children }) {
       const response = await axios.post(`${AUTH_API_URL}/resend-otp`, { email });
       return { success: true, data: response.data };
     } catch (err) {
+      console.error("DEBUG: Backend Error Details:", err.response?.data);
       const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again.';
       setError(errorMessage);
       return { success: false, error: errorMessage };

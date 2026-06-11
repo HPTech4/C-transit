@@ -8,9 +8,9 @@ router.post('/register', registerStudent);
 router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);
 router.post('/login', loginStudent);
-router.post('/logout', authenticateToken, logoutStudent);
+router.post('/logout', authenticateToken, logoutStudent); // NOT TESTED YET
 
 // Protected route for confirming card details
-router.post('/confirm-card', authenticateToken, confirmCard);
+router.post('/confirm-card', authenticateToken, confirmCard); // NOT TESTED YET
 
 export default router;

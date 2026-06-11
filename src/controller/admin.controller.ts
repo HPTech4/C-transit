@@ -14,6 +14,7 @@ import {
 } from "../services/ledger.service.js";
 import { buildDeltaCommand } from "../utils/parser.js";
 import { getRedisClient, redisKeys } from "../config/redis.js";
+import { approveKyc, rejectKyc } from "../services/kyc.service.js";
 
 const router = express.Router();
 
@@ -205,6 +206,53 @@ router.post(
         error instanceof Error ? error.message : "Unknown error";
       logger.error({ err: errMessage }, "admin.terminal_registration_error");
       res.status(500).json({ error: "Failed to register terminal" });
+    }
+  }
+);
+
+router.post(
+  "/kyc/approve",
+  async (req: Request<object, object, { userId: string }>, res: Response) => {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    try {
+      const kyc = await approveKyc(userId);
+      logger.info({ userId }, "admin.kyc_approved");
+      res.json({ success: true, kyc });
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.kyc_approve_error");
+      res.status(500).json({ error: "Failed to approve KYC" });
+    }
+  }
+);
+
+router.post(
+  "/kyc/reject",
+  async (
+    req: Request<object, object, { userId: string; reason: string }>,
+    res: Response
+  ) => {
+    const { userId, reason } = req.body;
+
+    if (!userId || !reason) {
+      return res.status(400).json({ error: "userId and reason are required" });
+    }
+
+    try {
+      const kyc = await rejectKyc(userId, reason);
+      logger.info({ userId, reason }, "admin.kyc_rejected");
+      res.json({ success: true, kyc });
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.kyc_reject_error");
+      res.status(500).json({ error: "Failed to reject KYC" });
     }
   }
 );

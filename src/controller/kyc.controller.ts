@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 import {
   processIdCard,
   submitKyc,
@@ -71,11 +71,12 @@ export const submitKycData = async (
       });
     }
 
-    const kyc = await submitKyc(userId, kycData);
+    await submitKyc(userId, kycData);
 
     res.status(201).json({
       message: "KYC submitted successfully. Pending admin review.",
     });
+    
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error({ err: errMessage }, "kyc.submit_error");

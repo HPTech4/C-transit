@@ -151,6 +151,13 @@ const getKycByUserId = async (userId: string) => {
  */
 const approveKyc = async (userId: string) => {
   return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { matricNumber: true },
+    });
+
+    if (!user) throw new Error("User not found");
+
     const kyc = await tx.kyc.update({
       where: { userId },
       data: {
@@ -165,6 +172,21 @@ const approveKyc = async (userId: string) => {
       data: { isVerified: true },
     });
 
+    await tx.wallet.upsert({
+      where: { student_uid: user.matricNumber },
+      update: { is_linked: true },
+      create: {
+        student_uid: user.matricNumber,
+        balance: 1500,
+        is_linked: true,
+      },
+    });
+
+    logger.info(
+      { userId, matricNumber: user.matricNumber },
+      "kyc.approved_wallet_created"
+    );
+    
     return kyc;
   });
 };

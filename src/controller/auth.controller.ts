@@ -16,6 +16,7 @@ export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
     role?: string;
+    email?: string;
   };
 }
 
@@ -87,20 +88,25 @@ export const registerStudent = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyOTP = async (req: Request, res: Response) => {
+export const verifyOTP = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { email, otp } = req.body;
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Email and OTP are required" });
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { otp } = req.body;
+    if (!otp) {
+      return res.status(400).json({ message: "OTP is required" });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { id: userId },
     });
 
     if (!user) {
       logger.warn(
-        { email: email.toLowerCase() },
+        { id: userId },
         "auth.verify_otp_user_not_found"
       );
       return res.status(404).json({ message: "User not found" });
@@ -109,10 +115,10 @@ export const verifyOTP = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email already verified" });
     }
 
-    const isValid = verifyOTPToken(email.toLowerCase(), otp);
+    const isValid = verifyOTPToken(user.email, otp);
     if (!isValid) {
       logger.warn(
-        { email: email.toLowerCase() },
+        { email: user.email },
         "auth.verify_otp_invalid_or_expired"
       );
       return res.status(400).json({
@@ -121,12 +127,12 @@ export const verifyOTP = async (req: Request, res: Response) => {
     }
 
     await prisma.user.update({
-      where: { email: email.toLowerCase() },
+      where: { id: userId },
       data: { isVerified: true },
     });
 
     logger.info(
-      { email: email.toLowerCase() },
+      { email: user.email },
       "auth.otp_verified_successfully"
     );
     res.status(200).json({

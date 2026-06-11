@@ -79,34 +79,36 @@ async function processTransaction(
     }
 
     // CHECK 3 — Does student have enough balance?
+    // const currentBalance = parseFloat(wallet.balance.toString());
+    // if (currentBalance < tx.amount) {
+    //   txLog.warn(
+    //     { currentBalance, required: tx.amount },
+    //     "ingestion.insufficient_balance"
+    //   );
+    //   await publishToTerminal(
+    // terminalId,
+    //  `ACK:FAIL,${tx.student_uid},INSUFFICIENT_FUNDS`
+    //   );
+
+    // Auto-blacklist if not already — balance is too low
+    // await prisma.blacklist.upsert({
+    //where: { student_uid: tx.student_uid },
+    // update: { blacklistedAt: new Date() },
+    //  create: {
+    //   student_uid: tx.student_uid,
+    //    reason: "LOW_BALANCE",
+    //},
+    //  });
+
+    //  await broadcastDeltaToFleet(
+    // buildDeltaCommand("ADD", "BL", tx.student_uid)
+    // );
+    //   return;
+    //   }
+
     const currentBalance = parseFloat(wallet.balance.toString());
-    if (currentBalance < tx.amount) {
-      txLog.warn(
-        { currentBalance, required: tx.amount },
-        "ingestion.insufficient_balance"
-      );
-      await publishToTerminal(
-        terminalId,
-        `ACK:FAIL,${tx.student_uid},INSUFFICIENT_FUNDS`
-      );
 
-      // Auto-blacklist if not already — balance is too low
-      await prisma.blacklist.upsert({
-        where: { student_uid: tx.student_uid },
-        update: { blacklistedAt: new Date() },
-        create: {
-          student_uid: tx.student_uid,
-          reason: "LOW_BALANCE",
-        },
-      });
-
-      await broadcastDeltaToFleet(
-        buildDeltaCommand("ADD", "BL", tx.student_uid)
-      );
-      return;
-    }
-
-    // Fetch active driver BEFORE transaction
+    // Fetch active driver BEFORE opening transaction
     const terminal = await prisma.terminal.findUnique({
       where: { terminal_id: terminalId },
       select: { active_driver_uid: true },
@@ -124,7 +126,7 @@ async function processTransaction(
 
         if (existingTx) {
           txLog.debug("ingestion.duplicate_transaction_skipped");
-          return { duplicate: true, newBalance: 0 };
+          return { duplicate: true, newBalance: currentBalance };
         }
 
         // Record transaction
@@ -170,7 +172,7 @@ async function processTransaction(
     );
     txLog.info({ newBalance }, "ingestion.ack_sent_to_terminal");
 
-    // Post-deduction blacklist check
+    // Post-deduction blacklist check — balance dropped below threshold after deduction
     if (isBelowThreshold(newBalance)) {
       const blacklistCmd = buildDeltaCommand("ADD", "BL", tx.student_uid);
       txLog.info(

@@ -174,7 +174,7 @@ export function AuthProvider({ children }) {
     setError(null);
 
     try {
-      const response = await axios.put(`${USER_API_URL}/users/reset-password`, {
+      const response = await axios.post(`${USER_API_URL}/users/reset-password`, {
         email: email.trim().toLowerCase(),
         otp: otp.trim(),
         newPassword,

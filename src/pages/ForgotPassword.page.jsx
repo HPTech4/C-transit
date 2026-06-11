@@ -89,16 +89,6 @@ export default function ResetPasswordPage() {
     const otpCode = otp.join('');
     const sanitizedEmail = email.trim().toLowerCase();
 
-    // 🟢 FRONTEND PAYLOAD MONITOR
-    console.log("=========================================");
-    console.log("NETWORK MONITOR: PREPARING OUTGOING PAYLOAD");
-    console.log("The frontend is packaging up these exact values:");
-    console.log({
-      email: sanitizedEmail,
-      otp: otpCode,
-      newPassword: newPassword
-    });
-    console.log("=========================================");
 
     if (!newPassword || newPassword.length < 6) {
       setError('Password must be at least 6 characters long.');
@@ -113,7 +103,7 @@ export default function ResetPasswordPage() {
     // Call context handler
     const result = await resetPassword(sanitizedEmail, otpCode, newPassword);
 
-    console.log("WIZARD STATE MANAGER: Processing result object:", result);
+
 
     if (result.success) {
       addToast('Password updated successfully!', 'success');
@@ -121,7 +111,7 @@ export default function ResetPasswordPage() {
         navigate('/auth/login', { replace: true });
       }, 1500);
     } else {
-      console.warn("WIZARD STATE MANAGER: Action rejected by server. Bouncing back to OTP step.");
+    
       setError(result.error || 'Reset failed. Your verification code may be invalid or expired.');
       setCurrentStep('verify_otp'); 
     }

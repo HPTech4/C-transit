@@ -53,15 +53,15 @@ function TapRow({ tap }) {
         <FaWifi />
       </div>
       <div className={styles.tapInfo}>
-        <p className={styles.tapTerminal}>{tap.terminal}</p>
-        <p className={styles.tapTime}>{tap.time}</p>
+        <p className={styles.tapTerminal}>{tap.terminal || 'Unknown Terminal'}</p>
+        <p className={styles.tapTime}>{tap.time || 'Recent'}</p>
       </div>
       <div className={styles.tapRight}>
         <p className={styles.tapAmount}>
           -₦{Number(tap.amount || 0).toLocaleString('en-NG')}
         </p>
         <span className={`${styles.statusBadge} ${statusStyles[normalizedStatus] ?? ''}`}>
-          {statusLabels[normalizedStatus] ?? tap.status}
+          {statusLabels[normalizedStatus] ?? tap.status ?? 'Success'}
         </span>
       </div>
     </div>
@@ -73,8 +73,8 @@ export default function DashboardHome({
   userData,
   walletBalance,
   recentTaps,
-  chartData,
-  stats,
+  chartData = null, // 🛠️ Added default value fallback
+  stats = null,     // 🛠️ Added default value fallback
   onFundWallet,
   onTransfer,
   onViewAll,
@@ -99,7 +99,8 @@ export default function DashboardHome({
       {/* ── Greeting ─────────────────────────────────────────────────────── */}
       <div className={styles.greeting}>
         <p className={styles.greetingTitle}>
-          Hello, {userData?.firstName || ''}
+          {/* 🛠️ FIXED: Changed from userData?.firstName to lowercase userData?.firstname */}
+          Hello, {userData?.firstname || 'User'}
         </p>
         <p className={styles.greetingSubtitle}>Welcome back to C-Transit</p>
       </div>
@@ -127,14 +128,14 @@ export default function DashboardHome({
       <div className={styles.statsRow}>
         <StatsCard
           label="Total Trips"
-          value={stats?.totalTrips ?? '-'}
+          value={stats?.totalTrips ?? userData?.totalTrips ?? '-'}
           subValue="This Month"
         />
         <StatsCard
           label="Active Card"
-          value={stats?.cardNumber ?? '-'}
+          value={stats?.cardNumber ?? userData?.virtualCard?.cardNumber ?? '-'}
           subValue="Virtual NFC Card"
-          badge={stats?.cardStatus ?? null}
+          badge={stats?.cardStatus ?? userData?.virtualCard?.status ?? null}
           badgeColor="green"
         />
         <StatsCard
@@ -142,7 +143,9 @@ export default function DashboardHome({
           value={
             stats?.monthlySpending != null
               ? `₦${Number(stats.monthlySpending).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`
-              : '-'
+              : userData?.monthlySpending != null 
+                ? `₦${Number(userData.monthlySpending).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`
+                : '-'
           }
           subValue="This Month"
           trend={stats?.spendingTrend}
@@ -161,8 +164,9 @@ export default function DashboardHome({
 
         <div className={styles.tapActivityList}>
           {safeTaps.length > 0 ? (
-            safeTaps.slice(0, 5).map(tap => (
-              <TapRow key={tap.id} tap={tap} />
+            safeTaps.slice(0, 5).map((tap, index) => (
+              // 🛠️ Safety check: use index fallback if your tap payload objects lack id properties
+              <TapRow key={tap.id || tap._id || index} tap={tap} />
             ))
           ) : (
             <p className={styles.emptyState}>No recent tap activity</p>

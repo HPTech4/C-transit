@@ -109,7 +109,8 @@ export function AuthProvider({ children }) {
       setIsLoading(false);
     }
   }, []);
-
+  
+// OTP verification and related functions
   const verifyOTP = useCallback(async (email, otp) => {
     setIsLoading(true);
     setError(null);
@@ -120,10 +121,8 @@ export function AuthProvider({ children }) {
         otp: otp.trim(),
       });
 
-      const { token, user: userData } = response.data;
-      setSession(token, userData);
-
-      return { success: true, user: userData };
+    
+      return { success: true, data: response.data };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'OTP verification failed. Please try again.';
       setError(errorMessage);
@@ -131,7 +130,7 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  }, [setSession]);
+  }, []);
 
   const resendOTP = useCallback(async (email) => {
     setIsLoading(true);
@@ -151,6 +150,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+// Forgot password and reset password functions
   const forgotPassword = useCallback(async (email) => {
     setIsLoading(true);
     setError(null);

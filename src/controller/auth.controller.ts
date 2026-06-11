@@ -16,7 +16,6 @@ export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
     role?: string;
-    email?: string;
   };
 }
 
@@ -59,7 +58,7 @@ export const registerStudent = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         firstname,
         lastname,
@@ -74,19 +73,11 @@ export const registerStudent = async (req: Request, res: Response) => {
     const otp = generateOTP(email.toLowerCase());
     await sendOTPEmail(email.toLowerCase(), otp);
 
-    const temporaryToken = jwt.sign(
-      { userId: newUser.id, role: newUser.role, isVerified: false }, // Explicitly note they aren't verified
-      env.jwt.secret,
-      { expiresIn: "15m" } // Short expiration just for verification
-    );
-
     logger.info(
       { email: email.toLowerCase() },
       "auth.registration_successful_otp_sent"
     );
-
-    return res.status(201).json({
-      token: temporaryToken, // Send this token back to the frontend!
+    res.status(201).json({
       message: "Registration successful. Check your email for the OTP.",
     });
   } catch (error) {
@@ -96,37 +87,50 @@ export const registerStudent = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyOTP = async (req: AuthenticatedRequest, res: Response) => {
+export const verifyOTP = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: Missing temp token" });
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
     }
 
-    const { otp } = req.body;
-    if (!otp) {
-      return res.status(400).json({ message: "OTP is required" });
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      logger.warn(
+        { email: email.toLowerCase() },
+        "auth.verify_otp_user_not_found"
+      );
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ message: "Email already verified" });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.isVerified)
-      return res.status(400).json({ message: "Already verified" });
+    const isValid = verifyOTPToken(email.toLowerCase(), otp);
+    if (!isValid) {
+      logger.warn(
+        { email: email.toLowerCase() },
+        "auth.verify_otp_invalid_or_expired"
+      );
+      return res.status(400).json({
+        message: "Invalid or expired OTP. Please request a new one.",
+      });
+    }
 
-    const isValid = verifyOTPToken(user.email, otp);
-    if (!isValid)
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-
-    // Mark as verified
     await prisma.user.update({
-      where: { id: userId },
+      where: { email: email.toLowerCase() },
       data: { isVerified: true },
     });
 
-    return res.status(200).json({
-      message: "Email verified successfully! Welcome aboard.",
+    logger.info(
+      { email: email.toLowerCase() },
+      "auth.otp_verified_successfully"
+    );
+    res.status(200).json({
+      message: "Email verified successfully. You can now log in.",
     });
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";

@@ -4,25 +4,29 @@ import { AuthContext } from '../context/AuthContext';
 import SharedAuthLayout from '../components/Auth/SharedAuthLayout';
 import OTPInput from '../components/Auth/OTPInput';
 import AuthButton from '../components/Auth/AuthButton';
-import styles from './VerifyPhone.page.module.css';
+import styles from './VerifyPhone.page.module.css'; // You can rename this file to VerifyOtp.page.module.css later if needed
 
-/**
- * Verify Phone Screen - OTP Verification after registration
- * Route: /auth/verify-phone
- */
-export default function VerifyPhonePage() {
+export default function VerifyOtpPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { verifyOTP, resendOTP, isLoading } = useContext(AuthContext);
 
-  const phone = location.state?.phone || '+234 800 123 4567';
+  // Strictly look for email passed from registration router state
+  const email = location.state?.email || '';
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [resendCountdown, setResendCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [toasts, setToasts] = useState([]);
 
-  // Countdown timer for resend button
+  // Fail-safe protection: If no email was routed, reject the view
+  useEffect(() => {
+    if (!email) {
+      setError('Session context lost. Please return to the registration screen.');
+    }
+  }, [email]);
+
+  // Countdown timer logic
   useEffect(() => {
     if (resendCountdown <= 0) {
       setCanResend(true);
@@ -52,18 +56,21 @@ export default function VerifyPhonePage() {
   const handleVerify = async () => {
     const otpCode = otp.join('');
 
+    if (!email) {
+      setError('Unable to verify: Missing email context.');
+      return;
+    }
+
     if (otpCode.length !== 6) {
       setError('Please enter all 6 digits');
       return;
     }
 
-    const result = await verifyOTP(phone, otpCode);
+    const result = await verifyOTP(email, otpCode);
 
     if (result.success) {
-      // Animate boxes turning green
       addToast('OTP verified successfully!', 'success');
       setTimeout(() => {
-        // Navigate to role selection or dashboard
         navigate('/login');
       }, 800);
     } else {
@@ -72,14 +79,19 @@ export default function VerifyPhonePage() {
   };
 
   const handleResendCode = async () => {
-    const result = await resendOTP(phone);
+    if (!email) {
+      addToast('Cannot request code: Missing user details', 'error');
+      return;
+    }
+
+    const result = await resendOTP(email);
 
     if (result.success) {
       setCanResend(false);
       setResendCountdown(60);
       addToast('Code resent successfully', 'success');
     } else {
-      addToast('Failed to resend code. Please try again.', 'error');
+      addToast(result.error || 'Failed to resend code. Please try again.', 'error');
     }
   };
 
@@ -95,16 +107,15 @@ export default function VerifyPhonePage() {
 
   return (
     <SharedAuthLayout
-      title="Verify Your one-time code"
-      subtitle={`Enter the 6-digit code sent to ${phone}`}
+      title="Verify Your One-Time Code"
+      subtitle={`Enter the 6-digit code sent to ${email || 'your email'}`}
     >
       <div className={styles.container}>
         <OTPInput
           otp={otp}
           onChange={handleOtpChange}
           error={error}
-          demoOTP="248719"
-          disabled={isLoading}
+          disabled={isLoading || !email}
         />
 
         <div className={styles.resendSection}>
@@ -113,7 +124,7 @@ export default function VerifyPhonePage() {
               type="button"
               onClick={handleResendCode}
               className={styles.resendLink}
-              disabled={isLoading}
+              disabled={isLoading || !email}
             >
               Resend Code
             </button>
@@ -124,23 +135,25 @@ export default function VerifyPhonePage() {
           )}
         </div>
 
-        <AuthButton
-          type="button"
-          onClick={handleVerify}
-          isLoading={isLoading}
-          disabled={isLoading || otp.some(digit => digit === '')}
-        >
-          Verify
-        </AuthButton>
+        <div className={styles.actionContainer}>
+          <AuthButton
+            type="button"
+            onClick={handleVerify}
+            isLoading={isLoading}
+            disabled={isLoading || !email || otp.some(digit => digit === '')}
+          >
+            Verify
+          </AuthButton>
 
-        <button
-          type="button"
-          onClick={handleBack}
-          className={styles.backButton}
-          disabled={isLoading}
-        >
-          ← Back
-        </button>
+          <button
+            type="button"
+            onClick={handleBack}
+            className={styles.backButton}
+            disabled={isLoading}
+          >
+            &larr; Back
+          </button>
+        </div>
       </div>
 
       {toasts.length > 0 && (

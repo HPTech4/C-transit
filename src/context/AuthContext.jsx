@@ -10,6 +10,25 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Helper function to centralize session initialization/saving
+  const setSession = useCallback((token, userData) => {
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('authUser', JSON.stringify(userData));
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(userData);
+    setIsAuthenticated(true);
+  }, []);
+
+  // Helper function to completely wipe session data safely
+  const clearSession = useCallback(() => {
+    setUser(null);
+    setIsAuthenticated(false);
+    setError(null);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    delete axios.defaults.headers.common['Authorization'];
+  }, []);
+
   useEffect(() => {
     const initializeAuth = () => {
       try {
@@ -18,51 +37,41 @@ export function AuthProvider({ children }) {
 
         if (storedToken && storedUser) {
           try {
+            // Check JWT expiration safely
             const payload = JSON.parse(atob(storedToken.split('.')[1]));
             const isExpired = payload.exp * 1000 < Date.now();
+            
             if (isExpired) {
-              localStorage.removeItem('authToken');
-              localStorage.removeItem('authUser');
+              clearSession();
               return;
             }
+            
             const userData = JSON.parse(storedUser);
-            setUser(userData);
-            setIsAuthenticated(true);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+            setSession(storedToken, userData);
           } catch {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('authUser');
+            clearSession();
           }
         }
       } catch (err) {
-        console.error('Error initializing auth:', err);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
+        clearSession();
       }
     };
 
     initializeAuth();
-  }, []);
+  }, [setSession, clearSession]);
 
-  const login = useCallback(async (emailOrPhone, password) => {
+  const login = useCallback(async (email, password) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await axios.post(`${AUTH_API_URL}/login`, {
-        email: emailOrPhone.includes('@') ? emailOrPhone : undefined,
-        phone: !emailOrPhone.includes('@') ? emailOrPhone : undefined,
+        email: email.trim().toLowerCase(),
         password,
       });
 
       const { token, user: userData } = response.data;
-
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('authUser', JSON.stringify(userData));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      setUser(userData);
-      setIsAuthenticated(true);
+      setSession(token, userData);
 
       return { success: true, user: userData };
     } catch (err) {
@@ -72,9 +81,8 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setSession]);
 
-  // ✅ UPDATED — with debug logs to find field name mismatch
   const register = useCallback(async (data) => {
     setIsLoading(true);
     setError(null);
@@ -83,7 +91,7 @@ export function AuthProvider({ children }) {
       const payload = {
         firstname: data.firstName,
         lastname: data.lastName,
-        email: data.email,
+        email: data.email.trim().toLowerCase(),
         matricNumber: data.matricNumber,
         password: data.password,
       };
@@ -91,7 +99,6 @@ export function AuthProvider({ children }) {
       const response = await axios.post(`${AUTH_API_URL}/register`, payload);
       return { success: true, data: response.data };
     } catch (err) {
-     
       const errorMessage = err.response?.data?.message 
         || err.response?.data?.error
         || err.response?.data?.msg
@@ -103,26 +110,18 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-// OTP verification and resend functions
   const verifyOTP = useCallback(async (email, otp) => {
     setIsLoading(true);
     setError(null);
 
-    console.log("DEBUG: Sending OTP verification with:", { email, otp });
     try {
       const response = await axios.post(`${AUTH_API_URL}/verify-otp`, {
-        email: email?.trim().toLowercase(),
-        otp: otp?.trim(),
+        email: email.trim().toLowerCase(),
+        otp: otp.trim(),
       });
 
       const { token, user: userData } = response.data;
-
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('authUser', JSON.stringify(userData));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      setUser(userData);
-      setIsAuthenticated(true);
+      setSession(token, userData);
 
       return { success: true, user: userData };
     } catch (err) {
@@ -132,17 +131,18 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setSession]);
 
   const resendOTP = useCallback(async (email) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await axios.post(`${AUTH_API_URL}/resend-otp`, { email });
+      const response = await axios.post(`${AUTH_API_URL}/resend-otp`, { 
+        email: email.trim().toLowerCase() 
+      });
       return { success: true, data: response.data };
     } catch (err) {
-      console.error("DEBUG: Backend Error Details:", err.response?.data);
       const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again.';
       setError(errorMessage);
       return { success: false, error: errorMessage };
@@ -151,16 +151,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const forgotPassword = useCallback(async (emailOrPhone) => {
+  const forgotPassword = useCallback(async (email) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const payload = emailOrPhone.includes('@')
-        ? { email: emailOrPhone }
-        : { phone: emailOrPhone };
-
-      const response = await axios.post(`${USER_API_URL}/users/forgot-password`, payload);
+      const response = await axios.post(`${USER_API_URL}/users/forgot-password`, { 
+        email: email.trim().toLowerCase() 
+      });
       return { success: true, data: response.data };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to process request. Please try again.';
@@ -171,18 +169,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const resetPassword = useCallback(async (emailOrPhone, otp, newPassword) => {
+  const resetPassword = useCallback(async (email, otp, newPassword) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const payload = emailOrPhone.includes('@')
-        ? { email: emailOrPhone }
-        : { phone: emailOrPhone };
-
       const response = await axios.put(`${AUTH_API_URL}/reset-password`, {
-        ...payload,
-        otp,
+        email: email.trim().toLowerCase(),
+        otp: otp.trim(),
         newPassword,
       });
 
@@ -197,13 +191,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    setUser(null);
-    setIsAuthenticated(false);
-    setError(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    delete axios.defaults.headers.common['Authorization'];
-  }, []);
+    clearSession();
+  }, [clearSession]);
 
   const value = {
     user,

@@ -8,31 +8,19 @@ import {
   FaShieldAlt,
   FaTrash,
   FaDownload,
-  FaIdCard,
   FaCheckCircle,
-  FaArrowRight,
-  FaUsers,
   FaLock,
+  FaUsers,
   FaInfoCircle,
+  FaIdCard,
+  FaCreditCard,
+  FaExclamationTriangle,
+  FaArrowRight,
+  FaWifi,
+  FaTimesCircle,
 } from 'react-icons/fa';
 import styles from './Settings.module.css';
-import PageTransition from '../components/PageTransition';
 
-/**
- * Settings & Preferences Component
- * 
- * Manages user settings including:
- * - General settings (language, theme, currency)
- * - Notification preferences
- * - Privacy & security settings
- * - Data management (export, delete account)
- * 
- * BACKEND INTEGRATION:
- * - GET /api/user/preferences (load saved preferences)
- * - PUT /api/user/preferences (save settings changes)
- * - POST /api/user/delete-account (delete account)
- * - GET /api/user/download-data (download user data)
- */
 export default function Settings() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('general');
@@ -41,7 +29,6 @@ export default function Settings() {
   const [actionModal, setActionModal] = useState({ title: '', message: '' });
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Mock preferences data (replace with API response)
   const [preferences, setPreferences] = useState({
     language: 'english',
     theme: 'light',
@@ -56,14 +43,13 @@ export default function Settings() {
   });
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('user_theme');
+    const savedTheme    = localStorage.getItem('user_theme');
     const savedLanguage = localStorage.getItem('user_language');
     const savedCurrency = localStorage.getItem('user_currency');
-
     if (savedTheme || savedLanguage || savedCurrency) {
-      setPreferences((previous) => ({
-        ...previous,
-        ...(savedTheme ? { theme: savedTheme } : {}),
+      setPreferences(prev => ({
+        ...prev,
+        ...(savedTheme    ? { theme: savedTheme }       : {}),
         ...(savedLanguage ? { language: savedLanguage } : {}),
         ...(savedCurrency ? { currency: savedCurrency } : {}),
       }));
@@ -72,20 +58,13 @@ export default function Settings() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = preferences.theme;
-    document.documentElement.lang = preferences.language === 'yoruba' ? 'yo' : preferences.language === 'igbo' ? 'ig' : 'en';
-    localStorage.setItem('user_theme', preferences.theme);
+    localStorage.setItem('user_theme',    preferences.theme);
     localStorage.setItem('user_language', preferences.language);
     localStorage.setItem('user_currency', preferences.currency);
   }, [preferences.theme, preferences.language, preferences.currency]);
 
-  // BACKEND: PUT /api/user/preferences
-  // Send: { preferences object }
-  // Response: { success: true, preferences: {...updatedPrefs} }
-  const handleSavePreferences = async (key, value) => {
-    const updated = { ...preferences, [key]: value };
-    setPreferences(updated);
-    // TODO: Call API to save when backend is ready
-    console.log('Preferences updated:', updated);
+  const handleSavePreferences = (key, value) => {
+    setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
   const showToast = (message) => {
@@ -99,49 +78,60 @@ export default function Settings() {
     setShowActionModal(true);
   };
 
-  // BACKEND: POST /api/user/delete-account
-  // Send: { password: "user_password" }
-  // Response: { success: true, message: "Account deleted" }
-  const handleDeleteAccount = async () => {
-    // TODO: Call API and redirect to home
+  const handleDeleteAccount = () => {
     setShowDeleteConfirm(false);
     showToast('Delete request captured. Your account removal flow would continue here.');
   };
 
-  // BACKEND: GET /api/user/download-data
-  // Response: Download user data as JSON file
-  const handleDownloadData = async () => {
-    // TODO: Call API to download data
-    console.log('Downloading user data...');
+  const handleDownloadData = () => {
     showToast('Your data export has been prepared.');
   };
 
   const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-    },
+    hidden:  { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden:  { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
+  const tabs = [
+    { id: 'general',       label: 'General',            icon: <FaCog /> },
+    { id: 'notifications', label: 'Notifications',      icon: <FaBell /> },
+    { id: 'cards',         label: 'Card Linking',        icon: <FaCreditCard /> },
+    { id: 'kyc',           label: 'Verification',        icon: <FaIdCard /> },
+    { id: 'privacy',       label: 'Privacy & Security',  icon: <FaShieldAlt /> },
+    { id: 'dispute',       label: 'Report Dispute',      icon: <FaExclamationTriangle /> },
+  ];
+
   return (
-    <PageTransition>
-      <motion.div className={styles.settingsPage} initial="hidden" animate="visible" variants={containerVariants}>
+    <motion.div
+      className={styles.settingsPage}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Header */}
       <div className={styles.header}>
-        <motion.button className={styles.backBtn} onClick={() => navigate('/dashboard')} whileHover={{ x: -5 }}>
+        <motion.button
+          className={styles.backBtn}
+          onClick={() => navigate('/dashboard')}
+          whileHover={{ x: -4 }}
+        >
           <FaArrowLeft /> Back
         </motion.button>
         <h1>Settings & Preferences</h1>
       </div>
 
+      {/* Toast */}
       {successMessage && (
-        <motion.div className={styles.toast} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div
+          className={styles.toast}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <FaCheckCircle /> {successMessage}
         </motion.div>
       )}
@@ -149,37 +139,31 @@ export default function Settings() {
       <div className={styles.container}>
         {/* Tabs */}
         <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${activeTab === 'general' ? styles.active : ''}`}
-            onClick={() => setActiveTab('general')}
-          >
-            <FaCog /> General
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'notifications' ? styles.active : ''}`}
-            onClick={() => setActiveTab('notifications')}
-          >
-            <FaBell /> Notifications
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'privacy' ? styles.active : ''}`}
-            onClick={() => setActiveTab('privacy')}
-          >
-            <FaShieldAlt /> Privacy & Security
-          </button>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Tab Content */}
         <motion.div variants={itemVariants}>
-          {/* General Settings */}
-          {activeTab === 'general' && <GeneralSettings preferences={preferences} onSave={handleSavePreferences} />}
-
-          {/* Notification Settings */}
+          {activeTab === 'general' && (
+            <GeneralSettings preferences={preferences} onSave={handleSavePreferences} />
+          )}
           {activeTab === 'notifications' && (
             <NotificationSettings preferences={preferences} onSave={handleSavePreferences} />
           )}
-
-          {/* Privacy & Security */}
+          {activeTab === 'cards' && (
+            <CardLinking onShowInfo={openActionModal} onToast={showToast} />
+          )}
+          {activeTab === 'kyc' && (
+            <KYCSection navigate={navigate} />
+          )}
           {activeTab === 'privacy' && (
             <PrivacySettings
               onDownload={handleDownloadData}
@@ -187,17 +171,19 @@ export default function Settings() {
               onShowInfo={openActionModal}
             />
           )}
+          {activeTab === 'dispute' && (
+            <ReportDispute onToast={showToast} />
+          )}
         </motion.div>
       </div>
 
-      {/* Delete Account Confirmation Modal */}
+      {/* Modals */}
       {showDeleteConfirm && (
         <DeleteConfirmModal
           onConfirm={handleDeleteAccount}
           onCancel={() => setShowDeleteConfirm(false)}
         />
       )}
-
       {showActionModal && (
         <ActionInfoModal
           title={actionModal.title}
@@ -205,14 +191,11 @@ export default function Settings() {
           onClose={() => setShowActionModal(false)}
         />
       )}
-      </motion.div>
-    </PageTransition>
+    </motion.div>
   );
 }
 
-/**
- * General Settings Tab
- */
+/* ── General Settings ──────────────────────────────────────────────────────── */
 function GeneralSettings({ preferences, onSave }) {
   return (
     <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -223,11 +206,7 @@ function GeneralSettings({ preferences, onSave }) {
           <label>Language</label>
           <p>Choose your preferred language</p>
         </div>
-        <select
-          value={preferences.language}
-          onChange={(e) => onSave('language', e.target.value)}
-          className={styles.select}
-        >
+        <select value={preferences.language} onChange={e => onSave('language', e.target.value)} className={styles.select}>
           <option value="english">English</option>
           <option value="yoruba">Yoruba</option>
           <option value="igbo">Igbo</option>
@@ -246,17 +225,13 @@ function GeneralSettings({ preferences, onSave }) {
             className={`${styles.themeBtn} ${preferences.theme === 'light' ? styles.active : ''}`}
             onClick={() => onSave('theme', 'light')}
             whileHover={{ scale: 1.05 }}
-          >
-            ☀️ Light
-          </motion.button>
+          >☀️ Light</motion.button>
           <motion.button
             type="button"
             className={`${styles.themeBtn} ${preferences.theme === 'dark' ? styles.active : ''}`}
             onClick={() => onSave('theme', 'dark')}
             whileHover={{ scale: 1.05 }}
-          >
-            🌙 Dark
-          </motion.button>
+          >🌙 Dark</motion.button>
         </div>
       </div>
 
@@ -265,13 +240,7 @@ function GeneralSettings({ preferences, onSave }) {
           <label>Currency</label>
           <p>All amounts are displayed in Nigerian Naira (₦)</p>
         </div>
-        <select
-          value={preferences.currency}
-          onChange={(e) => onSave('currency', e.target.value)}
-          className={styles.select}
-          disabled
-          aria-disabled="true"
-        >
+        <select value={preferences.currency} className={styles.select} disabled>
           <option value="NGN">Nigerian Naira (₦)</option>
         </select>
       </div>
@@ -279,136 +248,387 @@ function GeneralSettings({ preferences, onSave }) {
   );
 }
 
-/**
- * Notification Settings Tab
- */
+/* ── Notification Settings ─────────────────────────────────────────────────── */
 function NotificationSettings({ preferences, onSave }) {
+  const methods = [
+    { key: 'emailNotif', label: 'Email Notifications', desc: 'Receive updates via email' },
+    { key: 'pushNotif',  label: 'Push Notifications',  desc: 'Receive app notifications' },
+    { key: 'smsNotif',   label: 'SMS Alerts',           desc: 'Receive text messages' },
+  ];
+
+  const types = [
+    { key: 'busAlerts',      label: '🚌 Bus Arrival Alerts',       desc: 'Get notified when bus is near' },
+    { key: 'paymentAlerts',  label: '💳 Payment Confirmations',    desc: 'Confirm after each transaction' },
+    { key: 'tripReminders',  label: '📍 Trip Reminders',           desc: 'Remind before your scheduled trips' },
+    { key: 'promos',         label: '🎉 Promotions & Offers',      desc: 'Latest deals and special offers' },
+  ];
+
   return (
     <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <h2>Notification Preferences</h2>
 
       <div className={styles.sectionGroup}>
         <h3>Notification Methods</h3>
-
-        <div className={styles.toggleItem}>
-          <div className={styles.toggleLabel}>
-            <label>Email Notifications</label>
-            <p>Receive updates via email</p>
+        {methods.map(m => (
+          <div key={m.key} className={styles.toggleItem}>
+            <div className={styles.toggleLabel}>
+              <label>{m.label}</label>
+              <p>{m.desc}</p>
+            </div>
+            <label className={styles.toggle}>
+              <input type="checkbox" checked={preferences[m.key]} onChange={e => onSave(m.key, e.target.checked)} />
+              <span className={styles.slider}></span>
+            </label>
           </div>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences.emailNotif}
-              onChange={(e) => onSave('emailNotif', e.target.checked)}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
-
-        <div className={styles.toggleItem}>
-          <div className={styles.toggleLabel}>
-            <label>Push Notifications</label>
-            <p>Receive app notifications</p>
-          </div>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences.pushNotif}
-              onChange={(e) => onSave('pushNotif', e.target.checked)}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
-
-        <div className={styles.toggleItem}>
-          <div className={styles.toggleLabel}>
-            <label>SMS Alerts</label>
-            <p>Receive text messages</p>
-          </div>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences.smsNotif}
-              onChange={(e) => onSave('smsNotif', e.target.checked)}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
+        ))}
       </div>
 
       <div className={styles.sectionGroup}>
         <h3>Notification Types</h3>
-
-        <div className={styles.toggleItem}>
-          <div className={styles.toggleLabel}>
-            <label>🚌 Bus Arrival Alerts</label>
-            <p>Get notified when bus is near</p>
+        {types.map(t => (
+          <div key={t.key} className={styles.toggleItem}>
+            <div className={styles.toggleLabel}>
+              <label>{t.label}</label>
+              <p>{t.desc}</p>
+            </div>
+            <label className={styles.toggle}>
+              <input type="checkbox" checked={preferences[t.key]} onChange={e => onSave(t.key, e.target.checked)} />
+              <span className={styles.slider}></span>
+            </label>
           </div>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences.busAlerts}
-              onChange={(e) => onSave('busAlerts', e.target.checked)}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
-
-        <div className={styles.toggleItem}>
-          <div className={styles.toggleLabel}>
-            <label>💳 Payment Confirmations</label>
-            <p>Confirm after each transaction</p>
-          </div>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences.paymentAlerts}
-              onChange={(e) => onSave('paymentAlerts', e.target.checked)}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
-
-        <div className={styles.toggleItem}>
-          <div className={styles.toggleLabel}>
-            <label>📍 Trip Reminders</label>
-            <p>Remind before your scheduled trips</p>
-          </div>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences.tripReminders}
-              onChange={(e) => onSave('tripReminders', e.target.checked)}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
-
-        <div className={styles.toggleItem}>
-          <div className={styles.toggleLabel}>
-            <label>🎉 Promotions & Offers</label>
-            <p>Latest deals and special offers</p>
-          </div>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences.promos}
-              onChange={(e) => onSave('promos', e.target.checked)}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
+        ))}
       </div>
     </motion.div>
   );
 }
 
-/**
- * Privacy & Security Tab
- */
-function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
-  const navigate = useNavigate();
+/* ── Card Linking ──────────────────────────────────────────────────────────── */
+function CardLinking({ onShowInfo, onToast }) {
+  const [cards, setCards] = useState([
+    { id: 1, uid: 'NFC-4A2F-9B1C', label: 'My Transit Card', linked: true, linkedAt: '2024-11-10' },
+  ]);
+  const [showLinkForm, setShowLinkForm] = useState(false);
+  const [newCardUid, setNewCardUid] = useState('');
+  const [newCardLabel, setNewCardLabel] = useState('');
 
+  const handleLink = () => {
+    if (!newCardUid.trim()) return;
+    const newCard = {
+      id: Date.now(),
+      uid: newCardUid.trim().toUpperCase(),
+      label: newCardLabel.trim() || 'My NFC Card',
+      linked: true,
+      linkedAt: new Date().toISOString().split('T')[0],
+    };
+    setCards(prev => [...prev, newCard]);
+    setNewCardUid('');
+    setNewCardLabel('');
+    setShowLinkForm(false);
+    onToast('NFC card linked successfully.');
+  };
+
+  const handleUnlink = (id) => {
+    setCards(prev => prev.filter(c => c.id !== id));
+    onToast('Card unlinked from your account.');
+  };
+
+  return (
+    <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div className={styles.cardSectionHeader}>
+        <div>
+          <h2>NFC Card Linking</h2>
+          <p className={styles.cardSectionDesc}>Manage physical NFC transit cards linked to your account.</p>
+        </div>
+        <motion.button
+          className={styles.linkCardBtn}
+          onClick={() => setShowLinkForm(v => !v)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <FaWifi /> Link New Card
+        </motion.button>
+      </div>
+
+      {/* Link Form */}
+      {showLinkForm && (
+        <motion.div
+          className={styles.linkForm}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className={styles.linkFormGrid}>
+            <div className={styles.formGroup}>
+              <label>Card UID</label>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="e.g. NFC-4A2F-9B1C"
+                value={newCardUid}
+                onChange={e => setNewCardUid(e.target.value)}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Card Label (optional)</label>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="e.g. My Transit Card"
+                value={newCardLabel}
+                onChange={e => setNewCardLabel(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className={styles.linkHint}>
+            📡 Find your card UID printed on the back of your physical NFC card.
+          </p>
+          <div className={styles.linkFormActions}>
+            <button className={styles.cancelBtn} onClick={() => setShowLinkForm(false)}>Cancel</button>
+            <motion.button
+              className={styles.actionBtn}
+              onClick={handleLink}
+              disabled={!newCardUid.trim()}
+              whileHover={{ scale: 1.02 }}
+            >
+              <FaWifi /> Link Card
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Linked Cards List */}
+      <div className={styles.cardsList}>
+        {cards.length === 0 ? (
+          <div className={styles.emptyCards}>
+            <FaCreditCard size={32} />
+            <p>No NFC cards linked yet.</p>
+          </div>
+        ) : (
+          cards.map(card => (
+            <div key={card.id} className={styles.cardRow}>
+              <div className={styles.cardRowIcon}>
+                <FaWifi />
+              </div>
+              <div className={styles.cardRowInfo}>
+                <p className={styles.cardRowLabel}>{card.label}</p>
+                <p className={styles.cardRowUid}>{card.uid}</p>
+                <p className={styles.cardRowDate}>Linked on {card.linkedAt}</p>
+              </div>
+              <div className={styles.cardRowRight}>
+                <span className={styles.linkedBadge}><FaCheckCircle /> Active</span>
+                <motion.button
+                  className={styles.unlinkBtn}
+                  onClick={() => handleUnlink(card.id)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaTimesCircle /> Unlink
+                </motion.button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── KYC Section ───────────────────────────────────────────────────────────── */
+function KYCSection({ navigate }) {
+  // Mock status — replace with real API value
+  const kycStatus = 'unverified'; // 'unverified' | 'pending' | 'verified'
+
+  const statusConfig = {
+    unverified: {
+      label: 'Not Verified',
+      color: styles.kycBadgeRed,
+      icon: <FaTimesCircle />,
+      desc: 'Your identity has not been verified. Verify now to unlock full account features.',
+    },
+    pending: {
+      label: 'Verification Pending',
+      color: styles.kycBadgeYellow,
+      icon: <FaInfoCircle />,
+      desc: 'Your documents are under review. This usually takes 1–2 business days.',
+    },
+    verified: {
+      label: 'Verified',
+      color: styles.kycBadgeGreen,
+      icon: <FaCheckCircle />,
+      desc: 'Your identity has been successfully verified.',
+    },
+  };
+
+  const config = statusConfig[kycStatus];
+
+  return (
+    <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <h2>Identity Verification (KYC)</h2>
+
+      <div className={styles.kycStatusCard}>
+        <div className={`${styles.kycBadge} ${config.color}`}>
+          {config.icon} {config.label}
+        </div>
+        <p className={styles.kycDesc}>{config.desc}</p>
+
+        {kycStatus !== 'verified' && (
+          <div className={styles.kycFeatures}>
+            <p className={styles.kycFeaturesTitle}>Verification unlocks:</p>
+            <ul>
+              <li><FaCheckCircle /> Higher wallet limits</li>
+              <li><FaCheckCircle /> Transfer to other users</li>
+              <li><FaCheckCircle /> Full transaction history</li>
+              <li><FaCheckCircle /> Priority support</li>
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {kycStatus !== 'verified' && kycStatus !== 'pending' && (
+        <motion.button
+          className={styles.kycBtn}
+          onClick={() => navigate('/kyc')}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <FaIdCard /> Start Verification <FaArrowRight />
+        </motion.button>
+      )}
+
+      {kycStatus === 'pending' && (
+        <div className={styles.kycPendingNote}>
+          ⏳ Your submission is being reviewed. We'll notify you once it's complete.
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+/* ── Report Dispute ────────────────────────────────────────────────────────── */
+function ReportDispute({ onToast }) {
+  const [form, setForm] = useState({
+    type: '',
+    transactionId: '',
+    description: '',
+    amount: '',
+  });
+  const [submitted, setSubmitted] = useState(false);
+
+  const disputeTypes = [
+    'Incorrect fare deduction',
+    'Duplicate charge',
+    'Card tap not recorded',
+    'Wallet not credited',
+    'Unauthorized transaction',
+    'Other',
+  ];
+
+  const handleChange = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!form.type || !form.description.trim()) return;
+    // TODO: POST /api/disputes
+    console.log('Dispute submitted:', form);
+    setSubmitted(true);
+    onToast('Dispute submitted. We will respond within 24–48 hours.');
+  };
+
+  if (submitted) {
+    return (
+      <motion.div
+        className={styles.settingsCard}
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <div className={styles.disputeSuccess}>
+          <FaCheckCircle className={styles.disputeSuccessIcon} />
+          <h2>Dispute Submitted</h2>
+          <p>Your dispute has been logged. Our support team will review and respond within 24–48 hours.</p>
+          <motion.button
+            className={styles.actionBtn}
+            onClick={() => { setSubmitted(false); setForm({ type: '', transactionId: '', description: '', amount: '' }); }}
+            whileHover={{ scale: 1.02 }}
+          >
+            Submit Another
+          </motion.button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <h2>Report a Dispute</h2>
+      <p className={styles.disputeSubtitle}>
+        Experiencing an issue with a transaction? Let us know and we'll resolve it.
+      </p>
+
+      <div className={styles.disputeForm}>
+        <div className={styles.formGroup}>
+          <label>Dispute Type <span className={styles.required}>*</span></label>
+          <select
+            className={styles.select}
+            value={form.type}
+            onChange={e => handleChange('type', e.target.value)}
+          >
+            <option value="">Select a dispute type</option>
+            {disputeTypes.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.disputeFormRow}>
+          <div className={styles.formGroup}>
+            <label>Transaction ID (optional)</label>
+            <input
+              className={styles.input}
+              type="text"
+              placeholder="e.g. TXN-20241115-001"
+              value={form.transactionId}
+              onChange={e => handleChange('transactionId', e.target.value)}
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label>Amount Disputed (optional)</label>
+            <input
+              className={styles.input}
+              type="number"
+              placeholder="e.g. 150"
+              value={form.amount}
+              onChange={e => handleChange('amount', e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label>Description <span className={styles.required}>*</span></label>
+          <textarea
+            className={styles.textarea}
+            rows={4}
+            placeholder="Describe the issue in detail..."
+            value={form.description}
+            onChange={e => handleChange('description', e.target.value)}
+          />
+        </div>
+
+        <motion.button
+          className={styles.actionBtn}
+          onClick={handleSubmit}
+          disabled={!form.type || !form.description.trim()}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <FaExclamationTriangle /> Submit Dispute
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Privacy Settings ──────────────────────────────────────────────────────── */
+function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
   return (
     <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <h2>Privacy & Security</h2>
@@ -422,10 +642,7 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
           </div>
           <motion.button
             className={styles.actionBtn}
-            type="button"
-            onClick={() => {
-              onShowInfo('Two-Factor Authentication', '2FA setup would connect to the backend here. For now, this is a working premium placeholder.');
-            }}
+            onClick={() => onShowInfo('Two-Factor Authentication', '2FA setup would connect to the backend here.')}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -443,10 +660,7 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
           </div>
           <motion.button
             className={styles.actionBtn}
-            type="button"
-            onClick={() => {
-              onShowInfo('Active Sessions', 'This section would list devices, IPs, and login timestamps once connected to the API.');
-            }}
+            onClick={() => onShowInfo('Active Sessions', 'This section would list devices, IPs, and login timestamps once connected to the API.')}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -457,22 +671,15 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
 
       <div className={styles.sectionGroup}>
         <h3>Data Management</h3>
-
         <div className={styles.actionItem}>
           <div>
             <label>📥 Download Your Data</label>
-            <p>Get a copy of all your data (GDPR compliance)</p>
+            <p>Get a copy of all your data</p>
           </div>
-          <motion.button
-            className={styles.actionBtn}
-            onClick={onDownload}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
+          <motion.button className={styles.actionBtn} onClick={onDownload} whileHover={{ scale: 1.02 }}>
             <FaDownload /> Download
           </motion.button>
         </div>
-
         <div className={styles.actionItem}>
           <div>
             <label>🗑️ Delete Account</label>
@@ -482,7 +689,6 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
             className={`${styles.actionBtn} ${styles.dangerBtn}`}
             onClick={onDelete}
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
             <FaTrash /> Delete
           </motion.button>
@@ -492,27 +698,21 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
       <div className={styles.sectionGroup}>
         <h3>Legal</h3>
         <div className={styles.legalLinks}>
-          <a href="#" className={styles.link}>
-            📄 Privacy Policy
-          </a>
-          <a href="#" className={styles.link}>
-            📋 Terms & Conditions
-          </a>
+          <a href="#" className={styles.link}>📄 Privacy Policy</a>
+          <a href="#" className={styles.link}>📋 Terms & Conditions</a>
         </div>
       </div>
     </motion.div>
   );
 }
 
+/* ── Modals ────────────────────────────────────────────────────────────────── */
 function ActionInfoModal({ title, message, onClose }) {
   return (
     <motion.div className={styles.modalOverlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <motion.div className={styles.modal} initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
         <h2>{title}</h2>
-        <p className={styles.infoText}>
-          <FaInfoCircle /> {message}
-        </p>
-
+        <p className={styles.infoText}><FaInfoCircle /> {message}</p>
         <div className={styles.modalActions}>
           <motion.button className={styles.cancelBtn} onClick={onClose} whileHover={{ scale: 1.02 }}>
             Close
@@ -523,37 +723,27 @@ function ActionInfoModal({ title, message, onClose }) {
   );
 }
 
-/**
- * Delete Account Confirmation Modal
- */
 function DeleteConfirmModal({ onConfirm, onCancel }) {
   const [password, setPassword] = useState('');
-
   return (
-    <motion.div className={styles.modalOverlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <motion.div className={styles.modal} initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}>
+    <motion.div className={styles.modalOverlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div className={styles.modal} initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
         <h2>Delete Account</h2>
         <p className={styles.warningText}>
           ⚠️ This action is permanent and cannot be undone. All your data will be deleted.
         </p>
-
         <div className={styles.formGroup}>
           <label>Enter your password to confirm</label>
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             placeholder="Enter password"
             className={styles.input}
           />
         </div>
-
         <div className={styles.modalActions}>
-          <motion.button
-            className={styles.cancelBtn}
-            onClick={onCancel}
-            whileHover={{ scale: 1.02 }}
-          >
+          <motion.button className={styles.cancelBtn} onClick={onCancel} whileHover={{ scale: 1.02 }}>
             Cancel
           </motion.button>
           <motion.button

@@ -17,11 +17,12 @@ export default function SidebarDrawer({
 isOpen,
 onClose,
 activePage,
-onNavigate
+onNavigate,
+UserData
 }) {
 const { user, logout } = useContext(AuthContext);
 
-const userInitials = (user?.name || 'User')
+const userInitials = (UserData?.name || 'User')
 .split(' ')
 .slice(0, 2)
 .map(n => n[0].toUpperCase())
@@ -58,9 +59,9 @@ return (
 
     <div className={styles.userSection}>
       <div className={styles.avatar}>{userInitials}</div>
-      <p className={styles.userName}>{user?.name || 'User'}</p>
+      <p className={styles.userName}>{UserData?.firstName || 'User'}</p>
       <p className={styles.userEmail}>
-        {user?.email || 'user@ctransit.com'}
+        {UserData?.email || 'user@ctransit.com'}
       </p>
       <span className={styles.roleBadge}>Passenger</span>
     </div>

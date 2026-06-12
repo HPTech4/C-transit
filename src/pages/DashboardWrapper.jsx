@@ -52,7 +52,7 @@ export default function DashboardWrapper() {
         { headers }
       );
       console.log('RAW API response:', userResponse.data);
-      const profile = userResponse.data.profile;
+      const profile = userResponse.data.data.profile;
       console.log('PROFILE:', profile);
       console.log('First name:', profile?.firstName);
       setUserData(profile);

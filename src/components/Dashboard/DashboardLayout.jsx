@@ -30,7 +30,12 @@ export default function DashboardLayout({ children, activePage = 'home', onNavig
       )}
 
       {/* Fixed Top Header */}
-      <HeaderBar onMenuClick={() => setSidebarOpen(true)} />
+      <HeaderBar
+      onMenuClick={() => setSidebarOpen(true)}
+      onSettingsClick={() => onNavigate('settings')}
+      onNotificationsClick={() => onNavigate('notifications')}
+        unreadCount={1}
+      />
 
       {/* Scrollable Page Content */}
       <main className={styles.main}>

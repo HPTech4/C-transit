@@ -1,10 +1,8 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { FaBars, FaWifi, FaCog, FaBell } from 'react-icons/fa';
 import styles from './HeaderBar.module.css';
 
-export default function HeaderBar({ onMenuClick }) {
-  const [unreadNotifications, setUnreadNotifications] = useState(1); // Demo: 1 unread notification
-
+export default function HeaderBar({ onMenuClick, onSettingsClick, onNotificationsClick, unreadCount = 0 }) {
   return (
     <header className={styles.header}>
       {/* Left: Hamburger Menu */}
@@ -20,14 +18,14 @@ export default function HeaderBar({ onMenuClick }) {
 
       {/* Right: Action Buttons */}
       <div className={styles.actions}>
-        <button className={styles.iconBtn} aria-label="Settings">
+        <button className={styles.iconBtn} aria-label="Settings" onClick={onSettingsClick}>
           <FaCog size={22} />
         </button>
 
         <div style={{ position: 'relative' }}>
-          <button className={styles.iconBtn} aria-label="Notifications">
+          <button className={styles.iconBtn} aria-label="Notifications" onClick={onNotificationsClick}>
             <FaBell size={22} />
-            {unreadNotifications > 0 && <div className={styles.notifBadge} />}
+            {unreadCount > 0 && <div className={styles.notifBadge} />}
           </button>
         </div>
       </div>

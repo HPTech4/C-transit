@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -19,7 +19,8 @@ import {
   FaWifi,
   FaTimesCircle,
 } from 'react-icons/fa';
-import styles from './Settings.module.css';
+import styles from './SettingsPage.module.css';
+import KYCModal from '../../components/KYCModal';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -28,6 +29,9 @@ export default function Settings() {
   const [showActionModal, setShowActionModal] = useState(false);
   const [actionModal, setActionModal] = useState({ title: '', message: '' });
   const [successMessage, setSuccessMessage] = useState('');
+
+  // FIX 3: use useRef instead of window property for timer
+  const toastTimerRef = useRef(null);
 
   const [preferences, setPreferences] = useState({
     language: 'english',
@@ -63,14 +67,21 @@ export default function Settings() {
     localStorage.setItem('user_currency', preferences.currency);
   }, [preferences.theme, preferences.language, preferences.currency]);
 
+  // FIX 3: cleanup timer on unmount to avoid state update on unmounted component
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
   const handleSavePreferences = (key, value) => {
     setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
   const showToast = (message) => {
     setSuccessMessage(message);
-    window.clearTimeout(window.__settingsToastTimer);
-    window.__settingsToastTimer = window.setTimeout(() => setSuccessMessage(''), 2500);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setSuccessMessage(''), 2500);
   };
 
   const openActionModal = (title, message) => {
@@ -84,6 +95,7 @@ export default function Settings() {
   };
 
   const handleDownloadData = () => {
+    // API not ready yet — toast only
     showToast('Your data export has been prepared.');
   };
 
@@ -98,12 +110,12 @@ export default function Settings() {
   };
 
   const tabs = [
-    { id: 'general',       label: 'General',            icon: <FaCog /> },
-    { id: 'notifications', label: 'Notifications',      icon: <FaBell /> },
-    { id: 'cards',         label: 'Card Linking',        icon: <FaCreditCard /> },
-    { id: 'kyc',           label: 'Verification',        icon: <FaIdCard /> },
-    { id: 'privacy',       label: 'Privacy & Security',  icon: <FaShieldAlt /> },
-    { id: 'dispute',       label: 'Report Dispute',      icon: <FaExclamationTriangle /> },
+    { id: 'general',       label: 'General',           icon: <FaCog /> },
+    { id: 'notifications', label: 'Notifications',     icon: <FaBell /> },
+    { id: 'cards',         label: 'Card Linking',       icon: <FaCreditCard /> },
+    { id: 'kyc',           label: 'Verification',       icon: <FaIdCard /> },
+    { id: 'privacy',       label: 'Privacy & Security', icon: <FaShieldAlt /> },
+    { id: 'dispute',       label: 'Report Dispute',     icon: <FaExclamationTriangle /> },
   ];
 
   return (
@@ -162,7 +174,7 @@ export default function Settings() {
             <CardLinking onShowInfo={openActionModal} onToast={showToast} />
           )}
           {activeTab === 'kyc' && (
-            <KYCSection navigate={navigate} />
+            <KYCSection onToast={showToast} />
           )}
           {activeTab === 'privacy' && (
             <PrivacySettings
@@ -225,13 +237,13 @@ function GeneralSettings({ preferences, onSave }) {
             className={`${styles.themeBtn} ${preferences.theme === 'light' ? styles.active : ''}`}
             onClick={() => onSave('theme', 'light')}
             whileHover={{ scale: 1.05 }}
-          >☀️ Light</motion.button>
+          > Light</motion.button>
           <motion.button
             type="button"
             className={`${styles.themeBtn} ${preferences.theme === 'dark' ? styles.active : ''}`}
             onClick={() => onSave('theme', 'dark')}
             whileHover={{ scale: 1.05 }}
-          >🌙 Dark</motion.button>
+          > Dark</motion.button>
         </div>
       </div>
 
@@ -257,10 +269,10 @@ function NotificationSettings({ preferences, onSave }) {
   ];
 
   const types = [
-    { key: 'busAlerts',      label: '🚌 Bus Arrival Alerts',       desc: 'Get notified when bus is near' },
-    { key: 'paymentAlerts',  label: '💳 Payment Confirmations',    desc: 'Confirm after each transaction' },
-    { key: 'tripReminders',  label: '📍 Trip Reminders',           desc: 'Remind before your scheduled trips' },
-    { key: 'promos',         label: '🎉 Promotions & Offers',      desc: 'Latest deals and special offers' },
+    { key: 'busAlerts',     label: ' Bus Arrival Alerts',    desc: 'Get notified when bus is near' },
+    { key: 'paymentAlerts', label: ' Payment Confirmations', desc: 'Confirm after each transaction' },
+    { key: 'tripReminders', label: ' Trip Reminders',        desc: 'Remind before your scheduled trips' },
+    { key: 'promos',        label: ' Promotions & Offers',   desc: 'Latest deals and special offers' },
   ];
 
   return (
@@ -349,7 +361,6 @@ function CardLinking({ onShowInfo, onToast }) {
         </motion.button>
       </div>
 
-      {/* Link Form */}
       {showLinkForm && (
         <motion.div
           className={styles.linkForm}
@@ -395,7 +406,6 @@ function CardLinking({ onShowInfo, onToast }) {
         </motion.div>
       )}
 
-      {/* Linked Cards List */}
       <div className={styles.cardsList}>
         {cards.length === 0 ? (
           <div className={styles.emptyCards}>
@@ -405,9 +415,7 @@ function CardLinking({ onShowInfo, onToast }) {
         ) : (
           cards.map(card => (
             <div key={card.id} className={styles.cardRow}>
-              <div className={styles.cardRowIcon}>
-                <FaWifi />
-              </div>
+              <div className={styles.cardRowIcon}><FaWifi /></div>
               <div className={styles.cardRowInfo}>
                 <p className={styles.cardRowLabel}>{card.label}</p>
                 <p className={styles.cardRowUid}>{card.uid}</p>
@@ -433,9 +441,11 @@ function CardLinking({ onShowInfo, onToast }) {
 }
 
 /* ── KYC Section ───────────────────────────────────────────────────────────── */
-function KYCSection({ navigate }) {
-  // Mock status — replace with real API value
-  const kycStatus = 'unverified'; // 'unverified' | 'pending' | 'verified'
+function KYCSection({ onToast }) {
+  const [showKYCModal, setShowKYCModal] = useState(false);
+
+  // FIX 2: kycStatus must be state so it can update after submission
+  const [kycStatus, setKycStatus] = useState('unverified'); // 'unverified' | 'pending' | 'verified'
 
   const statusConfig = {
     unverified: {
@@ -460,46 +470,61 @@ function KYCSection({ navigate }) {
 
   const config = statusConfig[kycStatus];
 
+  // FIX 4: update kycStatus to 'pending' on successful KYC submission
+  const handleKYCClose = (result) => {
+    setShowKYCModal(false);
+    if (result?.success) {
+      setKycStatus('pending');
+      onToast(result.message || 'KYC submitted successfully.');
+    }
+  };
+
   return (
-    <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <h2>Identity Verification (KYC)</h2>
+    <>
+      <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <h2>Identity Verification (KYC)</h2>
 
-      <div className={styles.kycStatusCard}>
-        <div className={`${styles.kycBadge} ${config.color}`}>
-          {config.icon} {config.label}
+        <div className={styles.kycStatusCard}>
+          <div className={`${styles.kycBadge} ${config.color}`}>
+            {config.icon} {config.label}
+          </div>
+          <p className={styles.kycDesc}>{config.desc}</p>
+
+          {kycStatus !== 'verified' && (
+            <div className={styles.kycFeatures}>
+              <p className={styles.kycFeaturesTitle}>Verification unlocks:</p>
+              <ul>
+                <li><FaCheckCircle /> Higher wallet limits</li>
+                <li><FaCheckCircle /> Transfer to other users</li>
+                <li><FaCheckCircle /> Full transaction history</li>
+                <li><FaCheckCircle /> Priority support</li>
+              </ul>
+            </div>
+          )}
         </div>
-        <p className={styles.kycDesc}>{config.desc}</p>
 
-        {kycStatus !== 'verified' && (
-          <div className={styles.kycFeatures}>
-            <p className={styles.kycFeaturesTitle}>Verification unlocks:</p>
-            <ul>
-              <li><FaCheckCircle /> Higher wallet limits</li>
-              <li><FaCheckCircle /> Transfer to other users</li>
-              <li><FaCheckCircle /> Full transaction history</li>
-              <li><FaCheckCircle /> Priority support</li>
-            </ul>
+        {kycStatus === 'unverified' && (
+          <motion.button
+            className={styles.kycBtn}
+            onClick={() => setShowKYCModal(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <FaIdCard /> Start Verification <FaArrowRight />
+          </motion.button>
+        )}
+
+        {kycStatus === 'pending' && (
+          <div className={styles.kycPendingNote}>
+             Your submission is being reviewed. We'll notify you once it's complete.
           </div>
         )}
-      </div>
+      </motion.div>
 
-      {kycStatus !== 'verified' && kycStatus !== 'pending' && (
-        <motion.button
-          className={styles.kycBtn}
-          onClick={() => navigate('/kyc')}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <FaIdCard /> Start Verification <FaArrowRight />
-        </motion.button>
+      {showKYCModal && (
+        <KYCModal onClose={handleKYCClose} />
       )}
-
-      {kycStatus === 'pending' && (
-        <div className={styles.kycPendingNote}>
-          ⏳ Your submission is being reviewed. We'll notify you once it's complete.
-        </div>
-      )}
-    </motion.div>
+    </>
   );
 }
 
@@ -528,7 +553,6 @@ function ReportDispute({ onToast }) {
 
   const handleSubmit = () => {
     if (!form.type || !form.description.trim()) return;
-    // TODO: POST /api/disputes
     console.log('Dispute submitted:', form);
     setSubmitted(true);
     onToast('Dispute submitted. We will respond within 24–48 hours.');
@@ -698,8 +722,8 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
       <div className={styles.sectionGroup}>
         <h3>Legal</h3>
         <div className={styles.legalLinks}>
-          <a href="#" className={styles.link}>📄 Privacy Policy</a>
-          <a href="#" className={styles.link}>📋 Terms & Conditions</a>
+          <a href="#" className={styles.link}> Privacy Policy</a>
+          <a href="#" className={styles.link}> Terms & Conditions</a>
         </div>
       </div>
     </motion.div>
@@ -707,13 +731,15 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
 }
 
 /* ── Modals ────────────────────────────────────────────────────────────────── */
+
+// FIX 7: apply singleAction class so the single Close button isn't left-aligned
 function ActionInfoModal({ title, message, onClose }) {
   return (
     <motion.div className={styles.modalOverlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <motion.div className={styles.modal} initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
         <h2>{title}</h2>
         <p className={styles.infoText}><FaInfoCircle /> {message}</p>
-        <div className={styles.modalActions}>
+        <div className={`${styles.modalActions} ${styles.singleAction}`}>
           <motion.button className={styles.cancelBtn} onClick={onClose} whileHover={{ scale: 1.02 }}>
             Close
           </motion.button>
@@ -723,24 +749,37 @@ function ActionInfoModal({ title, message, onClose }) {
   );
 }
 
+// FIX 5: password validation — require minimum 6 characters to match a real password
 function DeleteConfirmModal({ onConfirm, onCancel }) {
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleConfirm = () => {
+    if (password.length < 6) {
+      setError('Please enter your full account password.');
+      return;
+    }
+    setError('');
+    onConfirm(password);
+  };
+
   return (
     <motion.div className={styles.modalOverlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <motion.div className={styles.modal} initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
         <h2>Delete Account</h2>
         <p className={styles.warningText}>
-          ⚠️ This action is permanent and cannot be undone. All your data will be deleted.
+           This action is permanent and cannot be undone. All your data will be deleted.
         </p>
         <div className={styles.formGroup}>
           <label>Enter your password to confirm</label>
           <input
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={e => { setPassword(e.target.value); setError(''); }}
             placeholder="Enter password"
             className={styles.input}
           />
+          {error && <p className={styles.fieldError}>{error}</p>}
         </div>
         <div className={styles.modalActions}>
           <motion.button className={styles.cancelBtn} onClick={onCancel} whileHover={{ scale: 1.02 }}>
@@ -748,7 +787,7 @@ function DeleteConfirmModal({ onConfirm, onCancel }) {
           </motion.button>
           <motion.button
             className={`${styles.submitBtn} ${styles.dangerBtn}`}
-            onClick={onConfirm}
+            onClick={handleConfirm}
             disabled={!password}
             whileHover={{ scale: 1.02 }}
           >

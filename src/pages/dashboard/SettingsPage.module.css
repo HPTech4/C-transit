@@ -82,9 +82,7 @@
   flex-wrap: nowrap;
 }
 
-.tabs::-webkit-scrollbar {
-  display: none;
-}
+.tabs::-webkit-scrollbar { display: none; }
 
 .tab {
   display: flex;
@@ -164,13 +162,9 @@
   gap: 2rem;
 }
 
-.settingItem:last-of-type {
-  border-bottom: none;
-}
+.settingItem:last-of-type { border-bottom: none; }
 
-.settingLabel {
-  flex: 1;
-}
+.settingLabel { flex: 1; }
 
 .settingLabel label {
   display: block;
@@ -252,13 +246,9 @@
   transition: box-shadow 0.2s ease;
 }
 
-.toggleItem:hover {
-  box-shadow: 0 2px 8px rgba(26, 86, 219, 0.07);
-}
+.toggleItem:hover { box-shadow: 0 2px 8px rgba(26, 86, 219, 0.07); }
 
-.toggleLabel {
-  flex: 1;
-}
+.toggleLabel { flex: 1; }
 
 .toggleLabel label {
   display: block;
@@ -283,11 +273,7 @@
   flex-shrink: 0;
 }
 
-.toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.toggle input { opacity: 0; width: 0; height: 0; }
 
 .slider {
   position: absolute;
@@ -311,13 +297,8 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
-input:checked + .slider {
-  background-color: var(--primary, #1A56DB);
-}
-
-input:checked + .slider:before {
-  transform: translateX(22px);
-}
+input:checked + .slider { background-color: var(--primary, #1A56DB); }
+input:checked + .slider:before { transform: translateX(22px); }
 
 /* ── Action Item ───────────────────────────────────────────────────────────── */
 .actionItem {
@@ -333,13 +314,8 @@ input:checked + .slider:before {
   transition: box-shadow 0.2s ease;
 }
 
-.actionItem:hover {
-  box-shadow: 0 2px 8px rgba(26, 86, 219, 0.07);
-}
-
-.actionItem div {
-  flex: 1;
-}
+.actionItem:hover { box-shadow: 0 2px 8px rgba(26, 86, 219, 0.07); }
+.actionItem div { flex: 1; }
 
 .actionItem label {
   display: block;
@@ -379,15 +355,10 @@ input:checked + .slider:before {
   box-shadow: 0 6px 18px rgba(26, 86, 219, 0.25);
 }
 
-.actionBtn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+.actionBtn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .actionBtn.dangerBtn,
-.dangerBtn {
-  background: #dc2626;
-}
+.dangerBtn { background: #dc2626; }
 
 .actionBtn.dangerBtn:hover:not(:disabled) {
   background: #b91c1c;
@@ -395,11 +366,7 @@ input:checked + .slider:before {
 }
 
 /* ── Legal Links ───────────────────────────────────────────────────────────── */
-.legalLinks {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
+.legalLinks { display: flex; gap: 1rem; flex-wrap: wrap; }
 
 .link {
   display: inline-flex;
@@ -450,9 +417,7 @@ input:checked + .slider:before {
   flex-wrap: wrap;
 }
 
-.cardSectionHeader h2 {
-  margin: 0 0 0.3rem;
-}
+.cardSectionHeader h2 { margin: 0 0 0.3rem; }
 
 .cardSectionDesc {
   margin: 0;
@@ -509,11 +474,7 @@ input:checked + .slider:before {
   justify-content: flex-end;
 }
 
-.cardsList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
+.cardsList { display: flex; flex-direction: column; gap: 0.8rem; }
 
 .emptyCards {
   text-align: center;
@@ -521,15 +482,8 @@ input:checked + .slider:before {
   color: var(--text-secondary, #94a3b8);
 }
 
-.emptyCards svg {
-  margin-bottom: 0.8rem;
-  opacity: 0.4;
-}
-
-.emptyCards p {
-  margin: 0;
-  font-size: 0.9rem;
-}
+.emptyCards svg { margin-bottom: 0.8rem; opacity: 0.4; }
+.emptyCards p { margin: 0; font-size: 0.9rem; }
 
 .cardRow {
   display: flex;
@@ -542,9 +496,7 @@ input:checked + .slider:before {
   transition: box-shadow 0.2s ease;
 }
 
-.cardRow:hover {
-  box-shadow: 0 2px 10px rgba(26, 86, 219, 0.09);
-}
+.cardRow:hover { box-shadow: 0 2px 10px rgba(26, 86, 219, 0.09); }
 
 .cardRowIcon {
   width: 40px;
@@ -559,10 +511,7 @@ input:checked + .slider:before {
   flex-shrink: 0;
 }
 
-.cardRowInfo {
-  flex: 1;
-  min-width: 0;
-}
+.cardRowInfo { flex: 1; min-width: 0; }
 
 .cardRowLabel {
   font-weight: 600;
@@ -619,9 +568,7 @@ input:checked + .slider:before {
   transition: all 0.2s ease;
 }
 
-.unlinkBtn:hover {
-  background: #fecaca;
-}
+.unlinkBtn:hover { background: #fecaca; }
 
 /* ── KYC ───────────────────────────────────────────────────────────────────── */
 .kycStatusCard {
@@ -643,20 +590,9 @@ input:checked + .slider:before {
   margin-bottom: 0.8rem;
 }
 
-.kycBadgeGreen {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.kycBadgeYellow {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.kycBadgeRed {
-  background: #fee2e2;
-  color: #991b1b;
-}
+.kycBadgeGreen { background: #d1fae5; color: #065f46; }
+.kycBadgeYellow { background: #fef3c7; color: #92400e; }
+.kycBadgeRed { background: #fee2e2; color: #991b1b; }
 
 .kycDesc {
   font-size: 0.88rem;
@@ -665,9 +601,7 @@ input:checked + .slider:before {
   line-height: 1.6;
 }
 
-.kycFeatures {
-  margin-top: 0.8rem;
-}
+.kycFeatures { margin-top: 0.8rem; }
 
 .kycFeaturesTitle {
   font-size: 0.85rem;
@@ -693,10 +627,7 @@ input:checked + .slider:before {
   color: var(--text-secondary, #64748b);
 }
 
-.kycFeatures li svg {
-  color: #10b981;
-  flex-shrink: 0;
-}
+.kycFeatures li svg { color: #10b981; flex-shrink: 0; }
 
 .kycBtn {
   display: flex;
@@ -738,11 +669,7 @@ input:checked + .slider:before {
   line-height: 1.6;
 }
 
-.disputeForm {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-}
+.disputeForm { display: flex; flex-direction: column; gap: 1.2rem; }
 
 .disputeFormRow {
   display: grid;
@@ -750,11 +677,7 @@ input:checked + .slider:before {
   gap: 1rem;
 }
 
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
+.formGroup { display: flex; flex-direction: column; gap: 0.4rem; }
 
 .formGroup label {
   font-size: 0.83rem;
@@ -764,10 +687,7 @@ input:checked + .slider:before {
   letter-spacing: 0.04em;
 }
 
-.required {
-  color: #dc2626;
-  margin-left: 2px;
-}
+.required { color: #dc2626; margin-left: 2px; }
 
 .input {
   width: 100%;
@@ -808,10 +728,7 @@ input:checked + .slider:before {
   box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1);
 }
 
-.disputeSuccess {
-  text-align: center;
-  padding: 2rem 1rem;
-}
+.disputeSuccess { text-align: center; padding: 2rem 1rem; }
 
 .disputeSuccessIcon {
   font-size: 3rem;
@@ -819,9 +736,7 @@ input:checked + .slider:before {
   margin-bottom: 1rem;
 }
 
-.disputeSuccess h2 {
-  margin: 0 0 0.6rem;
-}
+.disputeSuccess h2 { margin: 0 0 0.6rem; }
 
 .disputeSuccess p {
   font-size: 0.9rem;
@@ -876,6 +791,11 @@ input:checked + .slider:before {
   margin-top: 1.5rem;
 }
 
+/* FIX 7: single-button modal actions */
+.modalActions.singleAction {
+  grid-template-columns: 1fr;
+}
+
 .cancelBtn {
   padding: 0.8rem 1.2rem;
   border: 1.5px solid var(--border, #e2e8f0);
@@ -888,9 +808,7 @@ input:checked + .slider:before {
   font-size: 0.9rem;
 }
 
-.cancelBtn:hover {
-  background: var(--border, #e2e8f0);
-}
+.cancelBtn:hover { background: var(--border, #e2e8f0); }
 
 .submitBtn {
   padding: 0.8rem 1.2rem;
@@ -909,18 +827,21 @@ input:checked + .slider:before {
   box-shadow: 0 6px 18px rgba(26, 86, 219, 0.25);
 }
 
-.submitBtn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+.submitBtn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.submitBtn.dangerBtn {
-  background: #dc2626;
-}
+.submitBtn.dangerBtn { background: #dc2626; }
 
 .submitBtn.dangerBtn:hover:not(:disabled) {
   background: #b91c1c;
   box-shadow: 0 6px 18px rgba(220, 38, 38, 0.2);
+}
+
+/* ── Field Error (FIX 5 — password validation feedback) ────────────────────── */
+.fieldError {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: #dc2626;
+  font-weight: 500;
 }
 
 /* ── Focus Visible ─────────────────────────────────────────────────────────── */
@@ -938,22 +859,10 @@ input:checked + .slider:before {
 
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .settingsPage {
-    padding: 1rem;
-  }
-
-  .header {
-    flex-direction: row;
-    margin-bottom: 1.2rem;
-  }
-
-  .header h1 {
-    font-size: 1.2rem;
-  }
-
-  .settingsCard {
-    padding: 1.3rem;
-  }
+  .settingsPage { padding: 1rem; }
+  .header { flex-direction: row; margin-bottom: 1.2rem; }
+  .header h1 { font-size: 1.2rem; }
+  .settingsCard { padding: 1.3rem; }
 
   .settingItem,
   .actionItem {
@@ -962,38 +871,16 @@ input:checked + .slider:before {
     gap: 0.8rem;
   }
 
-  .themeButtons {
-    min-width: 100%;
-  }
-
-  .select {
-    min-width: 100%;
-  }
+  .themeButtons { min-width: 100%; }
+  .select { min-width: 100%; }
 
   .linkFormGrid,
-  .disputeFormRow {
-    grid-template-columns: 1fr;
-  }
+  .disputeFormRow { grid-template-columns: 1fr; }
 
-  .cardRowRight {
-    flex-direction: row;
-    align-items: center;
-  }
+  .cardRowRight { flex-direction: row; align-items: center; }
+  .kycFeatures ul { grid-template-columns: 1fr; }
 
-  .kycFeatures ul {
-    grid-template-columns: 1fr;
-  }
-
-  .modal {
-    width: 95%;
-    padding: 1.4rem;
-  }
-
-  .modalActions {
-    grid-template-columns: 1fr;
-  }
-
-  .legalLinks {
-    flex-direction: column;
-  }
+  .modal { width: 95%; padding: 1.4rem; }
+  .modalActions { grid-template-columns: 1fr; }
+  .legalLinks { flex-direction: column; }
 }

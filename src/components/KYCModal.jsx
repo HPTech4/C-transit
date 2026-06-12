@@ -92,13 +92,13 @@ export default function KYCModal({ onClose }) {
     setError("");
 
     try {
-      // ✅ Correct endpoint: POST /api/kyc/submit
+      //  Correct endpoint: POST /api/kyc/submit
       // Backend expects JSON not FormData
       const response = await fetch(`${KYC_API_URL}/submit`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json", // ✅ JSON body
+          "Content-Type": "application/json", //  JSON body
         },
         body: JSON.stringify({
           studentName: extractedData.studentName,

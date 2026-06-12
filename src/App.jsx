@@ -7,8 +7,7 @@ import { AuthProvider } from './context/AuthContext';
 import Home from './pages/Home';
 import DashboardWrapper from './pages/DashboardWrapper';
 import UserProfile from './pages/UserProfile';
-import Settings from './pages/Settings';
-import KYC from './pages/KYC';
+import Settings from './pages/dashboard/SettingsPage';
 import TransferHistory from './pages/TransferHistory';
 import ReportDispute from './pages/ReportDispute';
 import AdminLogin from './pages/AdminLogin';
@@ -114,14 +113,7 @@ function App() {
                 </AuthGuard>
               }
             />
-            <Route
-              path="/kyc"
-              element={
-                <AuthGuard>
-                  <KYC />
-                </AuthGuard>
-              }
-            />
+           
             <Route
               path="/card-linking"
               element={<Navigate to="/dashboard" replace />}

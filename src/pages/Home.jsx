@@ -96,10 +96,10 @@ export default function Home() {
   ]);
 
   // Count-up values
-  const riders   = useCountUp('2.8', 2000, statsAnimated);
-  const trips    = useCountUp('15',  2200, statsAnimated);
+  const riders   = useCountUp('1', 2000, statsAnimated);
+  const trips    = useCountUp('1.5',  2200, statsAnimated);
   const ontime   = useCountUp('98.5', 1800, statsAnimated);
-  const vehicles = useCountUp('500', 1600, statsAnimated);
+  const vehicles = useCountUp('100', 1600, statsAnimated);
 
   // Fade-in refs for each section
   const [featuresRef, featuresVisible]       = useFadeInOnScroll();
@@ -178,7 +178,7 @@ export default function Home() {
               </span>
             </h1>
             <p className={styles.heroSubtitle}>
-              Cashless. Contactless. Effortless. Just tap your NFC card or student ID and ride across the city.
+              Cashless. Contactless. Effortless. Just tap your C-transit card or student ID and ride across the city.
             </p>
             <div className={styles.heroButtons}>
               <Link to="/register" className={styles.primaryBtn}>Get Started</Link>
@@ -245,7 +245,7 @@ export default function Home() {
           </div>
           <div className={styles.cardsGrid}>
             {[
-              { icon: <FaLightbulb />, title: 'Instant Access',    desc: 'Tap your NFC card and get instant access to buses, trains, and metros.' },
+              { icon: <FaLightbulb />, title: 'Instant Access',    desc: 'Tap your C-transit card and get instant access to buses, trains, and metros.' },
               { icon: <FaWallet />,    title: 'Smart Wallet',       desc: 'Load money, set limits, and enjoy seamless transactions and savings.' },
               { icon: <FaChartBar />,  title: 'Track & Analyze',    desc: 'Get insights on your travel, spending, and destination patterns.' },
               { icon: <FaShieldAlt />, title: 'Reliable & Secure',  desc: 'Your data and payments are 100% secure with advanced encryption.' },
@@ -273,7 +273,7 @@ export default function Home() {
           </div>
           <div className={styles.stepsContainer}>
             {[
-              { icon: <FaCreditCard />, title: 'Tap Card',  desc: 'Tap your NFC card or student ID on the terminal.' },
+              { icon: <FaCreditCard />, title: 'Tap Card',  desc: 'Tap your C-transit card or student ID on the terminal.' },
               { icon: <FaCheck />,      title: 'Validate',  desc: 'System validates your card and deducts the correct fare.' },
               { icon: <FaBus />,        title: 'Ride',      desc: 'Enjoy your ride seamlessly.' },
               { icon: <FaRedo />,       title: 'Go Again',  desc: 'Tap again at every boarding and destination stop.' },
@@ -296,8 +296,8 @@ export default function Home() {
       <section ref={statsRef} className={styles.statsBar}>
         <div className={styles.statsContainer}>
           {[
-            { value: riders,   suffix: 'M+', label: 'Happy Riders' },
-            { value: trips,    suffix: 'M+', label: 'Trips Completed' },
+            { value: riders,   suffix: 'K+', label: 'Happy Riders' },
+            { value: trips,    suffix: 'K+', label: 'Trips Completed' },
             { value: ontime,   suffix: '%',  label: 'On-time Performance' },
             { value: vehicles, suffix: '+',  label: 'Active Vehicles' },
           ].map((s, i) => (

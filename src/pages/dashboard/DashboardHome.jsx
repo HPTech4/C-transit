@@ -66,7 +66,6 @@ export default function DashboardHome({
   walletBalance,
   recentTaps,
   onFundWallet,
-  onTransfer,
   onViewAll,
 }) {
   const [activeChartTab, setActiveChartTab] = useState('month');
@@ -113,10 +112,6 @@ export default function DashboardHome({
           <button className={styles.fundBtn} onClick={onFundWallet ?? (() => {})}>
             <FaWallet size={14} />
             Fund Wallet
-          </button>
-          <button className={styles.transferBtn} onClick={onTransfer ?? (() => {})}>
-            <FaArrowRight size={14} />
-            Transfer
           </button>
         </div>
       </div>

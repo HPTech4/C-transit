@@ -529,6 +529,7 @@
     flex: 1;
     justify-content: center;
   }
+  
 }
 
 @media (max-width: 480px) {
@@ -572,4 +573,17 @@
   .detailItem {
     padding: 0.7rem;
   }
+  .modal {
+  border-radius: 0;
+  max-height: 100vh;
+  height: 100%;
+}
+.reviewImage {
+  aspect-ratio: 16/9; /* flatter on mobile */
+}
+
+.cancelBtn,
+.primaryBtn {
+  min-height: 48px; /* better tap target */
+}
 }

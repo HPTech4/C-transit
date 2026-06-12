@@ -5,7 +5,6 @@ FaTimes,
 FaHome,
 FaWallet,
 FaHistory,
-FaCreditCard,
 FaBell,
 FaUser,
 FaCog,
@@ -20,9 +19,9 @@ activePage,
 onNavigate,
 UserData
 }) {
-const { user, logout } = useContext(AuthContext);
+const { logout } = useContext(AuthContext);
 
-const userInitials = (UserData?.name || 'User')
+const userInitials = (UserData?.firstName || 'User')
 .split(' ')
 .slice(0, 2)
 .map(n => n[0].toUpperCase())

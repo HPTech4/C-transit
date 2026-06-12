@@ -18,7 +18,9 @@
 .drawerOpen {
   transform: translateX(0);
 }
-
+.drawer {
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+}
 .overlay {
   position: fixed;
   top: 0;

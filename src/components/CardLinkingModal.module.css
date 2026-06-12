@@ -16,8 +16,9 @@
   padding: 1.25rem;
   box-shadow: 0 30px 70px rgba(15, 23, 42, 0.35);
   position: relative;
+   max-height: 90vh;
+  overflow-y: auto;
 }
-
 .closeBtn {
   position: absolute;
   top: 1rem;
@@ -87,6 +88,8 @@
   color: #0f172a;
   background: #f8fbff;
   font: inherit;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .noteBox {
@@ -109,6 +112,7 @@
   color: #fff;
   font-weight: 800;
   cursor: pointer;
+  width:100%;
 }
 
 .submitBtn:disabled {
@@ -160,4 +164,62 @@
 ::global(html[data-theme="dark"]) .successBox {
   background: rgba(16, 185, 129, 0.12);
   border-color: rgba(16, 185, 129, 0.25);
+}
+/* ── Responsive fixes ───────────────────── */
+.modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.submitBtn {
+  width: 100%;
+}
+
+.closeBtn {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    padding: 0.5rem;
+  }
+
+  .modal {
+    padding: 1rem;
+    border-radius: 1rem;
+    max-height: 95vh;
+  }
+
+  .header h2 {
+    font-size: 1.1rem;
+  }
+
+  .header p {
+    font-size: 0.85rem;
+  }
+
+  .form input {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .submitBtn {
+    padding: 0.85rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .modal {
+    border-radius: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .header h2 {
+    font-size: 1rem;
+  }
 }

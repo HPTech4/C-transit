@@ -53,6 +53,8 @@ export default function DashboardWrapper() {
       );
       console.log('RAW API response:', userResponse.data);
       const profile = userResponse.data.profile;
+      console.log('PROFILE:', profile);
+      console.log('First name:', profile?.firstName);
       setUserData(profile);
       setWalletBalance(profile?.wallet?.balance || 0);
       setError(null); // Profile loaded successfully, clear global error

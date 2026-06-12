@@ -52,8 +52,9 @@ export default function DashboardWrapper() {
         { headers }
       );
       console.log('RAW API response:', userResponse.data);
-      setUserData(userResponse.data);
-      setWalletBalance(userResponse.data?.wallet?.balance || 0);
+      const profile = userResponse.data.profile;
+      setUserData(profile);
+      setWalletBalance(profile?.wallet?.balance || 0);
       setError(null); // Profile loaded successfully, clear global error
 
       // 2. Fetch Trip History (Isolated so a backend 404 won't break the dashboard)

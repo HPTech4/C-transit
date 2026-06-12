@@ -36,12 +36,11 @@
 
 /* ── Wallet Card ──────────────────────────────────────────────────────────── */
 .walletCard {
-  background-color: var(--primary);
+   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, #1440a0) 100%);
   border-radius: var(--radius-lg);
   padding: 28px;
   margin: 0 0 16px 0;
 }
-
 .walletLabel {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.75);
@@ -116,6 +115,7 @@
   flex-wrap: nowrap;          /* stay on one row on desktop */
   gap: 12px;
   margin: 0 0 20px 0;
+   scroll-snap-type: x mandatory;
 }
 
 .statsCard {
@@ -126,6 +126,7 @@
   flex: 1;
   min-width: 0;               /* allow flex children to shrink */
   box-sizing: border-box;
+  scroll-snap-align: start;
 }
 
 .statsLabel {
@@ -164,6 +165,11 @@
 .green {
   background-color: #d1fae5;
   color: #065f46;
+}
+
+.red {
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 /* Trend indicators */
@@ -265,6 +271,10 @@
   gap: 14px;
   padding: 16px 18px;
   border-bottom: 1px solid var(--border-light);
+   transition: background-color 0.15s ease;
+}
+.tapRow:hover {
+  background-color: var(--bg-page);
 }
 
 .tapRow:last-child {
@@ -349,7 +359,7 @@
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 20px 12px 12px 12px;
+  padding: 20px 16px 16px;
 }
 
 /* ── Empty State ──────────────────────────────────────────────────────────── */

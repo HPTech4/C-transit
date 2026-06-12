@@ -4,7 +4,7 @@ import HeaderBar from './HeaderBar';
 import BottomNav from './BottomNav';
 import styles from './DashboardLayout.module.css';
 
-export default function DashboardLayout({ children, activePage = 'home', onNavigate, onLogout }) {
+export default function DashboardLayout({ children, activePage = 'home', onNavigate, onLogout, userData }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -18,6 +18,7 @@ export default function DashboardLayout({ children, activePage = 'home', onNavig
           onNavigate(page);
           setSidebarOpen(false);
         }}
+        userData={userData}
       />
 
       {/* Dark Overlay Behind Sidebar */}

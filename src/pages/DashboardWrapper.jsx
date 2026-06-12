@@ -51,7 +51,7 @@ export default function DashboardWrapper() {
         `${USER_API_URL}/users/myprofile`,
         { headers }
       );
-
+      console.log('RAW API response:', userResponse.data);
       setUserData(userResponse.data);
       setWalletBalance(userResponse.data?.wallet?.balance || 0);
       setError(null); // Profile loaded successfully, clear global error

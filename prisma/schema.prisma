@@ -128,3 +128,12 @@ model Blacklist {
 
   @@map("blacklist")
 }
+
+model CardMapping {
+  id           String   @id @default(uuid())
+  card_uid     String   @unique @db.VarChar(20)  // Hardware UID e.g. 238DB4E8
+  student_uid  String   @unique @db.VarChar(20)  // matricNumber e.g. 2022/1/87453LH
+  linked_at    DateTime @default(now())
+
+  @@map("card_mappings")
+}

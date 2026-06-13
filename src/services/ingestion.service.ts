@@ -45,18 +45,37 @@ async function processTransaction(
 ): Promise<void> {
   const txLog = log.child({
     transactionId: tx.transaction_id,
-    studentUid: tx.student_uid,
+    cardUid: tx.student_uid, // raw card UID from terminal
   });
 
   try {
-    // CHECK 1 — Is student whitelisted?
+    // ── STEP 0: Resolve card UID to matricNumber ───────────────────────────
+    // Terminal sends hardware card UID (e.g. 238DB4E8)
+    // We must look up the matricNumber from the card mapping table
+    const cardMapping = await prisma.cardMapping.findUnique({
+      where: { card_uid: tx.student_uid },
+    });
+
+    if (!cardMapping) {
+      txLog.warn("ingestion.card_uid_not_registered");
+      await publishToTerminal(
+        terminalId,
+        `ACK:FAIL,${tx.student_uid},CARD_NOT_REGISTERED`
+      );
+      return;
+    }
+
+    const matricNumber = cardMapping.student_uid;
+    txLog.info({ matricNumber }, "ingestion.card_uid_resolved");
+
+    // ── CHECK 1: Is student whitelisted? ──────────────────────────────────
     const wallet = await prisma.wallet.findUnique({
-      where: { student_uid: tx.student_uid },
+      where: { student_uid: matricNumber },
       select: { balance: true, is_linked: true },
     });
 
     if (!wallet || !wallet.is_linked) {
-      txLog.warn("ingestion.student_not_whitelisted");
+      txLog.warn({ matricNumber }, "ingestion.student_not_whitelisted");
       await publishToTerminal(
         terminalId,
         `ACK:FAIL,${tx.student_uid},NOT_WHITELISTED`
@@ -64,47 +83,23 @@ async function processTransaction(
       return;
     }
 
-    // CHECK 2 — Is student blacklisted?
+    // ── CHECK 2: Is student blacklisted? ──────────────────────────────────
     const blacklisted = await prisma.blacklist.findUnique({
-      where: { student_uid: tx.student_uid },
+      where: { student_uid: matricNumber },
     });
 
     if (blacklisted) {
-      txLog.warn("ingestion.student_is_blacklisted");
+      txLog.warn({ matricNumber }, "ingestion.student_is_blacklisted");
       await publishToTerminal(
         terminalId,
-        `ACK:FAIL,${tx.student_uid},INSUFFICIENT_FUNDS`
+        `ACK:FAIL,${tx.student_uid},BLACKLISTED`
       );
       return;
     }
 
-    // CHECK 3 — Does student have enough balance?
-    // const currentBalance = parseFloat(wallet.balance.toString());
-    // if (currentBalance < tx.amount) {
-    //   txLog.warn(
-    //     { currentBalance, required: tx.amount },
-    //     "ingestion.insufficient_balance"
-    //   );
-    //   await publishToTerminal(
-    // terminalId,
-    //  `ACK:FAIL,${tx.student_uid},INSUFFICIENT_FUNDS`
-    //   );
-
-    // Auto-blacklist if not already — balance is too low
-    // await prisma.blacklist.upsert({
-    //where: { student_uid: tx.student_uid },
-    // update: { blacklistedAt: new Date() },
-    //  create: {
-    //   student_uid: tx.student_uid,
-    //    reason: "LOW_BALANCE",
-    //},
-    //  });
-
-    //  await broadcastDeltaToFleet(
-    // buildDeltaCommand("ADD", "BL", tx.student_uid)
-    // );
-    //   return;
-    //   }
+    // ─── CHECK 3 DISABLED (balance check) ────────────────────────────────
+    // Restore when payment API is live
+    // ─────────────────────────────────────────────────────────────────────
 
     const currentBalance = parseFloat(wallet.balance.toString());
 
@@ -116,10 +111,9 @@ async function processTransaction(
 
     const driverUid = tx.driver_uid || terminal?.active_driver_uid || null;
 
-    // All checks passed — deduct atomically
+    // ── All checks passed — deduct atomically ─────────────────────────────
     const result = await prisma.$transaction(
       async (tx_ctx: Prisma.TransactionClient) => {
-        // Idempotency — skip if already processed
         const existingTx = await tx_ctx.transaction.findUnique({
           where: { transaction_id: tx.transaction_id },
         });
@@ -129,22 +123,22 @@ async function processTransaction(
           return { duplicate: true, newBalance: currentBalance };
         }
 
-        // Record transaction
+        // Record transaction using matricNumber as student_uid
         await tx_ctx.transaction.create({
           data: {
             transaction_id: tx.transaction_id,
             type: "RIDE",
             terminal_id: tx.terminal_id,
-            student_uid: tx.student_uid,
+            student_uid: matricNumber, // ✅ matricNumber not raw card UID
             amount: tx.amount,
             driver_uid: driverUid,
             synced_at: tx.synced_at,
           },
         });
 
-        // Deduct fare
+        // Deduct fare using matricNumber
         const updatedWallet = await tx_ctx.wallet.update({
-          where: { student_uid: tx.student_uid },
+          where: { student_uid: matricNumber }, // ✅ matricNumber
           data: { balance: { decrement: tx.amount } },
           select: { balance: true },
         });
@@ -152,7 +146,12 @@ async function processTransaction(
         const newBalance = parseFloat(updatedWallet.balance.toString());
 
         txLog.info(
-          { previousBalance: currentBalance, newBalance, driverUid },
+          {
+            previousBalance: currentBalance,
+            newBalance,
+            driverUid,
+            matricNumber,
+          },
           "ingestion.fare_deducted"
         );
 
@@ -165,28 +164,28 @@ async function processTransaction(
 
     const { newBalance } = result;
 
-    // Send ACK to terminal
+    // Send ACK to terminal using raw card UID (terminal identifies by card UID)
     await publishToTerminal(
       terminalId,
       `ACK:OK,${tx.student_uid},${newBalance.toFixed(2)}`
     );
-    txLog.info({ newBalance }, "ingestion.ack_sent_to_terminal");
+    txLog.info({ newBalance, matricNumber }, "ingestion.ack_sent_to_terminal");
 
-    // Post-deduction blacklist check — balance dropped below threshold after deduction
+    // Post-deduction blacklist check using matricNumber
     if (isBelowThreshold(newBalance)) {
       const blacklistCmd = buildDeltaCommand("ADD", "BL", tx.student_uid);
       txLog.info(
-        { newBalance },
+        { newBalance, matricNumber },
         "ingestion.balance_now_below_threshold — blacklisting"
       );
 
       process.nextTick(async () => {
         try {
           await prisma.blacklist.upsert({
-            where: { student_uid: tx.student_uid },
+            where: { student_uid: matricNumber },
             update: { blacklistedAt: new Date() },
             create: {
-              student_uid: tx.student_uid,
+              student_uid: matricNumber,
               reason: "LOW_BALANCE",
             },
           });

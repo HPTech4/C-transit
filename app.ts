@@ -12,6 +12,7 @@ import adminRouter from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import kycRoutes from "./src/routes/kyc.routes.js";
+import transactionRoutes from "./src/routes/transaction.routes.js";
 import walletsRouter, {
   requireStudentAuth,
 } from "./src/controller/wallets.controller.js";
@@ -62,6 +63,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/kyc", kycRoutes);
 app.use("/api/wallets", authenticateToken, requireStudentAuth, walletsRouter);
+app.use("/api/transactions", authenticateToken, transactionRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -69,7 +71,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Global error handler (must have 4 arguments for Express to recognize it)
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response) => {
   logger.error({ err: err.message, path: req.path }, "http.unhandled_error");
   res.status(500).json({ error: "Internal server error" });
 });

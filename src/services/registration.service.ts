@@ -106,12 +106,26 @@ async function confirmRegistration(
     };
   }
 
+  await prisma.cardMapping.upsert({
+    where: { card_uid: cardUid },
+    update: { student_uid: user.matricNumber },
+    create: {
+      card_uid: cardUid,
+      student_uid: user.matricNumber,
+    },
+  });
+
+  log.info(
+    { cardUid, matricNumber: user.matricNumber },
+    "registration.card_uid_mapped_to_student"
+  );
+
   // Consume OTP
   await redis.del(key);
   log.debug({ key }, "registration.otp_consumed_from_redis");
 
   // Broadcast ADD:WL,matricNumber to all terminals
-  const addWlCmd = buildDeltaCommand("ADD", "WL", user.matricNumber);
+  const addWlCmd = buildDeltaCommand("ADD", "WL", cardUid);
 
   try {
     await routeDeltaToTerminal(originTerminalId, addWlCmd);

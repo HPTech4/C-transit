@@ -49,7 +49,7 @@ async function processTransaction(
   });
 
   try {
-    // ── STEP 0: Resolve card UID to matricNumber ───────────────────────────
+    // STEP 0: Resolve card UID to matricNumber
     // Terminal sends hardware card UID (e.g. 238DB4E8)
     // We must look up the matricNumber from the card mapping table
     const cardMapping = await prisma.cardMapping.findUnique({
@@ -60,7 +60,7 @@ async function processTransaction(
       txLog.warn("ingestion.card_uid_not_registered");
       await publishToTerminal(
         terminalId,
-        `ACK:FAIL,${tx.student_uid},CARD_NOT_REGISTERED`
+        `ACK:FAIL,${cardMapping.card_uid},CARD_NOT_REGISTERED`
       );
       return;
     }
@@ -78,7 +78,7 @@ async function processTransaction(
       txLog.warn({ matricNumber }, "ingestion.student_not_whitelisted");
       await publishToTerminal(
         terminalId,
-        `ACK:FAIL,${tx.student_uid},NOT_WHITELISTED`
+        `ACK:FAIL,${cardMapping.card_uid},NOT_WHITELISTED`
       );
       return;
     }
@@ -93,7 +93,7 @@ async function processTransaction(
       await publishToTerminal(
         terminalId,
         `ACK:FAIL,${tx.student_uid},BLACKLISTED`
-      );
+      );   
       return;
     }
 

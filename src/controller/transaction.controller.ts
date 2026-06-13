@@ -18,7 +18,7 @@ export const getTransactionHistory = async (
         driver_uid: true,
       },
       orderBy: {
-        synced_at: "desc", // Returns the newest transactions first
+        synced_at: "desc",
       },
     });
 

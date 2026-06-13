@@ -15,7 +15,6 @@ export const getTransactionHistory = async (
         type: true, 
         synced_at: true,
         terminal_id: true,
-        driver_uid: true,
       },
       orderBy: {
         synced_at: "desc",

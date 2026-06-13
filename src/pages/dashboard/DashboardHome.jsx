@@ -32,7 +32,7 @@ function StatsCard({ label, value, subValue, badge, badgeColor }) {
   );
 }
 
-// ─── TapRow Component ─────────────────────────────────────────────────────────
+// ─── TapRow Component ──────────────────────────────────────────────────────
 function TapRow({ tap }) {
   const normalizedStatus = tap.status?.toLowerCase() || 'success';
 

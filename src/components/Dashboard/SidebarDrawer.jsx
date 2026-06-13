@@ -19,6 +19,8 @@ activePage,
 onNavigate,
 UserData
 }) {
+   console.log('SidebarDrawer received UserData:', UserData); // ← add this
+  console.log('SidebarDrawer isOpen:', isOpen);  
 const { logout } = useContext(AuthContext);
 
 const userInitials = (UserData?.firstName || 'User')

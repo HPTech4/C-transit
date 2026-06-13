@@ -61,18 +61,22 @@ export default function DashboardWrapper() {
       // 2. Fetch Trip History (Isolated so a backend 404 won't break the dashboard)
       try {
         const tripsResponse = await axios.get(
-          `${USER_API_URL}/transfers/history`,
+          `${USER_API_URL}/transactions/history`,
           { headers }
         );
 
-        const tripsData = tripsResponse.data;
+       const tripsData = tripsResponse.data.data.transactions;
+       const normalized = tripsData.map(t => ({
+  ...t,
+  createdAt: t.synced_at,
+  terminal: t.terminal_id,
+  status: t.type === 'RIDE' ? 'success' : 'pending',
+}));
 
-        if (Array.isArray(tripsData)) {
-          setRecentTaps(tripsData.slice(0, 5));
-        } else {
-          console.error('Trips data is not an array:', tripsData);
-          setRecentTaps([]);
-        }
+setRecentTaps(normalized.slice(0, 5));
+
+
+       
       } catch (tripErr) {
         // Log the 404 warning silently and fallback to an empty array
         console.warn('Trip history endpoint not found/available yet:', tripErr.message);
@@ -148,12 +152,13 @@ export default function DashboardWrapper() {
       </div>
     );
   }
-
+console.log('DashboardWrapper userData:', userData); //
   return (
     <DashboardLayout
       activeTab={currentPage}
       onNavigate={handleNavigate}
       onLogout={handleLogout}
+      UserData={userData}
     >
       {renderPage()}
     </DashboardLayout>

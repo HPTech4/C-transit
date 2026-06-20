@@ -23,8 +23,8 @@
     border-top: 1px solid var(--border);
     align-items: flex-end;
     justify-content: space-around;
-    padding: 8px 0 16px 0;
-    z-index: 200;
+    padding: 8px 0 calc(16px + env(safe-area-inset-bottom)) 0;;
+    z-index: 140;
   }
 }
 

@@ -63,56 +63,13 @@
 
 /* ── Container ─────────────────────────────────────────────────────────────── */
 .container {
-  max-width: 1000px;
+    max-width: 1000px;
   margin: 0 auto;
-}
-
-/* ── Tabs ──────────────────────────────────────────────────────────────────── */
-.tabs {
   display: flex;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
-  background: var(--bg-card, white);
-  padding: 0.8rem;
-  border-radius: 1rem;
-  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.07);
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  flex-wrap: nowrap;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.tabs::-webkit-scrollbar { display: none; }
-
-.tab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.7rem 1.1rem;
-  background: transparent;
-  border: 1.5px solid var(--border, #e2e8f0);
-  border-radius: 0.7rem;
-  color: var(--text-secondary, #64748b);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.tab:hover {
-  border-color: var(--primary, #1A56DB);
-  color: var(--primary, #1A56DB);
-}
-
-.tab.active {
-  background: var(--primary, #1A56DB);
-  border-color: var(--primary, #1A56DB);
-  color: white;
-  box-shadow: 0 4px 14px rgba(26, 86, 219, 0.25);
-}
 
 /* ── Settings Card ─────────────────────────────────────────────────────────── */
 .settingsCard {
@@ -836,7 +793,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   box-shadow: 0 6px 18px rgba(220, 38, 38, 0.2);
 }
 
-/* ── Field Error (FIX 5 — password validation feedback) ────────────────────── */
+/* ── Field Error (FIX 5 — password validation feedback) ──────────────── */
 .fieldError {
   margin: 0.3rem 0 0;
   font-size: 0.8rem;
@@ -846,7 +803,6 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 /* ── Focus Visible ─────────────────────────────────────────────────────────── */
 .actionBtn:focus-visible,
-.tab:focus-visible,
 .themeBtn:focus-visible,
 .link:focus-visible,
 .backBtn:focus-visible,
@@ -864,23 +820,66 @@ input:checked + .slider:before { transform: translateX(22px); }
   .header h1 { font-size: 1.2rem; }
   .settingsCard { padding: 1.3rem; }
 
+  /* Keep side-by-side, shrink sizes instead of stacking */
   .settingItem,
-  .actionItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.8rem;
+  .actionItem,
+  .toggleItem {
+    gap: 0.6rem;
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
   }
 
-  .themeButtons { min-width: 100%; }
-  .select { min-width: 100%; }
+  .settingLabel label,
+  .toggleLabel label,
+  .actionItem label {
+    font-size: 0.85rem;
+  }
+  .settingLabel p,
+  .toggleLabel p,
+  .actionItem p {
+    font-size: 0.75rem;
+  }
+
+  .select {
+    min-width: 0;
+    width: auto;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .themeButtons { min-width: 0; gap: 0.5rem; }
+  .themeBtn { padding: 0.55rem 0.6rem; font-size: 0.78rem; }
+
+  .actionBtn,
+  .linkCardBtn,
+  .unlinkBtn {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.78rem;
+  }
 
   .linkFormGrid,
   .disputeFormRow { grid-template-columns: 1fr; }
 
+  .cardRow { flex-wrap: wrap; }
   .cardRowRight { flex-direction: row; align-items: center; }
   .kycFeatures ul { grid-template-columns: 1fr; }
 
   .modal { width: 95%; padding: 1.4rem; }
   .modalActions { grid-template-columns: 1fr; }
   .legalLinks { flex-direction: column; }
+}
+
+@media (max-width: 420px) {
+  .header h1 { font-size: 1.05rem; }
+  .settingsCard h2 { font-size: 1.05rem; }
+  .toggle { width: 42px; height: 24px; }
+  .slider:before { height: 18px; width: 18px; }
+  input:checked + .slider:before { transform: translateX(18px); }
+
+  .actionItem,
+  .toggleItem {
+    flex-wrap: wrap;
+  }
+  .actionItem div,
+  .toggleLabel { flex: 1 1 100%; }
 }

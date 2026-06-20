@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FaArrowLeft,
-  FaCog,
-  FaBell,
   FaShieldAlt,
   FaTrash,
+  FaCog,
+  FaBell,
   FaDownload,
   FaCheckCircle,
   FaLock,
@@ -22,15 +22,13 @@ import {
 import styles from './SettingsPage.module.css';
 import KYCModal from '../../components/KYCModal';
 
+
 export default function Settings() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('general');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
   const [actionModal, setActionModal] = useState({ title: '', message: '' });
   const [successMessage, setSuccessMessage] = useState('');
-
-  // FIX 3: use useRef instead of window property for timer
   const toastTimerRef = useRef(null);
 
   const [preferences, setPreferences] = useState({
@@ -125,7 +123,6 @@ export default function Settings() {
       animate="visible"
       variants={containerVariants}
     >
-      {/* Header */}
       <div className={styles.header}>
         <motion.button
           className={styles.backBtn}
@@ -137,7 +134,6 @@ export default function Settings() {
         <h1>Settings & Preferences</h1>
       </div>
 
-      {/* Toast */}
       {successMessage && (
         <motion.div
           className={styles.toast}
@@ -149,47 +145,30 @@ export default function Settings() {
       )}
 
       <div className={styles.container}>
-        {/* Tabs */}
-        <div className={styles.tabs}>
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
         <motion.div variants={itemVariants}>
-          {activeTab === 'general' && (
-            <GeneralSettings preferences={preferences} onSave={handleSavePreferences} />
-          )}
-          {activeTab === 'notifications' && (
-            <NotificationSettings preferences={preferences} onSave={handleSavePreferences} />
-          )}
-          {activeTab === 'cards' && (
-            <CardLinking onShowInfo={openActionModal} onToast={showToast} />
-          )}
-          {activeTab === 'kyc' && (
-            <KYCSection onToast={showToast} />
-          )}
-          {activeTab === 'privacy' && (
-            <PrivacySettings
-              onDownload={handleDownloadData}
-              onDelete={() => setShowDeleteConfirm(true)}
-              onShowInfo={openActionModal}
-            />
-          )}
-          {activeTab === 'dispute' && (
-            <ReportDispute onToast={showToast} />
-          )}
+          <GeneralSettings preferences={preferences} onSave={handleSavePreferences} />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <NotificationSettings preferences={preferences} onSave={handleSavePreferences} />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <CardLinking onShowInfo={openActionModal} onToast={showToast} />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <KYCSection onToast={showToast} />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <PrivacySettings
+            onDownload={handleDownloadData}
+            onDelete={() => setShowDeleteConfirm(true)}
+            onShowInfo={openActionModal}
+          />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <ReportDispute onToast={showToast} />
         </motion.div>
       </div>
 
-      {/* Modals */}
       {showDeleteConfirm && (
         <DeleteConfirmModal
           onConfirm={handleDeleteAccount}
@@ -206,6 +185,7 @@ export default function Settings() {
     </motion.div>
   );
 }
+
 
 /* ── General Settings ──────────────────────────────────────────────────────── */
 function GeneralSettings({ preferences, onSave }) {

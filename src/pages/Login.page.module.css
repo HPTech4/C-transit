@@ -20,20 +20,20 @@
 }
 
 .forgotPasswordLink {
-  position: absolute;
-  top: 28px;
-  right: 0;
+  display: block;
+  text-align: right;
+  margin-top: 6px;
   background: none;
   border: none;
   color: #1a56db;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  padding: 4px;
+  padding: 0;
   transition: color 0.2s ease;
   text-decoration: none;
+  width: 100%;
 }
-
 .forgotPasswordLink:hover {
   color: #1240a0;
   text-decoration: underline;
@@ -92,14 +92,5 @@
 @media (max-width: 480px) {
   .form {
     gap: 14px;
-  }
-
-  .forgotPasswordLink {
-    position: relative;
-    top: auto;
-    right: auto;
-    display: block;
-    margin-top: -12px;
-    margin-bottom: 8px;
   }
 }

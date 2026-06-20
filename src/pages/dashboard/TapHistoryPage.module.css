@@ -114,6 +114,15 @@
   border-bottom: 1px solid var(--border-light);
 }
 
+/* ================= EMPTY STATE ================= */
+
+.emptyState {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: clamp(13px, 2vw, 14px);
+  padding: 48px 16px;
+}
+
 /* ================= TAP ROW ================= */
 
 .tapRow {
@@ -172,6 +181,8 @@
   margin: 0 0 3px 0;
 }
 
+/* ================= STATUS BADGE ================= */
+
 .statusBadge {
   display: inline-block;
   font-size: 10px;
@@ -180,6 +191,16 @@
   border-radius: 999px;
   background-color: var(--success-light);
   color: var(--success);
+}
+
+.statusBadgePending {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background-color: var(--warning-light); /* confirm this token exists in tokens.css */
+  color: var(--warning); /* confirm this token exists in tokens.css */
 }
 
 /* ================= LOAD MORE ================= */
@@ -199,6 +220,11 @@
 
 .loadMoreBtn:hover {
   background-color: var(--primary-light);
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ================= RESPONSIVE ================= */

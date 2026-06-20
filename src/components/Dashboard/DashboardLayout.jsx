@@ -5,7 +5,7 @@ import BottomNav from './BottomNav';
 import styles from './DashboardLayout.module.css';
 
 export default function DashboardLayout({ children, activePage = 'home', onNavigate, onLogout, UserData }) {
-    console.log('DashboardLayout received UserData:', UserData); // ← add this
+    
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (

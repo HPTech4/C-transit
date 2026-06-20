@@ -172,7 +172,24 @@
   border-radius: var(--radius-md);
   overflow: hidden;
 }
+/* ---------- ACTION BUTTONS (disabled state) ---------- */
+.actionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
 
+.actionBtn:disabled:hover {
+  color: var(--text-muted); /* override the hover color so it doesn't look interactive */
+}
+
+/* ---------- EMPTY STATE ---------- */
+.emptyState {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 32px 16px;
+}
 .transactionRow {
   display: flex;
   align-items: center;

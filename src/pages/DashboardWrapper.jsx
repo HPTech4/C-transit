@@ -5,7 +5,6 @@ import DashboardLayout from '../components/Dashboard/DashboardLayout';
 import DashboardHome from './dashboard/DashboardHome';
 import WalletPage from './dashboard/WalletPage';
 import TapHistoryPage from './dashboard/TapHistoryPage';
-import NfcCardPage from './dashboard/NfcCardPage';
 import NotificationsPage from './dashboard/NotificationsPage';
 import ProfilePage from './dashboard/ProfilePage';
 import SettingsPage from './dashboard/SettingsPage';
@@ -24,7 +23,7 @@ export default function DashboardWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Defined first so fetchDashboardData can reference it
+  //  Defined first so fetchDashboardData can reference it
   const handleLogout = useCallback(() => {
     localStorage.removeItem('authToken');
     logout();
@@ -123,8 +122,6 @@ setRecentTaps(normalized.slice(0, 5));
         return <WalletPage {...pageProps} />;
       case 'history':
         return <TapHistoryPage {...pageProps} />;
-      case 'card':
-        return <NfcCardPage {...pageProps} />;
       case 'notifications':
         return <NotificationsPage {...pageProps} />;
       case 'profile':
@@ -152,7 +149,7 @@ setRecentTaps(normalized.slice(0, 5));
       </div>
     );
   }
-console.log('DashboardWrapper userData:', userData); //
+
   return (
     <DashboardLayout
       activeTab={currentPage}

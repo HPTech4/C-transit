@@ -14,6 +14,8 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AgentLogin from './pages/AgentLogin';
 import AgentDashboard from './pages/AgentDashboard';
+import TermsPage from './pages/Terms.page';
+import PrivacyPage from './pages/Privacy.page';
 
 // New Auth Screens
 import LoginPage from './pages/Login.page';
@@ -55,6 +57,8 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
 
             {/* New Auth Routes */}
             <Route
@@ -74,8 +78,7 @@ function App() {
               }
             />
             
-            {/* 🛠️ FIXED FOR PRODUCTION */}
-            {/* Removed PublicAuthRoute wrapper so authentication hooks don't forcefully boot the user out to the dashboard */}
+         
             <Route
               path="/auth/verify-phone"
               element={<VerifyPhonePage />}

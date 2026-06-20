@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaWifi, FaCreditCard, FaWallet, FaChartLine, FaShieldAlt, FaLightbulb, FaCheck, FaChartBar, FaBus, FaRedo, FaTwitter, FaInstagram, FaLinkedin, FaFacebook, FaBars, FaTimes, FaStar } from 'react-icons/fa';
+import { FaWifi, FaCreditCard, FaWallet, FaBan, FaSignal, FaCoins, FaChartLine, FaShieldAlt, FaLightbulb, FaCheck, FaChartBar, FaBus, FaRedo, FaTwitter, FaInstagram, FaLinkedin, FaFacebook, FaBars, FaTimes, FaStar } from 'react-icons/fa';
 import styles from './Home.module.css';
 
 // ── Count-up Hook ─────────────────────────────────────────────────────────────
@@ -93,6 +93,7 @@ export default function Home() {
     'The Smarter Way to Move.',
     'Tap. Ride. Repeat.',
     'Cashless. Contactless. Effortless.',
+    'Built for the Campus. Built for You.',
   ]);
 
   // Count-up values
@@ -107,13 +108,17 @@ export default function Home() {
   const [howRef, howVisible]                 = useFadeInOnScroll();
   const [testimonialsRef, testimonialsVisible] = useFadeInOnScroll();
 
-  // Navbar scroll
-  useEffect(() => {
-    const handleScroll = () => setNavTransparent(window.scrollY < 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
+   const [showScrollTop, setShowScrollTop] = useState(false); 
+  // Navbar scroll
+useEffect(() => {
+  const handleScroll = () => {
+    setNavTransparent(window.scrollY < 50);
+    setShowScrollTop(window.scrollY > 400);
+  };
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
   // Stats trigger
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -123,6 +128,8 @@ export default function Home() {
     if (statsRef.current) observer.observe(statsRef.current);
     return () => observer.disconnect();
   }, [statsAnimated]);
+
+ 
 
   return (
     <main className={styles.home}>
@@ -137,7 +144,6 @@ export default function Home() {
 
           <div className={styles.navLinks}>
             <a href="#how-it-works">How It Works</a>
-            <a href="#wallet">Wallet</a>
             <a href="#why-ctransit">Solutions</a>
           </div>
 
@@ -155,7 +161,6 @@ export default function Home() {
           <div className={styles.mobileMenu}>
             <a href="#features"    onClick={() => setMobileMenuOpen(false)}>Features</a>
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
-            <a href="#wallet"      onClick={() => setMobileMenuOpen(false)}>Wallet</a>
             <a href="#why-ctransit" onClick={() => setMobileMenuOpen(false)}>Solutions</a>
             <Link to="/auth/login"  onClick={() => setMobileMenuOpen(false)} className={styles.mobileLogin}>Login</Link>
             <Link to="/register"    onClick={() => setMobileMenuOpen(false)} className={styles.mobileGetStarted}>Get Started</Link>
@@ -178,7 +183,7 @@ export default function Home() {
               </span>
             </h1>
             <p className={styles.heroSubtitle}>
-              Cashless. Contactless. Effortless. Just tap your C-transit card or student ID and ride across the city.
+              Cashless. Contactless. Effortless. Just tap your C-transit card or student ID and ride across the campus.
             </p>
             <div className={styles.heroButtons}>
               <Link to="/register" className={styles.primaryBtn}>Get Started</Link>
@@ -245,7 +250,7 @@ export default function Home() {
           </div>
           <div className={styles.cardsGrid}>
             {[
-              { icon: <FaLightbulb />, title: 'Instant Access',    desc: 'Tap your C-transit card and get instant access to buses, trains, and metros.' },
+              { icon: <FaLightbulb />, title: 'Instant Access', desc: 'Tap your C-transit card and get instant access to buses, Keke, and other vehicles.' },
               { icon: <FaWallet />,    title: 'Smart Wallet',       desc: 'Load money, set limits, and enjoy seamless transactions and savings.' },
               { icon: <FaChartBar />,  title: 'Track & Analyze',    desc: 'Get insights on your travel, spending, and destination patterns.' },
               { icon: <FaShieldAlt />, title: 'Reliable & Secure',  desc: 'Your data and payments are 100% secure with advanced encryption.' },
@@ -259,6 +264,28 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* ── CASHLESS SECTION ── */}
+<section className={styles.cashlessSection}>
+  <div className={styles.sectionContainer}>
+    <div className={styles.sectionHeader}>
+      <h2>Finally. Cashless Done Right.</h2>
+      <p>No more wahala at the bus stop.</p>
+    </div>
+    <div className={styles.cashlessGrid}>
+      {[
+        { icon: <FaCoins />, pain: '"Change no de"', fix: 'Your card handles the exact fare. Always.' },
+        { icon: <FaSignal />, pain: '"Network no de"', fix: 'C-Transit works even when internet is down.' },
+        { icon: <FaBan />, pain: '"I no de collect transfer"', fix: 'No driver approval needed. Just tap and ride.' },
+      ].map((item, i) => (
+        <div key={i} className={styles.cashlessCard}>
+          <div className={styles.cashlessIcon}>{item.icon}</div>
+          <p className={styles.cashlessPain}>{item.pain}</p>
+          <p className={styles.cashlessFix}>{item.fix}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* ── HOW IT WORKS ── */}
       <section
@@ -364,7 +391,6 @@ export default function Home() {
             <h5>Product</h5>
             <a href="#features">Features</a>
             <a href="#how-it-works">How It Works</a>
-            <a href="#wallet">Wallet</a>
           </div>
 
           <div className={styles.footerColumn}>
@@ -387,7 +413,16 @@ export default function Home() {
           <p>Made with care for Nigerian University</p>
         </div>
       </footer>
-
+      {/* ── SCROLL TO TOP ── */}
+{showScrollTop && (
+  <button
+    className={styles.scrollTop}
+    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+    aria-label="Scroll to top"
+  >
+    ▲
+  </button>
+)}
     </main>
   );
 }

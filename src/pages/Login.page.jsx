@@ -118,7 +118,7 @@ const [formData, setFormData] = useState({
 
         <InputField
           label="Email or Phone"
-          placeholder="admin@st.futminna.edu"
+          placeholder="Enter your email"
           name="emailOrPhone"
           type="text"
           value={formData.emailOrPhone}

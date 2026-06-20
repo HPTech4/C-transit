@@ -16,8 +16,8 @@ export default function RegisterPage() {
   const { register, isLoading, error, setError } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
-    firstname: '',
-    lastname: '',
+    firstName: '',
+    lastName: '',
     email: '',
     matricNumber: '',
     password: '',
@@ -133,8 +133,8 @@ export default function RegisterPage() {
   };
 
   const handleFooterLink = () => navigate('/auth/login');
-  const handleTermsClick = () => addToast('Terms & Conditions coming soon!', 'info');
-  const handlePrivacyClick = () => addToast('Privacy Policy coming soon!', 'info');
+  const handleTermsClick = () => navigate('/terms');
+  const handlePrivacyClick = () => navigate('/privacy');
 
   return (
     <SharedAuthLayout

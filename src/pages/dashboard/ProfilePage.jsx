@@ -104,7 +104,6 @@ export default function ProfilePage({ userData, onBack }) {
         <p className={styles.userInitials}>
           {userData?.fullname || `${formData.firstName} ${formData.lastName}`}
         </p>
-        <p className={styles.userRole}>C-Transit Passenger Account</p>
       </div>
 
       {/* Profile Info Form */}

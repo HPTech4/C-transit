@@ -232,6 +232,11 @@
 
 .toggle input { opacity: 0; width: 0; height: 0; }
 
+.toggle input:focus-visible + .slider {
+  outline: 3px solid rgba(26, 86, 219, 0.25);
+  outline-offset: 2px;
+}
+
 .slider {
   position: absolute;
   cursor: pointer;
@@ -618,21 +623,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   font-weight: 500;
 }
 
-/* ── Dispute Form ──────────────────────────────────────────────────────────── */
-.disputeSubtitle {
-  font-size: 0.88rem;
-  color: var(--text-secondary, #64748b);
-  margin: -0.8rem 0 1.5rem;
-  line-height: 1.6;
-}
 
-.disputeForm { display: flex; flex-direction: column; gap: 1.2rem; }
-
-.disputeFormRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
 
 .formGroup { display: flex; flex-direction: column; gap: 0.4rem; }
 
@@ -685,22 +676,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1);
 }
 
-.disputeSuccess { text-align: center; padding: 2rem 1rem; }
 
-.disputeSuccessIcon {
-  font-size: 3rem;
-  color: #10b981;
-  margin-bottom: 1rem;
-}
-
-.disputeSuccess h2 { margin: 0 0 0.6rem; }
-
-.disputeSuccess p {
-  font-size: 0.9rem;
-  color: var(--text-secondary, #64748b);
-  margin: 0 0 1.5rem;
-  line-height: 1.6;
-}
 
 /* ── Modal ─────────────────────────────────────────────────────────────────── */
 .modalOverlay {
@@ -747,7 +723,63 @@ input:checked + .slider:before { transform: translateX(22px); }
   gap: 0.8rem;
   margin-top: 1.5rem;
 }
+/* ── OTP Input ─────────────────────────────────────────────────────────────── */
+.otpRow {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
 
+.otpInput {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 0.7rem;
+  background: var(--bg-card, white);
+  transition: all 0.2s ease;
+  caret-color: var(--primary, #1A56DB);
+}
+
+.otpInput:focus {
+  outline: none;
+  border-color: var(--primary, #1A56DB);
+  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
+}
+
+.otpInput:focus-visible {
+  outline: 3px solid rgba(26, 86, 219, 0.25);
+  outline-offset: 2px;
+}
+
+/* Remove number spinner arrows in case inputMode renders as number on some browsers */
+.otpInput::-webkit-outer-spin-button,
+.otpInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .otpRow { gap: 0.45rem; }
+  .otpInput {
+    width: 40px;
+    height: 48px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .otpRow { gap: 0.35rem; }
+  .otpInput {
+    width: 36px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+}
 /* FIX 7: single-button modal actions */
 .modalActions.singleAction {
   grid-template-columns: 1fr;
@@ -857,8 +889,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     font-size: 0.78rem;
   }
 
-  .linkFormGrid,
-  .disputeFormRow { grid-template-columns: 1fr; }
+  .linkFormGrid { grid-template-columns: 1fr; }
 
   .cardRow { flex-wrap: wrap; }
   .cardRowRight { flex-direction: row; align-items: center; }

@@ -14,13 +14,13 @@ import {
   FaInfoCircle,
   FaIdCard,
   FaCreditCard,
-  FaExclamationTriangle,
   FaArrowRight,
   FaWifi,
   FaTimesCircle,
 } from 'react-icons/fa';
 import styles from './SettingsPage.module.css';
 import KYCModal from '../../components/KYCModal';
+import { USER_API_URL } from '../../config/api';
 
 
 export default function Settings() {
@@ -107,14 +107,6 @@ export default function Settings() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
-  const tabs = [
-    { id: 'general',       label: 'General',           icon: <FaCog /> },
-    { id: 'notifications', label: 'Notifications',     icon: <FaBell /> },
-    { id: 'cards',         label: 'Card Linking',       icon: <FaCreditCard /> },
-    { id: 'kyc',           label: 'Verification',       icon: <FaIdCard /> },
-    { id: 'privacy',       label: 'Privacy & Security', icon: <FaShieldAlt /> },
-    { id: 'dispute',       label: 'Report Dispute',     icon: <FaExclamationTriangle /> },
-  ];
 
   return (
     <motion.div
@@ -163,9 +155,6 @@ export default function Settings() {
             onDelete={() => setShowDeleteConfirm(true)}
             onShowInfo={openActionModal}
           />
-        </motion.div>
-        <motion.div variants={itemVariants}>
-          <ReportDispute onToast={showToast} />
         </motion.div>
       </div>
 
@@ -295,28 +284,99 @@ function NotificationSettings({ preferences, onSave }) {
 }
 
 /* ── Card Linking ──────────────────────────────────────────────────────────── */
+const OTP_LENGTH = 6;
+
 function CardLinking({ onShowInfo, onToast }) {
   const [cards, setCards] = useState([
     { id: 1, uid: 'NFC-4A2F-9B1C', label: 'My Transit Card', linked: true, linkedAt: '2024-11-10' },
   ]);
   const [showLinkForm, setShowLinkForm] = useState(false);
-  const [newCardUid, setNewCardUid] = useState('');
-  const [newCardLabel, setNewCardLabel] = useState('');
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
+  const [verifying, setVerifying] = useState(false);
+  const [linkError, setLinkError] = useState('');
+  const otpRefs = useRef([]);
 
-  const handleLink = () => {
-    if (!newCardUid.trim()) return;
-    const newCard = {
-      id: Date.now(),
-      uid: newCardUid.trim().toUpperCase(),
-      label: newCardLabel.trim() || 'My NFC Card',
-      linked: true,
-      linkedAt: new Date().toISOString().split('T')[0],
-    };
-    setCards(prev => [...prev, newCard]);
-    setNewCardUid('');
-    setNewCardLabel('');
-    setShowLinkForm(false);
-    onToast('NFC card linked successfully.');
+  const resetOtp = () => {
+    setOtp(Array(OTP_LENGTH).fill(''));
+    setLinkError('');
+  };
+
+  const handleOtpChange = (index, value) => {
+    const digit = value.replace(/\D/g, '').slice(-1); // only last digit, numbers only
+    const next = [...otp];
+    next[index] = digit;
+    setOtp(next);
+    setLinkError('');
+
+    if (digit && index < OTP_LENGTH - 1) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+    if (!pasted) return;
+    e.preventDefault();
+    const next = Array(OTP_LENGTH).fill('');
+    pasted.split('').forEach((d, i) => { next[i] = d; });
+    setOtp(next);
+    otpRefs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
+  };
+
+  const handleVerify = async () => {
+    const code = otp.join('');
+    if (code.length !== OTP_LENGTH || verifying) return;
+
+    setVerifying(true);
+    setLinkError('');
+
+    try {
+      // TODO(backend): replace with your real card-linking endpoint once ready
+      const response = await fetch(`${USER_API_URL}/link`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ otp: code }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Could not verify this code. Please try again.');
+      }
+
+      // Expected backend shape: { status: 'linked' | 'pending', card: { uid, label, linkedAt } }
+      if (result.status === 'linked') {
+        setCards(prev => [...prev, {
+          id: Date.now(),
+          uid: result.card?.uid || 'UNKNOWN',
+          label: result.card?.label || 'My NFC Card',
+          linked: true,
+          linkedAt: result.card?.linkedAt || new Date().toISOString().split('T')[0],
+        }]);
+        onToast('Card linked successfully.');
+        setShowLinkForm(false);
+        resetOtp();
+      } else if (result.status === 'pending') {
+        onToast('Card linking is pending. We will notify you once confirmed.');
+        setShowLinkForm(false);
+        resetOtp();
+      } else {
+        setLinkError('Invalid code. Please check and try again.');
+      }
+    } catch (err) {
+      setLinkError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setVerifying(false);
+    }
   };
 
   const handleUnlink = (id) => {
@@ -328,12 +388,12 @@ function CardLinking({ onShowInfo, onToast }) {
     <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <div className={styles.cardSectionHeader}>
         <div>
-          <h2>NFC Card Linking</h2>
+          <h2>C-transit Card Linking</h2>
           <p className={styles.cardSectionDesc}>Manage physical NFC transit cards linked to your account.</p>
         </div>
         <motion.button
           className={styles.linkCardBtn}
-          onClick={() => setShowLinkForm(v => !v)}
+          onClick={() => { setShowLinkForm(v => !v); resetOtp(); }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -347,79 +407,46 @@ function CardLinking({ onShowInfo, onToast }) {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className={styles.linkFormGrid}>
-            <div className={styles.formGroup}>
-              <label>Card UID</label>
+          <p className={styles.linkHint}>Enter the OTP code sent to your registered device to link your card.</p>
+
+          <div className={styles.otpRow}>
+            {otp.map((digit, i) => (
               <input
-                className={styles.input}
+                key={i}
+                ref={el => (otpRefs.current[i] = el)}
+                className={styles.otpInput}
                 type="text"
-                placeholder="e.g. NFC-4A2F-9B1C"
-                value={newCardUid}
-                onChange={e => setNewCardUid(e.target.value)}
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={e => handleOtpChange(i, e.target.value)}
+                onKeyDown={e => handleOtpKeyDown(i, e)}
+                onPaste={handleOtpPaste}
               />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Card Label (optional)</label>
-              <input
-                className={styles.input}
-                type="text"
-                placeholder="e.g. My Transit Card"
-                value={newCardLabel}
-                onChange={e => setNewCardLabel(e.target.value)}
-              />
-            </div>
+            ))}
           </div>
-          <p className={styles.linkHint}>
-            📡 Find your card UID printed on the back of your physical NFC card.
-          </p>
+
+          {linkError && <p className={styles.fieldError}>{linkError}</p>}
+
           <div className={styles.linkFormActions}>
-            <button className={styles.cancelBtn} onClick={() => setShowLinkForm(false)}>Cancel</button>
+            <button className={styles.cancelBtn} onClick={() => { setShowLinkForm(false); resetOtp(); }}>
+              Cancel
+            </button>
             <motion.button
               className={styles.actionBtn}
-              onClick={handleLink}
-              disabled={!newCardUid.trim()}
+              onClick={handleVerify}
+              disabled={otp.join('').length !== OTP_LENGTH || verifying}
               whileHover={{ scale: 1.02 }}
             >
-              <FaWifi /> Link Card
+              <FaWifi /> {verifying ? 'Verifying...' : 'Verify & Link'}
             </motion.button>
           </div>
         </motion.div>
       )}
 
-      <div className={styles.cardsList}>
-        {cards.length === 0 ? (
-          <div className={styles.emptyCards}>
-            <FaCreditCard size={32} />
-            <p>No NFC cards linked yet.</p>
-          </div>
-        ) : (
-          cards.map(card => (
-            <div key={card.id} className={styles.cardRow}>
-              <div className={styles.cardRowIcon}><FaWifi /></div>
-              <div className={styles.cardRowInfo}>
-                <p className={styles.cardRowLabel}>{card.label}</p>
-                <p className={styles.cardRowUid}>{card.uid}</p>
-                <p className={styles.cardRowDate}>Linked on {card.linkedAt}</p>
-              </div>
-              <div className={styles.cardRowRight}>
-                <span className={styles.linkedBadge}><FaCheckCircle /> Active</span>
-                <motion.button
-                  className={styles.unlinkBtn}
-                  onClick={() => handleUnlink(card.id)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaTimesCircle /> Unlink
-                </motion.button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
     </motion.div>
   );
 }
-
 /* ── KYC Section ───────────────────────────────────────────────────────────── */
 function KYCSection({ onToast }) {
   const [showKYCModal, setShowKYCModal] = useState(false);
@@ -508,128 +535,7 @@ function KYCSection({ onToast }) {
   );
 }
 
-/* ── Report Dispute ────────────────────────────────────────────────────────── */
-function ReportDispute({ onToast }) {
-  const [form, setForm] = useState({
-    type: '',
-    transactionId: '',
-    description: '',
-    amount: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
 
-  const disputeTypes = [
-    'Incorrect fare deduction',
-    'Duplicate charge',
-    'Card tap not recorded',
-    'Wallet not credited',
-    'Unauthorized transaction',
-    'Other',
-  ];
-
-  const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = () => {
-    if (!form.type || !form.description.trim()) return;
-    console.log('Dispute submitted:', form);
-    setSubmitted(true);
-    onToast('Dispute submitted. We will respond within 24–48 hours.');
-  };
-
-  if (submitted) {
-    return (
-      <motion.div
-        className={styles.settingsCard}
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        <div className={styles.disputeSuccess}>
-          <FaCheckCircle className={styles.disputeSuccessIcon} />
-          <h2>Dispute Submitted</h2>
-          <p>Your dispute has been logged. Our support team will review and respond within 24–48 hours.</p>
-          <motion.button
-            className={styles.actionBtn}
-            onClick={() => { setSubmitted(false); setForm({ type: '', transactionId: '', description: '', amount: '' }); }}
-            whileHover={{ scale: 1.02 }}
-          >
-            Submit Another
-          </motion.button>
-        </div>
-      </motion.div>
-    );
-  }
-
-  return (
-    <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <h2>Report a Dispute</h2>
-      <p className={styles.disputeSubtitle}>
-        Experiencing an issue with a transaction? Let us know and we'll resolve it.
-      </p>
-
-      <div className={styles.disputeForm}>
-        <div className={styles.formGroup}>
-          <label>Dispute Type <span className={styles.required}>*</span></label>
-          <select
-            className={styles.select}
-            value={form.type}
-            onChange={e => handleChange('type', e.target.value)}
-          >
-            <option value="">Select a dispute type</option>
-            {disputeTypes.map(t => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.disputeFormRow}>
-          <div className={styles.formGroup}>
-            <label>Transaction ID (optional)</label>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="e.g. TXN-20241115-001"
-              value={form.transactionId}
-              onChange={e => handleChange('transactionId', e.target.value)}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Amount Disputed (optional)</label>
-            <input
-              className={styles.input}
-              type="number"
-              placeholder="e.g. 150"
-              value={form.amount}
-              onChange={e => handleChange('amount', e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className={styles.formGroup}>
-          <label>Description <span className={styles.required}>*</span></label>
-          <textarea
-            className={styles.textarea}
-            rows={4}
-            placeholder="Describe the issue in detail..."
-            value={form.description}
-            onChange={e => handleChange('description', e.target.value)}
-          />
-        </div>
-
-        <motion.button
-          className={styles.actionBtn}
-          onClick={handleSubmit}
-          disabled={!form.type || !form.description.trim()}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <FaExclamationTriangle /> Submit Dispute
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-}
 
 /* ── Privacy Settings ──────────────────────────────────────────────────────── */
 function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
@@ -702,8 +608,8 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
       <div className={styles.sectionGroup}>
         <h3>Legal</h3>
         <div className={styles.legalLinks}>
-          <a href="#" className={styles.link}> Privacy Policy</a>
-          <a href="#" className={styles.link}> Terms & Conditions</a>
+          <a href="/policy" className={styles.link}> Privacy Policy</a>
+          <a href="/terms" className={styles.link}> Terms & Conditions</a>
         </div>
       </div>
     </motion.div>

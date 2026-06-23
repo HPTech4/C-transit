@@ -7,7 +7,7 @@ import {
   FaTimes,
   FaArrowRight,
 } from "react-icons/fa";
-import { KYC_API_URL, USER_API_URL } from "../config/api";
+import { KYC_API_URL } from "../config/api";
 import styles from "./KYCModal.module.css";
 
 export default function KYCModal({ onClose }) {
@@ -71,14 +71,19 @@ export default function KYCModal({ onClose }) {
         },
       });
 
-      const result = await response.json();
+     const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.message || "Failed to process ID card");
       }
 
       // ✅ Backend returns { message, data: { studentName, studentId, matricNumber, school, department, idCardImageUrl, faceImageUrl } }
-      setExtractedData(result.data);
+      const data = result.data;
+      if (!data || !data.studentName || !data.studentId) {
+        throw new Error("We couldn't read your ID card clearly. Please try a clearer photo.");
+      }
+
+      setExtractedData(data);
       setStep(2);
     } catch (err) {
       setError(err.message || "Failed to process ID card. Please try again.");
@@ -270,22 +275,27 @@ export default function KYCModal({ onClose }) {
                   </div>
 
                   {/* Right: Extracted Details */}
+                  {/* Right: Extracted Details */}
                   <div className={styles.detailsSection}>
                     <h4>Extracted Information</h4>
                     <div className={styles.detailsGrid}>
                       <div className={styles.detailItem}>
                         <label>Full Name</label>
-                        <p>{extractedData?.name}</p>
+                        <p>{extractedData?.studentName}</p>
                       </div>
                       <div className={styles.detailItem}>
                         <label>Matric Number</label>
                         <p>{extractedData?.matricNumber}</p>
                       </div>
                       <div className={styles.detailItem}>
-                        <label>School ID</label>
-                        <p>{extractedData?.schoolId}</p>
+                        <label>Student ID</label>
+                        <p>{extractedData?.studentId}</p>
                       </div>
-                      {extractedData?.photo && (
+                      <div className={styles.detailItem}>
+                        <label>School</label>
+                        <p>{extractedData?.school}</p>
+                      </div>
+                      {extractedData?.faceImageUrl && (
                         <div className={styles.detailItem}>
                           <label>Photo</label>
                           <div className={styles.photoBadge}>✓ Detected</div>

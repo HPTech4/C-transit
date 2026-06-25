@@ -189,9 +189,6 @@ function GeneralSettings({ preferences, onSave }) {
         </div>
         <select value={preferences.language} onChange={e => onSave('language', e.target.value)} className={styles.select}>
           <option value="english">English</option>
-          <option value="yoruba">Yoruba</option>
-          <option value="igbo">Igbo</option>
-          <option value="hausa">Hausa</option>
         </select>
       </div>
 
@@ -583,7 +580,7 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
         <h3>Data Management</h3>
         <div className={styles.actionItem}>
           <div>
-            <label>📥 Download Your Data</label>
+            <label> Download Your Data</label>
             <p>Get a copy of all your data</p>
           </div>
           <motion.button className={styles.actionBtn} onClick={onDownload} whileHover={{ scale: 1.02 }}>
@@ -592,7 +589,7 @@ function PrivacySettings({ onDownload, onDelete, onShowInfo }) {
         </div>
         <div className={styles.actionItem}>
           <div>
-            <label>🗑️ Delete Account</label>
+            <label> Delete Account</label>
             <p>Permanently delete your account and all data</p>
           </div>
           <motion.button

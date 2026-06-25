@@ -1137,7 +1137,7 @@
   }
 
   .stepsContainer {
-    gap: 0;
+    gap: 15px;
   }
 
   .arrow {

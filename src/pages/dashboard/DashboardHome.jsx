@@ -68,7 +68,6 @@ export default function DashboardHome({
   onFundWallet,
   onViewAll,
 }) {
-  const [activeChartTab, setActiveChartTab] = useState('month');
   const [activeChartData, setActiveChartData] = useState([]);
 
   // Generate dynamic, real analytics points based on the actual history payload
@@ -86,7 +85,7 @@ export default function DashboardHome({
 
   const safeTaps = Array.isArray(recentTaps) ? recentTaps : [];
 
-  // Calculate dynamic data fields directly out of the real transaction arrays
+ 
   const totalTripsThisMonth = safeTaps.length;
   const totalSpendingThisMonth = safeTaps.reduce((sum, current) => sum + Number(current.amount || 0), 0);
 

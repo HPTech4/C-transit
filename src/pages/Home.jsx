@@ -352,9 +352,9 @@ useEffect(() => {
           </div>
           <div className={styles.testimonialGrid}>
             {[
-              { initials: 'AM', name: 'Aisha M.',  role: 'Student',         text: 'C-Transit makes my daily commute so easy and convenient.' },
-              { initials: 'DK', name: 'David K.',  role: 'Daily Commuter',  text: 'Love the tap & ride experience. Fast, secure and reliable.' },
-              { initials: 'MJ', name: 'Mary J.',   role: 'Traveler',        text: 'Best transit card system I\'ve used. Super convenient!' },
+              { initials: 'DE', name: 'Destiny E.',  role: 'Student',         text: 'C-Transit makes my daily commute so easy and convenient.' },
+              { initials: 'MM', name: 'Muhammed M.',  role: 'Lecturer',  text: 'Love the tap & ride experience. Fast, secure and reliable.' },
+              { initials: 'AA', name: 'AbdulAzeez A.',   role: 'Student',        text: 'Best transit card system I\'ve used. Super convenient!' },
             ].map((t, i) => (
               <div key={i} className={styles.testimonialCard} style={{ transitionDelay: `${i * 120}ms` }}>
                 <div className={styles.avatar}>{t.initials}</div>

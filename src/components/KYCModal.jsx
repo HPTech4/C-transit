@@ -62,7 +62,7 @@ export default function KYCModal({ onClose }) {
       formData.append("idCard", idCardImage); // ✅ was 'idCardImage' — must match multer field name
 
       // ✅ Correct endpoint: POST /api/kyc/upload
-      const response = await fetch(`${KYC_API_URL}/upload`, {
+      const response = await fetch(`${AUTH_API_URL}/upload`, {
         method: "POST",
         body: formData,
         headers: {
@@ -99,7 +99,7 @@ export default function KYCModal({ onClose }) {
     try {
       //  Correct endpoint: POST /api/kyc/submit
       // Backend expects JSON not FormData
-      const response = await fetch(`${KYC_API_URL}/submit`, {
+      const response = await fetch(`${AUTH_API_URL}/confirm-card`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

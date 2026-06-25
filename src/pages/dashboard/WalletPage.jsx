@@ -10,7 +10,6 @@ export default function WalletPage({ walletBalance, onBack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const quickAmounts = [1000, 2000, 5000];
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -47,74 +46,31 @@ export default function WalletPage({ walletBalance, onBack }) {
   }, [fetchTransactions]);
 
   return (
-    <>
+    <div className={styles.WalletPage}>
       {/* Page Header */}
       <div className={styles.pageHeader}>
         <button className={styles.backBtn} onClick={onBack}>
           <FaArrowLeft size={20} />
         </button>
         <h1 className={styles.pageTitle}>Wallet</h1>
-        <button className={styles.moreBtn}>
-          <FaEllipsisV size={20} />
-        </button>
       </div>
 
-      {/* NFC Card Visual */}
+      {/* C-transit Card Visual */}
       <div className={styles.nfcCard}>
         <div className={styles.cardTop}>
           <FaWifi size={20} color="white" />
           <span className={styles.cardBadge}>Active</span>
         </div>
-        <p className={styles.cardNumber}>**** **** **** ****</p>
         <div className={styles.cardBottom}>
-          <p>Wallet</p>
-          <p>Tap to view details</p>
-        </div>
-      </div>
-
-      {/* Balance Display */}
-      <div className={styles.balanceDisplay}>
-        <p className={styles.balanceAmount}>
+           <p className={styles.balanceAmount}>
           ₦{(walletBalance || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
         </p>
-        <div className={styles.actionButtons}>
-          <button className={styles.actionBtn} disabled title="Coming soon">
-            <FaWallet size={24} />
-            <span>Fund Wallet</span>
-          </button>
-          <button className={styles.actionBtn} disabled title="Coming soon">
-            <FaArrowRight size={24} />
-            <span>Transfer</span>
-          </button>
-          <button className={styles.actionBtn} disabled title="Coming soon">
-            <FaEllipsisV size={24} />
-            <span>More</span>
-          </button>
+          <p className={styles.balanceText}>Balance Amount</p>
+         
         </div>
       </div>
 
-      {/* Quick Amount Pills */}
-      <div className={styles.quickAmountSection}>
-        <p className={styles.quickAmountLabel}>Quick Amount</p>
-        <div className={styles.amountPills}>
-          {quickAmounts.map(amount => (
-            <button
-              key={amount}
-              className={`${styles.amountPill} ${selectedAmount === amount ? styles.amountPillActive : ''}`}
-              onClick={() => setSelectedAmount(amount)}
-            >
-              ₦{(amount / 1000).toFixed(0)}K
-            </button>
-          ))}
-          <button
-            className={`${styles.amountPill} ${selectedAmount === 'other' ? styles.amountPillActive : ''}`}
-            onClick={() => setSelectedAmount('other')}
-          >
-            Other
-          </button>
-        </div>
-      </div>
-
+    
       {/* Recent Transactions */}
       <div className={styles.transactionSection}>
         <h3 className={styles.transactionTitle}>Recent Transactions</h3>
@@ -146,6 +102,6 @@ export default function WalletPage({ walletBalance, onBack }) {
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }

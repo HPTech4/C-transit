@@ -22,7 +22,7 @@ UserData
    
 const { logout } = useContext(AuthContext);
 
-const userInitials = (UserData?.firstName || 'User')
+const userInitials = (UserData?.firstName  || 'User')
 .split(' ')
 .slice(0, 2)
 .map(n => n[0].toUpperCase())

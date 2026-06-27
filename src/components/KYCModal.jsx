@@ -65,7 +65,7 @@ export default function KYCModal({ onClose }) {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 

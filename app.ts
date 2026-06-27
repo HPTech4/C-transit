@@ -29,9 +29,13 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://c-transit-new.vercel.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://c-transit-new.vercel.app",
+      "https://c-transit-pink.vercel.app", // ← backend URL that fronted calls across
+    ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // ← OPTIONS required for preflight
   })
 );
 

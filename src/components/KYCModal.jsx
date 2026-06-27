@@ -49,6 +49,7 @@ export default function KYCModal({ onClose }) {
     }
 
     const token = localStorage.getItem("authToken");
+    //debugging
     console.log('Token:', token);
 
 if (token) {
@@ -74,7 +75,7 @@ if (token) {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 

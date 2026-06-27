@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 export interface UserUpdateData {
   firstname?: string;
   lastname?: string;
-  phonenumber?: string;
 }
 
 const getUserCount = async () => {
@@ -68,7 +67,7 @@ const getUserProfile = async (userId: string) => {
 };
 
 const updateUserProfile = async (userId: string, data: UserUpdateData) => {
-  const { firstname, lastname, phonenumber } = data;
+  const { firstname, lastname } = data;
 
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
@@ -79,12 +78,6 @@ const updateUserProfile = async (userId: string, data: UserUpdateData) => {
       },
     });
 
-    if (phonenumber) {
-      await tx.kyc.update({
-        where: { userId },
-        data: { phoneNumber: phonenumber.trim() },
-      });
-    }
   });
 
   return await getUserProfile(userId);

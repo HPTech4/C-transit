@@ -49,6 +49,15 @@ export default function KYCModal({ onClose }) {
     }
 
     const token = localStorage.getItem("authToken");
+    console.log('Token:', token);
+
+if (token) {
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  console.log('Expires:', new Date(payload.exp * 1000).toLocaleString());
+  console.log('Expired?', new Date(payload.exp * 1000) < new Date() ? 'YES ❌' : 'NO ✅');
+} else {
+  console.log('No token found ❌');
+}
     if (!token) {
       setError("Session expired. Please log in again.");
       return;

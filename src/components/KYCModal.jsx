@@ -61,7 +61,7 @@ export default function KYCModal({ onClose }) {
       const formData = new FormData();
       formData.append("idCard", idCardImage);
 
-      const response = await fetch(`${KYC_API_URL}/upload`, {
+      const response = await fetch(`${KYC_API_URL}/submit`, {
         method: "POST",
         body: formData,
         headers: {

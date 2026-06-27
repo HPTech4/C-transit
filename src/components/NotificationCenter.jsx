@@ -2,85 +2,44 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBell, FaTimes, FaCheck } from 'react-icons/fa';
 import styles from './NotificationCenter.module.css';
+import { NOT_API_URL } from '../config/api';
 
-/**
- * NotificationCenter Component
- * 
- * Notification system with:
- * - Bell icon with unread count badge
- * - Notification drawer/dropdown
- * - Different notification types (bus, payment, trip, promo, system)
- * - Mark as read functionality
- * - Delete notifications
- * 
- * BACKEND INTEGRATION:
- * - GET /api/notifications (fetch all notifications)
- * - POST /api/notifications/mark-read (mark as read)
- * - DELETE /api/notifications/:id (delete notification)
- * - WebSocket for real-time notifications (optional)
- */
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // Mock notifications (replace with API response)
+  const getToken = () => localStorage.getItem('authToken');
+
+  // Fetch notifications from backend
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${NOT_API_URL}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) throw new Error(result.message || 'Failed to fetch notifications');
+
+      const data = result.data || result.notifications || result || [];
+      setNotifications(data);
+      updateUnreadCount(data);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const mockNotifications = [
-      {
-        id: 1,
-        type: 'bus',
-        title: 'Bus Arriving Soon',
-        message: 'Bus to Engineering Block arriving in 5 minutes',
-        timestamp: new Date(Date.now() - 5 * 60000), // 5 mins ago
-        isRead: false,
-        icon: '🚌',
-        actionUrl: '/dashboard',
-      },
-      {
-        id: 2,
-        type: 'payment',
-        title: 'Payment Successful',
-        message: 'Wallet recharged with ₦5,000',
-        timestamp: new Date(Date.now() - 30 * 60000), // 30 mins ago
-        isRead: false,
-        icon: '💳',
-        actionUrl: '/dashboard?tab=wallet',
-      },
-      {
-        id: 3,
-        type: 'trip',
-        title: 'Trip Completed',
-        message: 'Your trip to Library has been completed',
-        timestamp: new Date(Date.now() - 2 * 60 * 60000), // 2 hours ago
-        isRead: true,
-        icon: '📍',
-        actionUrl: '/dashboard?tab=history',
-      },
-      {
-        id: 4,
-        type: 'promo',
-        title: 'Special Offer',
-        message: 'Get 20% off on Sunday rides - Use code SUNDAY20',
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60000), // 1 day ago
-        isRead: true,
-        icon: '🎉',
-        actionUrl: null,
-      },
-      {
-        id: 5,
-        type: 'system',
-        title: 'App Update Available',
-        message: 'Version 2.1 is now available with bug fixes',
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60000), // 2 days ago
-        isRead: true,
-        icon: '🔧',
-        actionUrl: null,
-      },
-    ];
-
-    setNotifications(mockNotifications);
-    updateUnreadCount(mockNotifications);
+    fetchNotifications();
   }, []);
 
   const updateUnreadCount = (notifList) => {
@@ -88,56 +47,95 @@ export default function NotificationCenter() {
     setUnreadCount(unread);
   };
 
-  // BACKEND: POST /api/notifications/mark-read
-  // Send: { notificationId }
-  // Response: { success: true }
+  // Mark single notification as read
   const handleMarkAsRead = async (id) => {
+    // Optimistic update
     const updated = notifications.map((n) =>
       n.id === id ? { ...n, isRead: true } : n
     );
     setNotifications(updated);
     updateUnreadCount(updated);
-    // TODO: Call API when backend is ready
+
+    try {
+      const response = await fetch(`${NOT_API_URL}/mark-read`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notificationId: id }),
+      });
+
+      if (!response.ok) throw new Error('Failed to mark as read');
+    } catch (err) {
+      console.error('Mark as read failed:', err.message);
+      // Revert on failure
+      fetchNotifications();
+    }
   };
 
   // Mark all as read
   const handleMarkAllAsRead = async () => {
+    // Optimistic update
     const updated = notifications.map((n) => ({ ...n, isRead: true }));
     setNotifications(updated);
     updateUnreadCount(updated);
-    // TODO: Call API when backend is ready
+
+    try {
+      const response = await fetch(`${NOT_API_URL}/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to mark all as read');
+    } catch (err) {
+      console.error('Mark all as read failed:', err.message);
+      // Revert on failure
+      fetchNotifications();
+    }
   };
 
-  // BACKEND: DELETE /api/notifications/:id
-  // Send: { notificationId }
-  // Response: { success: true }
+  // Delete notification
   const handleDeleteNotification = async (id) => {
+    // Optimistic update
     const updated = notifications.filter((n) => n.id !== id);
     setNotifications(updated);
     updateUnreadCount(updated);
-    // TODO: Call API when backend is ready
+
+    try {
+      const response = await fetch(`${NOT_API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to delete notification');
+    } catch (err) {
+      console.error('Delete failed:', err.message);
+      // Revert on failure
+      fetchNotifications();
+    }
   };
 
   const getNotificationColor = (type) => {
     switch (type) {
-      case 'bus':
-        return '#3b82f6';
-      case 'payment':
-        return '#10b981';
-      case 'trip':
-        return '#f59e0b';
-      case 'promo':
-        return '#ec4899';
-      case 'system':
-        return '#6366f1';
-      default:
-        return '#64748b';
+      case 'bus': return '#3b82f6';
+      case 'payment': return '#10b981';
+      case 'trip': return '#f59e0b';
+      case 'promo': return '#ec4899';
+      case 'system': return '#6366f1';
+      default: return '#64748b';
     }
   };
 
   const formatTime = (timestamp) => {
     const now = new Date();
-    const diffMs = now - timestamp;
+    const diffMs = now - new Date(timestamp);
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
@@ -146,7 +144,7 @@ export default function NotificationCenter() {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return timestamp.toLocaleDateString();
+    return new Date(timestamp).toLocaleDateString();
   };
 
   return (
@@ -195,7 +193,11 @@ export default function NotificationCenter() {
 
             {/* Notifications List */}
             <div className={styles.notificationsList}>
-              {notifications.length === 0 ? (
+              {loading ? (
+                <div className={styles.empty}>
+                  <p>Loading notifications...</p>
+                </div>
+              ) : notifications.length === 0 ? (
                 <div className={styles.empty}>
                   <p>No notifications yet</p>
                   <span>You're all caught up! 🎉</span>
@@ -222,7 +224,6 @@ export default function NotificationCenter() {
                         onClick={() => {
                           if (!notif.isRead) handleMarkAsRead(notif.id);
                           if (notif.actionUrl) {
-                            // Navigate to action URL
                             window.location.href = notif.actionUrl;
                           }
                         }}
@@ -233,9 +234,7 @@ export default function NotificationCenter() {
                             <div
                               className={styles.unreadDot}
                               style={{
-                                backgroundColor: getNotificationColor(
-                                  notif.type
-                                ),
+                                backgroundColor: getNotificationColor(notif.type),
                               }}
                             />
                           )}
@@ -277,7 +276,7 @@ export default function NotificationCenter() {
         )}
       </AnimatePresence>
 
-      {/* Overlay to close drawer when clicking outside */}
+      {/* Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div

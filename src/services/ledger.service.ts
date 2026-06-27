@@ -1,14 +1,13 @@
 "use strict";
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "../lib/prisma.js";
 import type { Prisma } from "@prisma/client";
 import logger from "../config/logger.js";
 import env from "../config/env.js";
 
-const prisma = new PrismaClient();
 
 // Support both standard PrismaClient and Transactional Client
-type DbClient = PrismaClient | Prisma.TransactionClient;
+type DbClient = typeof prisma | Prisma.TransactionClient;
 
 interface DeductionResult {
   newBalance: number | null;

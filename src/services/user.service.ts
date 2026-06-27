@@ -163,3 +163,131 @@ export {
   requestPasswordReset,
   resetPasswordWithOTP,
 };
+
+// ─────────────────────────────────────────────
+// getStudentsForAgent
+// Paginated student list for the agent dashboard.
+// Includes wallet + KYC status so the agent can
+// spot unverified accounts or unlinked wallets
+// without extra round-trips.
+// ─────────────────────────────────────────────
+interface StudentFilter {
+  page: number;
+  limit: number;
+  isVerified?: boolean;
+}
+
+const getStudentsForAgent = async (filters: StudentFilter) => {
+  const { page, limit, isVerified } = filters;
+  const skip = (page - 1) * limit;
+
+  const where = {
+    role: "STUDENT" as const,
+    // Only apply isVerified filter when explicitly passed —
+    // undefined means "return all" regardless of verification status
+    ...(isVerified !== undefined && { isVerified }),
+  };
+
+  const [students, total] = await prisma.$transaction([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        firstname: true,
+        lastname: true,
+        email: true,
+        matricNumber: true,
+        isVerified: true,
+        createdAt: true,
+        wallet: {
+          select: { balance: true, is_linked: true },
+        },
+        kyc: {
+          select: { status: true, submittedAt: true },
+        },
+      },
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return {
+    students,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
+};
+
+// ─────────────────────────────────────────────
+// getStudentTransactions
+// Transaction history for a specific student,
+// used by agents to investigate disputes and
+// network errors. Confirms the student exists
+// and has STUDENT role before querying — agents
+// must not be able to pull driver transactions
+// by guessing a matricNumber.
+// ─────────────────────────────────────────────
+interface TransactionFilter {
+  page: number;
+  limit: number;
+}
+
+const getStudentTransactions = async (
+  matricNumber: string,
+  filters: TransactionFilter
+) => {
+  const { page, limit } = filters;
+  const skip = (page - 1) * limit;
+  const normalisedMatric = matricNumber.toUpperCase();
+
+  const student = await prisma.user.findUnique({
+    where: { matricNumber: normalisedMatric },
+    select: {
+      id: true,
+      firstname: true,
+      lastname: true,
+      matricNumber: true,
+      role: true,
+    },
+  });
+
+  if (!student || student.role !== "STUDENT") {
+    throw new Error("STUDENT_NOT_FOUND");
+  }
+
+  const [transactions, total] = await prisma.$transaction([
+    prisma.transaction.findMany({
+      where: { student_uid: normalisedMatric },
+      skip,
+      take: limit,
+      orderBy: { synced_at: "desc" },
+      select: {
+        transaction_id: true,
+        type: true,
+        amount: true,
+        terminal_id: true,
+        driver_uid: true,
+        synced_at: true,
+      },
+    }),
+    prisma.transaction.count({ where: { student_uid: normalisedMatric } }),
+  ]);
+
+  return {
+    student: {
+      id: student.id,
+      firstname: student.firstname,
+      lastname: student.lastname,
+      matricNumber: student.matricNumber,
+    },
+    transactions,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
+};
+
+export { getStudentsForAgent, getStudentTransactions };

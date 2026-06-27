@@ -39,17 +39,22 @@ const extractTextFromImage = async (imageBuffer: Buffer): Promise<string> => {
   const cleanBuffer = await preprocessImage(imageBuffer);
   const base64Image = bufferToBase64(cleanBuffer);
 
-  logger.info("ocr.running_tesseract");
+  logger.info("ocr.running_tesseract_locally");
 
-  const {
-    data: { text, confidence },
-  } = await Tesseract.recognize(base64Image, "eng", {
+  // Create worker without CDN paths to use the bundled node_modules
+  const worker = await Tesseract.createWorker("eng", 1, {
     logger: (m) => {
       if (m.status === "recognizing text") {
         logger.info({ progress: Math.round(m.progress * 100) }, "ocr.progress");
       }
     },
   });
+
+  const {
+    data: { text, confidence },
+  } = await worker.recognize(base64Image);
+
+  await worker.terminate();
 
   logger.info({ confidence }, "ocr.extraction_complete");
 

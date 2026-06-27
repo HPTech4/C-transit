@@ -1,20 +1,19 @@
 import { PrismaClient } from "@prisma/client";
+import env from "../config/env.js";
 
-const isProduction = process.env.NODE_ENV === "production";
-const pooledUrl = process.env.DATABASE_URL;
-const directUrl = process.env.DIRECT_URL;
+const isProduction = env.NODE_ENV === "production";
 
-if (!pooledUrl && !directUrl) {
-  throw new Error(
-    "Missing database connection string. Set DATABASE_URL or DIRECT_URL."
-  );
-}
-
-// Fallback logic to ensure databaseUrl is definitely a string
-const databaseUrl = isProduction ? pooledUrl : directUrl ?? pooledUrl;
+// ✅ Connection strategy:
+//   Production  → pooled URL (PgBouncer on Neon) — handles high concurrency
+//   Development → direct URL — supports all Prisma features (no pgbouncer limitations)
+const databaseUrl = isProduction ? env.db.pooledUrl : env.db.url;
 
 const prisma = new PrismaClient({
-  log: isProduction ? ["error"] : ["query", "error", "warn"],
+  // ✅ Log slow queries and errors in dev, errors only in production
+  log: isProduction ? ["error"] : ["warn", "error"],
+
+  errorFormat: "minimal", // Shorter errors — better for structured logging
+
   datasources: {
     db: {
       url: databaseUrl,

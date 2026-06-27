@@ -1,6 +1,11 @@
 "use strict";
 
-import { getRedisClient, redisKeys, OTP_TTL_SECONDS } from "../config/redis.js";
+import {
+  getRedisClient,
+  redisKeys,
+  cacheKeys, // ✅ Added — needed for cache invalidation
+  OTP_TTL_SECONDS,
+} from "../config/redis.js";
 import { activateWallet, prisma } from "./ledger.service.js";
 import { buildDeltaCommand, type PendingLinkData } from "../utils/parser.js";
 import { routeDeltaToTerminal } from "./sync.service.js";
@@ -97,6 +102,14 @@ async function confirmRegistration(
       { matricNumber: user.matricNumber },
       "registration.wallet_activated"
     );
+
+    // ✅ Invalidate wallet cache — wallet was just created/activated.
+    // Next tap reads fresh wallet state from DB instead of stale null.
+    await redis.del(cacheKeys.wallet(user.matricNumber));
+    log.debug(
+      { matricNumber: user.matricNumber },
+      "registration.wallet_cache_invalidated"
+    );
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : "Unknown error";
     log.error({ err: errMsg }, "registration.wallet_activation_failed");
@@ -120,11 +133,18 @@ async function confirmRegistration(
     "registration.card_uid_mapped_to_student"
   );
 
-  // Consume OTP
+  // ✅ Invalidate card mapping cache — card_uid now points to a new matricNumber.
+  // Without this, ingestion.service.ts would serve the old (stale) mapping from
+  // cache if this card was previously linked to a different student.
+  await redis.del(cacheKeys.cardMap(cardUid));
+  log.debug({ cardUid }, "registration.card_map_cache_invalidated");
+
+  // Consume OTP — cannot be reused
   await redis.del(key);
   log.debug({ key }, "registration.otp_consumed_from_redis");
 
-  // Broadcast ADD:WL,matricNumber to all terminals
+  // Broadcast ADD:WL,cardUid to all terminals
+  // Uses cardUid (not matricNumber) — terminals identify cards by hardware UID
   const addWlCmd = buildDeltaCommand("ADD", "WL", cardUid);
 
   try {

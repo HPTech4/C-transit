@@ -96,3 +96,106 @@ async function handleDriverLogout(terminalId: string, driverUid: string) {
 }
 
 export { handleDriverRegister, handleDriverLogin, handleDriverLogout };
+
+// ─────────────────────────────────────────────
+// listDrivers
+// Returns all drivers with their active terminal
+// assignment. Uses a Map for the join so we avoid
+// an N+1 query — one drivers query, one terminals
+// query, merged in memory.
+// ─────────────────────────────────────────────
+async function listDrivers() {
+  const [drivers, activeTerminals] = await Promise.all([
+    prisma.user.findMany({
+      where: { role: "DRIVER" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        firstname: true,
+        lastname: true,
+        matricNumber: true,
+        createdAt: true,
+      },
+    }),
+    // Only fetch terminals that currently have a driver — avoids
+    // scanning the full terminal table when most are empty
+    prisma.terminal.findMany({
+      where: { active_driver_uid: { not: null } },
+      select: {
+        terminal_id: true,
+        status: true,
+        active_driver_uid: true,
+      },
+    }),
+  ]);
+
+  // Map: matricNumber → terminal — O(1) lookups in the merge below
+  const terminalByDriver = new Map(
+    activeTerminals.map((t) => [t.active_driver_uid, t])
+  );
+
+  return drivers.map((driver) => ({
+    ...driver,
+    activeTerminal: terminalByDriver.get(driver.matricNumber) ?? null,
+  }));
+}
+
+// ─────────────────────────────────────────────
+// registerDriverByAgent
+// REST-based driver registration by an agent.
+// Unlike handleDriverRegister (MQTT flow which
+// requires a terminalId), this is initiated from
+// the agent dashboard with no terminal context.
+// Same default password scheme as the MQTT path
+// for consistency — agent communicates it to the
+// driver out-of-band.
+// ─────────────────────────────────────────────
+async function registerDriverByAgent(data: DriverRegisterData) {
+  const { firstname, lastname, matricNumber } = data;
+  const normalisedMatric = matricNumber.toUpperCase();
+
+  const existing = await prisma.user.findUnique({
+    where: { matricNumber: normalisedMatric },
+    select: { id: true, role: true },
+  });
+
+  if (existing) {
+    // Surface a clear error code — controller maps it to 409
+    throw new Error(
+      existing.role === "DRIVER"
+        ? "DRIVER_ALREADY_EXISTS"
+        : "MATRIC_NUMBER_IN_USE"
+    );
+  }
+
+  const defaultPassword = `${normalisedMatric.replace(/\//g, "")}Driver!`;
+  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+  const driver = await prisma.user.create({
+    data: {
+      firstname: firstname.trim(),
+      lastname: lastname.trim(),
+      email: `-`,
+      matricNumber: normalisedMatric,
+      password: hashedPassword,
+      role: "DRIVER",
+      isVerified: true,
+    },
+    select: {
+      id: true,
+      firstname: true,
+      lastname: true,
+      matricNumber: true,
+      createdAt: true,
+    },
+  });
+
+  logger.info(
+    { matricNumber: driver.matricNumber },
+    "driver.registered_by_agent"
+  );
+
+  return driver;
+}
+
+export { listDrivers, registerDriverByAgent };

@@ -2,7 +2,8 @@
 
 import prisma from "../lib/prisma.js";
 import cloudinary from "../config/cloudinary.js";
-import { extractTextFromImage, parseIdCardText } from "./ocr.service.js";
+import { extractTextFromImage, parseIdCardText } from "./ocr.service.js";// Add getRedisClient and cacheKeys to the existing logger import line
+import { getRedisClient, cacheKeys } from "../config/redis.js"; // ✅ Add this line
 import logger from "../config/logger.js";
 
 export interface KycSubmissionData {
@@ -150,7 +151,13 @@ const getKycByUserId = async (userId: string) => {
  * FIXED: Uses a transaction to update both the KYC record and the User verification flag.
  */
 const approveKyc = async (userId: string) => {
-  return prisma.$transaction(async (tx) => {
+  const redis = getRedisClient();
+
+  // ✅ Transaction now returns { kyc, matricNumber } so we can
+  // invalidate the wallet cache AFTER the transaction commits.
+  // We cannot call redis.del() inside the transaction — Redis and
+  // Prisma are separate systems; the transaction could still roll back.
+  const { kyc, matricNumber } = await prisma.$transaction(async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: { matricNumber: true },
@@ -172,6 +179,8 @@ const approveKyc = async (userId: string) => {
       data: { isVerified: true },
     });
 
+    // Test balance: 1500 NGN = 10 rides at 150 NGN each
+    // Change balance to 0 when Monnify payment API is live
     await tx.wallet.upsert({
       where: { student_uid: user.matricNumber },
       update: { is_linked: true },
@@ -186,9 +195,18 @@ const approveKyc = async (userId: string) => {
       { userId, matricNumber: user.matricNumber },
       "kyc.approved_wallet_created"
     );
-    
-    return kyc;
+
+    // ✅ Return matricNumber alongside kyc so it's available outside the transaction
+    return { kyc, matricNumber: user.matricNumber };
   });
+
+  // ✅ Invalidate wallet cache AFTER transaction commits successfully.
+  // If the transaction rolled back, we never reach here — no false invalidation.
+  await redis.del(cacheKeys.wallet(matricNumber));
+
+  logger.debug({ matricNumber }, "kyc.wallet_cache_invalidated_after_approval");
+
+  return kyc;
 };
 
 const rejectKyc = async (userId: string, reason: string) => {
@@ -202,4 +220,39 @@ const rejectKyc = async (userId: string, reason: string) => {
   });
 };
 
-export { processIdCard, submitKyc, getKycByUserId, approveKyc, rejectKyc };
+// ─────────────────────────────────────────────
+// getPendingKyc
+// Agent KYC queue — returns all PENDING submissions
+// ordered oldest-first so agents work through them
+// in the order students submitted.
+// secret_key and password never appear in KYC data
+// but faceImageUrl is included so the agent can
+// visually verify the ID card photo.
+// ─────────────────────────────────────────────
+const getPendingKyc = async () => {
+  return prisma.kyc.findMany({
+    where: { status: "PENDING" },
+    orderBy: { submittedAt: "asc" },
+    select: {
+      id: true,
+      userId: true,
+      studentName: true,
+      matricNumber: true,
+      school: true,
+      department: true,
+      phoneNumber: true,
+      idCardImageUrl: true,
+      faceImageUrl: true,
+      submittedAt: true,
+    },
+  });
+};
+
+export {
+  processIdCard,
+  submitKyc,
+  getKycByUserId,
+  approveKyc,
+  rejectKyc,
+  getPendingKyc,
+};

@@ -5,6 +5,7 @@ const REQUIRED_VARS = [
   "HIVEMQ_PORT",
   "HIVEMQ_CLIENT_ID",
   "DATABASE_URL",
+  "DATABASE_URL_POOLED",
   "REDIS_URL",
   "ADMIN_API_SECRET",
   "JWT_SECRET",
@@ -30,23 +31,29 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-// Added type definitions for 'value' and 'fallback'
 const parseIntSafe = (value: string | undefined, fallback: number): number => {
   if (!value) return fallback;
   const parsed = parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const parseFloatSafe = (value: string | undefined, fallback: number): number => {
+const parseFloatSafe = (
+  value: string | undefined,
+  fallback: number
+): number => {
   if (!value) return fallback;
   const parsed = parseFloat(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-// Defining a strict interface for your environment configuration
 interface Config {
   NODE_ENV: string;
   PORT: number;
+  // ✅ Added db section — exposes both URLs for prisma.ts to consume
+  db: {
+    url: string; // Direct connection — migrations only
+    pooledUrl: string; // Pooled via PgBouncer — all runtime queries
+  };
   mqtt: {
     host: string;
     port: number;
@@ -84,6 +91,11 @@ interface Config {
 const env: Config = {
   NODE_ENV: process.env.NODE_ENV || "production",
   PORT: parseIntSafe(process.env.PORT, 3000),
+  // ✅ db section now properly typed and exposed
+  db: {
+    url: process.env.DATABASE_URL as string,
+    pooledUrl: process.env.DATABASE_URL_POOLED as string,
+  },
   mqtt: {
     host: process.env.HIVEMQ_HOST as string,
     port: parseIntSafe(process.env.HIVEMQ_PORT, 1883),

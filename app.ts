@@ -13,6 +13,9 @@ import authRoutes from "./src/routes/auth.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import kycRoutes from "./src/routes/kyc.routes.js";
 import transactionRoutes from "./src/routes/transaction.routes.js";
+import agentRoutes from "./src/routes/agent.routes.js";
+import disputeRoutes from "./src/routes/dispute.routes.js";
+import notificationRoutes from "./src/routes/notification.routes.js";
 import walletsRouter, {
   requireStudentAuth,
 } from "./src/controller/wallets.controller.js";
@@ -28,7 +31,7 @@ app.use(
   cors({
     origin: ["http://localhost:5173", "https://c-transit-new.vercel.app"],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   })
 );
 
@@ -64,13 +67,19 @@ app.use("/api/users", userRoutes);
 app.use("/api/kyc", kycRoutes);
 app.use("/api/wallets", authenticateToken, requireStudentAuth, walletsRouter);
 app.use("/api/transactions", authenticateToken, transactionRoutes);
+// authenticateToken is not applied here — agent.routes.ts owns the full
+// middleware chain: authenticateToken → requireAgent → checkAgentActive
+app.use("/api/agents", agentRoutes);
+app.use("/api/disputes", disputeRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Not found" });
 });
 
-// Global error handler (must have 4 arguments for Express to recognize it)
+// Global error handler — must have exactly 4 params for Express to
+// treat it as an error handler rather than a regular middleware
 app.use((err: Error, req: Request, res: Response) => {
   logger.error({ err: err.message, path: req.path }, "http.unhandled_error");
   res.status(500).json({ error: "Internal server error" });

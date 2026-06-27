@@ -15,6 +15,25 @@ import {
 import { buildDeltaCommand } from "../utils/parser.js";
 import { getRedisClient, redisKeys } from "../config/redis.js";
 import { approveKyc, rejectKyc } from "../services/kyc.service.js";
+import {
+  authenticateToken,
+  requireAdmin,
+  type CustomAuthRequest,
+} from "../middleware/auth.middleware.js";
+import { type AgentStatus } from "@prisma/client";
+import {
+  createAgent,
+  updateAgentStatus,
+  listAgents,
+  getAgentById,
+  listTerminals,
+  getAdminOverview,
+  getIncomeStats,
+  listDisputes,
+  getDisputeById,
+  updateDisputeStatus,
+  sendNotification,
+} from "../services/admin.service.js";
 
 const router = express.Router();
 
@@ -31,7 +50,10 @@ router.use(requireAdminSecret);
 
 router.post(
   "/poison-pill",
-  async (req: Request<object, object, { terminalId: string }>, res: Response) => {
+  async (
+    req: Request<object, object, { terminalId: string }>,
+    res: Response
+  ) => {
     const { terminalId } = req.body;
     if (!terminalId) {
       return res.status(400).json({ error: "terminalId is required" });
@@ -67,7 +89,10 @@ router.post(
 
 router.post(
   "/ota",
-  async (req: Request<object, object, { firmwareUrl: string }>, res: Response) => {
+  async (
+    req: Request<object, object, { firmwareUrl: string }>,
+    res: Response
+  ) => {
     const { firmwareUrl } = req.body;
 
     if (!firmwareUrl || !firmwareUrl.startsWith("https://")) {
@@ -133,7 +158,11 @@ router.post(
 router.post(
   "/monnify-webhook",
   async (
-    req: Request<object, object, { studentUid: string; amount: string | number }>,
+    req: Request<
+      object,
+      object,
+      { studentUid: string; amount: string | number }
+    >,
     res: Response
   ) => {
     res.status(200).json({ received: true });
@@ -258,3 +287,479 @@ router.post(
 );
 
 export default router;
+
+// ═════════════════════════════════════════════
+// JWT-PROTECTED ADMIN ROUTER — AGENT MANAGEMENT
+//
+// Separate router from the secret-based one above.
+// requireAdminSecret does NOT apply here — these
+// routes are protected by JWT + requireAdmin instead.
+// Mounted at the same /admin prefix via admin.routes.ts.
+// ═════════════════════════════════════════════
+
+// Valid AgentStatus values — used to guard the update-status route
+const VALID_AGENT_STATUSES: AgentStatus[] = [
+  "ACTIVE",
+  "SUSPENDED",
+  "DEACTIVATED",
+];
+
+// Safely extracts a single string from a query parameter.
+// Express types req.query values as string | string[] | ParsedQs | ParsedQs[]
+// — takes the first element when an array is given (duplicate query key),
+// and returns undefined for nested ParsedQs objects we never expect here.
+function qs(val: unknown): string | undefined {
+  if (typeof val === "string") return val;
+  if (Array.isArray(val) && typeof val[0] === "string") return val[0];
+  return undefined;
+}
+
+const agentManagementRouter = express.Router();
+
+// All routes in this router require a valid admin JWT
+agentManagementRouter.use(authenticateToken, requireAdmin);
+
+// ─────────────────────────────────────────────
+// POST /admin/agents
+// Create a new agent account.
+// Body: { firstname, lastname, email, phone, password }
+// ─────────────────────────────────────────────
+agentManagementRouter.post(
+  "/agents",
+  async (
+    req: CustomAuthRequest & {
+      body: {
+        firstname: string;
+        lastname: string;
+        email: string;
+        phone: string;
+        password: string;
+      };
+    },
+    res: Response
+  ) => {
+    const { firstname, lastname, email, phone, password } = req.body;
+
+    if (!firstname || !lastname || !email || !phone || !password) {
+      return res.status(400).json({
+        error: "firstname, lastname, email, phone, and password are required",
+      });
+    }
+
+    try {
+      // req.user is guaranteed by requireAdmin — safe to assert
+      const adminId = req.user!.userId;
+      const agent = await createAgent(
+        { firstname, lastname, email, phone, password },
+        adminId
+      );
+
+      logger.info({ agentId: agent.id, adminId }, "admin.route_agent_created");
+      return res.status(201).json({ success: true, agent });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "EMAIL_ALREADY_IN_USE") {
+          return res
+            .status(409)
+            .json({ error: "An agent with this email already exists" });
+        }
+      }
+
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.route_create_agent_error");
+      return res.status(500).json({ error: "Failed to create agent" });
+    }
+  }
+);
+
+// ─────────────────────────────────────────────
+// GET /admin/agents
+// Paginated agent list with optional status filter.
+// Query: ?status=ACTIVE&page=1&limit=20
+// ─────────────────────────────────────────────
+agentManagementRouter.get(
+  "/agents",
+  async (req: CustomAuthRequest, res: Response) => {
+    const rawStatus = qs(req.query.status);
+    const page = Math.max(1, parseInt(qs(req.query.page) ?? "1") || 1);
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(qs(req.query.limit) ?? "20") || 20)
+    );
+
+    if (rawStatus && !VALID_AGENT_STATUSES.includes(rawStatus as AgentStatus)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${VALID_AGENT_STATUSES.join(
+          ", "
+        )}`,
+      });
+    }
+
+    try {
+      const result = await listAgents({
+        status: rawStatus as AgentStatus | undefined,
+        page,
+        limit,
+      });
+
+      return res.status(200).json({ success: true, ...result });
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.route_list_agents_error");
+      return res.status(500).json({ error: "Failed to fetch agents" });
+    }
+  }
+);
+
+// ─────────────────────────────────────────────
+// GET /admin/agents/:id
+// Single agent detail — includes resolvedDisputeCount.
+// ─────────────────────────────────────────────
+agentManagementRouter.get(
+  "/agents/:id",
+  async (
+    req: CustomAuthRequest & { params: { id: string } },
+    res: Response
+  ) => {
+    const { id } = req.params;
+
+    try {
+      const agent = await getAgentById(id);
+      return res.status(200).json({ success: true, agent });
+    } catch (error) {
+      if (error instanceof Error && error.message === "AGENT_NOT_FOUND") {
+        return res.status(404).json({ error: "Agent not found" });
+      }
+
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error(
+        { err: errMessage, agentId: id },
+        "admin.route_get_agent_error"
+      );
+      return res.status(500).json({ error: "Failed to fetch agent" });
+    }
+  }
+);
+
+// ─────────────────────────────────────────────
+// PATCH /admin/agents/:id/status
+// Update agent account status.
+// Body: { status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED" }
+// Redis cache is invalidated inside the service — no TTL wait.
+// ─────────────────────────────────────────────
+agentManagementRouter.patch(
+  "/agents/:id/status",
+  async (
+    req: CustomAuthRequest & {
+      params: { id: string };
+      body: { status: string };
+    },
+    res: Response
+  ) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: "status is required" });
+    }
+
+    if (!VALID_AGENT_STATUSES.includes(status as AgentStatus)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${VALID_AGENT_STATUSES.join(
+          ", "
+        )}`,
+      });
+    }
+
+    try {
+      const agent = await updateAgentStatus(id, status as AgentStatus);
+
+      logger.info(
+        { agentId: id, newStatus: status, adminId: req.user!.userId },
+        "admin.route_agent_status_updated"
+      );
+      return res.status(200).json({ success: true, agent });
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.message) {
+          case "AGENT_NOT_FOUND":
+            return res.status(404).json({ error: "Agent not found" });
+          case "AGENT_ALREADY_IN_STATUS":
+            return res
+              .status(409)
+              .json({ error: "Agent is already in that status" });
+          case "CANNOT_TRANSITION_FROM_DEACTIVATED":
+            return res.status(409).json({
+              error:
+                "A deactivated agent can only be set to ACTIVE, not SUSPENDED",
+            });
+        }
+      }
+
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error(
+        { err: errMessage, agentId: id },
+        "admin.route_update_agent_status_error"
+      );
+      return res.status(500).json({ error: "Failed to update agent status" });
+    }
+  }
+);
+
+// ─────────────────────────────────────────────
+// OVERVIEW + INCOME STATS
+// ─────────────────────────────────────────────
+
+// GET /admin/overview
+agentManagementRouter.get(
+  "/overview",
+  async (_req: CustomAuthRequest, res: Response) => {
+    try {
+      const overview = await getAdminOverview();
+      return res.status(200).json({ success: true, overview });
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.route_overview_error");
+      return res.status(500).json({ error: "Failed to fetch overview" });
+    }
+  }
+);
+
+// GET /admin/income
+// Query: ?from=2025-01-01&to=2025-12-31&terminalId=term_01&driverUid=2022/1/12345LH
+agentManagementRouter.get(
+  "/income",
+  async (req: CustomAuthRequest, res: Response) => {
+    const rawFrom = qs(req.query.from);
+    const rawTo = qs(req.query.to);
+    const terminalId = qs(req.query.terminalId);
+    const driverUid = qs(req.query.driverUid);
+
+    // Parse date strings — invalid dates are silently dropped (treated as unfiltered)
+    const from = rawFrom ? new Date(rawFrom) : undefined;
+    const to = rawTo ? new Date(rawTo) : undefined;
+
+    if (from && isNaN(from.getTime())) {
+      return res.status(400).json({ error: "Invalid 'from' date format" });
+    }
+    if (to && isNaN(to.getTime())) {
+      return res.status(400).json({ error: "Invalid 'to' date format" });
+    }
+
+    try {
+      const stats = await getIncomeStats({ from, to, terminalId, driverUid });
+      return res.status(200).json({ success: true, stats });
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.route_income_error");
+      return res.status(500).json({ error: "Failed to fetch income stats" });
+    }
+  }
+);
+
+// GET /admin/terminals
+// Shared with agents — mounted here for admin JWT access too
+agentManagementRouter.get(
+  "/terminals",
+  async (_req: CustomAuthRequest, res: Response) => {
+    try {
+      const terminals = await listTerminals();
+      return res.status(200).json({ success: true, terminals });
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.route_terminals_error");
+      return res.status(500).json({ error: "Failed to fetch terminals" });
+    }
+  }
+);
+
+// ─────────────────────────────────────────────
+// DISPUTE MANAGEMENT
+// ─────────────────────────────────────────────
+
+const VALID_DISPUTE_STATUSES = [
+  "OPEN",
+  "UNDER_REVIEW",
+  "RESOLVED",
+  "REJECTED",
+] as const;
+type ValidDisputeStatus = (typeof VALID_DISPUTE_STATUSES)[number];
+
+// GET /admin/disputes
+// Query: ?status=OPEN&page=1&limit=20
+agentManagementRouter.get(
+  "/disputes",
+  async (req: CustomAuthRequest, res: Response) => {
+    const rawStatus = qs(req.query.status);
+    const page = Math.max(1, parseInt(qs(req.query.page) ?? "1") || 1);
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(qs(req.query.limit) ?? "20") || 20)
+    );
+
+    if (
+      rawStatus &&
+      !VALID_DISPUTE_STATUSES.includes(rawStatus as ValidDisputeStatus)
+    ) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${VALID_DISPUTE_STATUSES.join(
+          ", "
+        )}`,
+      });
+    }
+
+    try {
+      const result = await listDisputes({
+        status: rawStatus as ValidDisputeStatus | undefined,
+        page,
+        limit,
+      });
+      return res.status(200).json({ success: true, ...result });
+    } catch (error) {
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.route_list_disputes_error");
+      return res.status(500).json({ error: "Failed to fetch disputes" });
+    }
+  }
+);
+
+// GET /admin/disputes/:id
+agentManagementRouter.get(
+  "/disputes/:id",
+  async (
+    req: CustomAuthRequest & { params: { id: string } },
+    res: Response
+  ) => {
+    const { id } = req.params;
+    try {
+      const dispute = await getDisputeById(id);
+      return res.status(200).json({ success: true, dispute });
+    } catch (error) {
+      if (error instanceof Error && error.message === "DISPUTE_NOT_FOUND") {
+        return res.status(404).json({ error: "Dispute not found" });
+      }
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error(
+        { err: errMessage, disputeId: id },
+        "admin.route_get_dispute_error"
+      );
+      return res.status(500).json({ error: "Failed to fetch dispute" });
+    }
+  }
+);
+
+// PATCH /admin/disputes/:id/status
+// Body: { status: "UNDER_REVIEW" | "RESOLVED" | "REJECTED", resolution?: string }
+agentManagementRouter.patch(
+  "/disputes/:id/status",
+  async (
+    req: CustomAuthRequest & {
+      params: { id: string };
+      body: { status: string; resolution?: string };
+    },
+    res: Response
+  ) => {
+    const { id } = req.params;
+    const { status, resolution } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: "status is required" });
+    }
+
+    if (!VALID_DISPUTE_STATUSES.includes(status as ValidDisputeStatus)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${VALID_DISPUTE_STATUSES.join(
+          ", "
+        )}`,
+      });
+    }
+
+    try {
+      const dispute = await updateDisputeStatus(id, {
+        newStatus: status as ValidDisputeStatus,
+        resolution,
+        adminId: req.user!.userId,
+      });
+
+      logger.info(
+        { disputeId: id, newStatus: status, adminId: req.user!.userId },
+        "admin.route_dispute_status_updated"
+      );
+      return res.status(200).json({ success: true, dispute });
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.message) {
+          case "DISPUTE_NOT_FOUND":
+            return res.status(404).json({ error: "Dispute not found" });
+          case "DISPUTE_ALREADY_CLOSED":
+            return res
+              .status(409)
+              .json({ error: "Dispute is already resolved or rejected" });
+          case "RESOLUTION_REQUIRED":
+            return res
+              .status(400)
+              .json({
+                error: "resolution text is required when closing a dispute",
+              });
+        }
+      }
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error(
+        { err: errMessage, disputeId: id },
+        "admin.route_update_dispute_error"
+      );
+      return res.status(500).json({ error: "Failed to update dispute" });
+    }
+  }
+);
+// ─────────────────────────────────────────────
+// POST /admin/notifications
+// Admin sends a notification to a specific student.
+// Body: { studentMatric, title, body }
+// ─────────────────────────────────────────────
+agentManagementRouter.post(
+  "/notifications",
+  async (
+    req: CustomAuthRequest & {
+      body: { studentMatric: string; title: string; body: string };
+    },
+    res: Response
+  ) => {
+    const { studentMatric, title, body } = req.body;
+
+    if (!studentMatric || !title || !body) {
+      return res
+        .status(400)
+        .json({ error: "studentMatric, title, and body are required" });
+    }
+
+    try {
+      const notification = await sendNotification(studentMatric, title, body);
+      logger.info(
+        { studentMatric, adminId: req.user!.userId },
+        "admin.route_notification_sent"
+      );
+      return res.status(201).json({ success: true, notification });
+    } catch (error) {
+      if (error instanceof Error && error.message === "STUDENT_NOT_FOUND") {
+        return res.status(404).json({ error: "Student not found" });
+      }
+      const errMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      logger.error({ err: errMessage }, "admin.route_send_notification_error");
+      return res.status(500).json({ error: "Failed to send notification" });
+    }
+  }
+);
+
+export { agentManagementRouter };

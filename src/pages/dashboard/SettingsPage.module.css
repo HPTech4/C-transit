@@ -24,19 +24,8 @@
 }
 
 .backBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--bg-card, white);
-  border: 2px solid var(--border, #e2e8f0);
-  color: var(--primary, #1A56DB);
-  padding: 0.6rem 1rem;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  display: none;
+  
 }
 
 .backBtn:hover {

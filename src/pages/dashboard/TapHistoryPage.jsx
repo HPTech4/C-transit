@@ -98,7 +98,7 @@ export default function TapHistoryPage({ onBack }) {
     });
 
   return (
-    <>
+    <div className={styles.historyPage}>
       <div className={styles.pageHeader}>
         <button className={styles.backBtn} onClick={onBack}>
           <FaArrowLeft size={20} />
@@ -166,6 +166,6 @@ export default function TapHistoryPage({ onBack }) {
           Load More
         </button>
       )}
-    </>
+    </div>
   );
 }

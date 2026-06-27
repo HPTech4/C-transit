@@ -15,14 +15,7 @@
 
 .backBtn,
 .moreBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+ display:none;
 }
 
 .pageTitle {

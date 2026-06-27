@@ -76,7 +76,7 @@ export default function ProfilePage({ userData, onBack }) {
   };
 
   return (
-    <>
+    <div className={styles.profilePages}>
       {/* Page Header */}
       <div className={styles.pageHeader}>
         <button className={styles.backBtn} onClick={onBack}>
@@ -183,6 +183,6 @@ export default function ProfilePage({ userData, onBack }) {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }

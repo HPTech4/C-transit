@@ -59,15 +59,15 @@ export default function KYCModal({ onClose }) {
 
     try {
       const formData = new FormData();
-      formData.append("idCard", idCardImage); // ✅ was 'idCardImage' — must match multer field name
+      formData.append("idCard", idCardImage); //  was 'idCardImage' — must match multer field name
 
-      // ✅ Correct endpoint: POST /api/kyc/upload
-      const response = await fetch(`${AUTH_API_URL}/upload`, {
+      // Correct endpoint: POST /api/kyc/upload
+      const response = await fetch(`${KYC_API_URL}/upload`, {
         method: "POST",
         body: formData,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          // ✅ Do NOT set Content-Type for FormData — browser sets it with boundary
+          //  Do NOT set Content-Type for FormData — browser sets it with boundary
         },
       });
 
@@ -77,7 +77,7 @@ export default function KYCModal({ onClose }) {
         throw new Error(result.message || "Failed to process ID card");
       }
 
-      // ✅ Backend returns { message, data: { studentName, studentId, matricNumber, school, department, idCardImageUrl, faceImageUrl } }
+      //  Backend returns { message, data: { studentName, studentId, matricNumber, school, department, idCardImageUrl, faceImageUrl } }
       const data = result.data;
       if (!data || !data.studentName || !data.studentId) {
         throw new Error("We couldn't read your ID card clearly. Please try a clearer photo.");
@@ -99,7 +99,7 @@ export default function KYCModal({ onClose }) {
     try {
       //  Correct endpoint: POST /api/kyc/submit
       // Backend expects JSON not FormData
-      const response = await fetch(`${AUTH_API_URL}/confirm-card`, {
+      const response = await fetch(`${KYC_API_URL}/submit`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

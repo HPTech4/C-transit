@@ -1,8 +1,5 @@
 @import "../../styles/tokens.css";
 
-/* -------------------- */
-/* BASE (UNCHANGED + SAFE FLEX) */
-/* -------------------- */
 
 .pageHeader {
 display: flex;
@@ -13,8 +10,12 @@ margin-bottom: 24px;
 flex-wrap: wrap;
 gap: 10px;
 }
-
-.backBtn,
+.profilePages{
+    padding: clamp(25px, 22rem, 25px);
+}
+.backBtn{
+    display:none;
+}
 .editBtn {
 background: none;
 border: none;

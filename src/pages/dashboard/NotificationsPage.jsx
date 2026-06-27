@@ -25,7 +25,7 @@ export default function NotificationsPage({ onBack }) {
   const earlierNotifications = notifications.filter(n => !n.time.includes('hours') && !n.time.includes('minutes'));
 
   return (
-    <>
+    <div className={styles.notificationPage}>
       {/* Page Header */}
       <div className={styles.pageHeader}>
         <button className={styles.backBtn} onClick={onBack}>
@@ -105,6 +105,6 @@ export default function NotificationsPage({ onBack }) {
           <p className={styles.emptyMessage}>You're all caught up!</p>
         </div>
       )}
-    </>
+    </div>
   );
 }

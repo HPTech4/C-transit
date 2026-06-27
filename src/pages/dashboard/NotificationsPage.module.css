@@ -13,16 +13,11 @@ padding: 16px 0;
 margin-bottom: 16px;
 flex-wrap: wrap;
 }
-
+.notificationPage{
+    padding: clamp(25px, 22rem, 25px);
+}
 .backBtn {
-background: none;
-border: none;
-cursor: pointer;
-padding: 8px;
-color: var(--text-primary);
-display: flex;
-align-items: center;
-justify-content: center;
+display:none;
 }
 
 .pageTitle {

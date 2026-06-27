@@ -145,29 +145,21 @@ model Transaction {
   @@map("transactions")
 }
 
+// kyc_records
+// Stripped to essentials — student uploads ID card image only.
+// All manual field entry and OCR removed. Admin reviews the image directly.
 model Kyc {
-  id              String    @id @default(uuid())
-  studentName     String
-  studentId       String    @unique
-  matricNumber    String
-  school          String
-  department      String
-  phoneNumber     String
-  idCardImageUrl  String
-  faceImageUrl    String?
-  status          KycStatus @default(PENDING)
+  id             String    @id @default(uuid())
+  idCardImageUrl String
+  status         KycStatus @default(PENDING)
   rejectionReason String?
-  submittedAt     DateTime  @default(now())
-  reviewedAt      DateTime?
+  submittedAt    DateTime  @default(now())
+  reviewedAt     DateTime?
 
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Existing index kept — admin KYC queue filters by status
   @@index([status])
-
-  // ✅ New composite index — admin searches pending KYC sorted by submission date
-  // Query: findMany({ where: { status: PENDING }, orderBy: { submittedAt: 'asc' } })
   @@index([status, submittedAt(sort: Asc)])
 
   @@map("kyc_records")

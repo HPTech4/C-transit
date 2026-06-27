@@ -25,11 +25,11 @@ router.get("/", async (req: CustomAuthRequest, res: Response) => {
 });
 
 // ─────────────────────────────────────────────
-// PATCH /api/notifications/read-all
-// Must be defined BEFORE /:id/read so Express
-// doesn't interpret "read-all" as a dynamic :id.
+// PATCH /api/notifications/mark-all-read
+// Must be defined BEFORE /:id/mark-read so Express
+// doesn't interpret "mark-all-read" as a dynamic :id.
 // ─────────────────────────────────────────────
-router.patch("/read-all", async (req: CustomAuthRequest, res: Response) => {
+router.patch("/mark-all-read", async (req: CustomAuthRequest, res: Response) => {
   try {
     const result = await markAllNotificationsRead(req.user!.userId);
     return res.status(200).json({ success: true, ...result });
@@ -43,11 +43,11 @@ router.patch("/read-all", async (req: CustomAuthRequest, res: Response) => {
 });
 
 // ─────────────────────────────────────────────
-// PATCH /api/notifications/:id/read
+// PATCH /api/notifications/:id/mark-read
 // Marks a single notification as read.
 // ─────────────────────────────────────────────
 router.patch(
-  "/:id/read",
+  "/:id/mark-read",
   async (
     req: CustomAuthRequest & { params: { id: string } },
     res: Response

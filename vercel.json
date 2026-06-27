@@ -1,10 +1,7 @@
 {
   "functions": {
     "dist/**/*.js": {
-      "includeFiles": [
-        "node_modules/tesseract.js-core/**/*.wasm",
-        "eng.traineddata"
-      ]
+      "includeFiles": "{node_modules/tesseract.js-core/**/*.wasm,eng.traineddata}"
     }
   }
 }

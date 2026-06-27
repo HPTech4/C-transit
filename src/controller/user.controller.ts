@@ -75,20 +75,19 @@ export const updateProfile = async (
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const { firstname, lastname, phoneNumber } = req.body;
+    const { firstname, lastname } = req.body;
 
-    if (!firstname && !lastname && !phoneNumber) {
+    if (!firstname && !lastname) {
       return res.status(400).json({
         success: false,
         message:
-          "Provide at least one field to update: firstname, lastname, or phoneNumber",
+          "Provide at least one field to update: firstname, lastname",
       });
     }
 
     const updatedProfile = await updateUserProfile(userId, {
       firstname,
       lastname,
-      phonenumber: phoneNumber,
     });
 
     logger.info({ userId }, "user.profile_updated");

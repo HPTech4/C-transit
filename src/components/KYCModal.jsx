@@ -49,6 +49,21 @@ export default function KYCModal({ onClose }) {
   };
 
   const handleContinue = async () => {
+    const token = localStorage.getItem("token");
+    console.log("=== KYC DEBUG ===");
+    console.log("1. Raw token:", token);
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const expiry = new Date(payload.exp * 1000);
+        console.log("2. Token payload:", payload);
+        console.log("3. Expires at:", expiry.toLocaleString());
+        console.log("4. Expired?", expiry < new Date() ? "YES ❌" : "NO ✅");
+      } catch (e) {
+        console.log("2. Token is MALFORMED ❌", e.message);
+      }
+    }
+    console.log("=== END DEBUG ===");
     if (!idCardImage) {
       setError("Please upload your school ID card");
       return;

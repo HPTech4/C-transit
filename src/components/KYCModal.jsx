@@ -49,21 +49,7 @@ export default function KYCModal({ onClose }) {
   };
 
   const handleContinue = async () => {
-    const token = localStorage.getItem("token");
-    console.log("=== KYC DEBUG ===");
-    console.log("1. Raw token:", token);
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        const expiry = new Date(payload.exp * 1000);
-        console.log("2. Token payload:", payload);
-        console.log("3. Expires at:", expiry.toLocaleString());
-        console.log("4. Expired?", expiry < new Date() ? "YES ❌" : "NO ✅");
-      } catch (e) {
-        console.log("2. Token is MALFORMED ❌", e.message);
-      }
-    }
-    console.log("=== END DEBUG ===");
+    
     if (!idCardImage) {
       setError("Please upload your school ID card");
       return;
@@ -81,7 +67,7 @@ export default function KYCModal({ onClose }) {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           //  Do NOT set Content-Type for FormData — browser sets it with boundary
         },
       });
@@ -117,7 +103,7 @@ export default function KYCModal({ onClose }) {
       const response = await fetch(`${KYC_API_URL}/submit`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           "Content-Type": "application/json", //  JSON body
         },
         body: JSON.stringify({

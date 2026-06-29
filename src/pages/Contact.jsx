@@ -11,7 +11,7 @@ import {
   FaExclamationCircle,
   FaPaperPlane,
 } from 'react-icons/fa';
-import styles from './ContactSupport.module.css';
+import styles from './Contact.module.css';
 
 const CONTACT_CARDS = [
   { icon: <FaEnvelope />, label: 'Email Support', value: 'support@ctransit.me' }, // ⚠️ confirm real address

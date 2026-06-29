@@ -14,7 +14,7 @@ import {
   FaHeadset,
   FaArrowRight,
 } from 'react-icons/fa';
-import styles from './HelpCenter.module.css';
+import styles from './Help.module.css';
 
 const FAQ_DATA = [
   {

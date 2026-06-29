@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 
 import './App.css';
 import './styles/designSystem.css';
@@ -57,6 +58,7 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <Router>
+          <Analytics />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/terms" element={<TermsPage />} />

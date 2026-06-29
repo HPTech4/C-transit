@@ -8,9 +8,8 @@ import TapHistoryPage from './dashboard/TapHistoryPage';
 import NotificationsPage from './dashboard/NotificationsPage';
 import ProfilePage from './dashboard/ProfilePage';
 import SettingsPage from './dashboard/SettingsPage';
-import HelpCenter from './dashboard/HelpCenter';
-import SettingsPage from './dashboard/SettingsPage';
-import ContactSupport from './dashboard/Contact';
+import HelpCenter from './HelpPage';
+import ContactSupport from './Contact';
 import axios from 'axios';
 
 import { USER_API_URL } from './../config/api';

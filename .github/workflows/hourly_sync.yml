@@ -1,0 +1,32 @@
+name: C-Transit Leaderboard Hourly Sync
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs at minute 0 past every hour
+  workflow_dispatch: # Allows manual triggering from the GitHub UI
+
+jobs:
+  run-sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run Leaderboard Sync Script
+      env:
+        GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+        REGISTRATION_SHEET_ID: ${{ secrets.REGISTRATION_SHEET_ID }}
+        FEEDBACK_SHEET_ID: ${{ secrets.FEEDBACK_SHEET_ID }}
+        LEADERBOARD_SHEET_ID: ${{ secrets.LEADERBOARD_SHEET_ID }}
+      run: python -m src.main

@@ -393,17 +393,17 @@ useEffect(() => {
             <a href="#how-it-works">How It Works</a>
           </div>
 
-          <div className={styles.footerColumn}>
+         <div className={styles.footerColumn}>
             <h5>Company</h5>
-            <a href="#about">About Us</a>
-            <a href="#contact">Contact</a>
+            <Link to="/about">About Us</Link>
+            <Link to="/contact">Contact</Link>
           </div>
 
           <div className={styles.footerColumn}>
             <h5>Support</h5>
-            <a href="#help">Help Center</a>
-            <a href="#privacy">Privacy Policy</a>
-            <a href="#terms">Terms of Service</a>
+            <Link to="/help">Help Center</Link>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
             <a href="#status">Status</a>
           </div>
         </div>

@@ -1,0 +1,488 @@
+@import "../../styles/tokens.css";
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap');
+
+/* ── Page ──────────────────────────────────────────────────────────────────── */
+.page {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+.sectionLabel {
+  display: inline-block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.sectionLabelLight {
+  display: inline-block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warning);
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0 0 0.8rem;
+  color: var(--text-primary);
+}
+
+.sectionIntro {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 560px;
+  margin: 0 auto 2.5rem;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────────── */
+.hero {
+  background: var(--navy);
+  padding-bottom: 4rem;
+  position: relative;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--warning), transparent);
+}
+
+.topBar {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1.5rem 1.2rem 0;
+}
+
+.backBtnDark {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: #e2e8f0;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+}
+
+.backBtnDark:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: var(--warning);
+}
+
+.backBtnDark:focus-visible {
+  outline: 3px solid var(--warning);
+  outline-offset: 2px;
+}
+
+.heroContent {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 3rem 1.2rem 0;
+  text-align: center;
+}
+
+.eyebrowDark {
+  display: inline-block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  margin-bottom: 1.6rem;
+}
+
+.heroContent h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #ffffff;
+  margin: 0 0 1.6rem;
+}
+
+.heroLead {
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: #cbd5e1;
+  margin: 0 0 1.4rem;
+}
+
+.heroPunch {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1.4rem;
+}
+
+.heroGoal {
+  font-size: 1.05rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 1.8rem 0 0;
+}
+
+.heroGoal span {
+  color: var(--warning);
+  font-weight: 700;
+}
+
+/* ── Our Story ─────────────────────────────────────────────────────────────── */
+.storySection {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4.5rem 1.2rem;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.storyQuote { position: sticky; top: 2rem; }
+
+.bigQuote {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.storyBody p {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  margin: 0 0 1.2rem;
+}
+
+/* ── Route Line (What We Do) ─────────────────────────────────────────────── */
+.routeSection {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem 1.2rem 4.5rem;
+  text-align: center;
+}
+
+.routeLine {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  margin: 2.5rem 0 2.5rem;
+  padding: 0 1rem;
+}
+
+.routeLine::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--primary) 0, var(--primary) 8px,
+    transparent 8px, transparent 16px
+  );
+}
+
+.routeStop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  width: 25%;
+}
+
+.routeStopNumber {
+  position: absolute;
+  top: -10px;
+  right: calc(50% - 32px);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--warning);
+  color: var(--navy);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.routeStopIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
+}
+
+.routeStop p {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.4;
+  max-width: 140px;
+}
+
+.routeNote {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Manifesto ─────────────────────────────────────────────────────────────── */
+.manifesto {
+  background: var(--navy);
+  padding: 5rem 1.2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.manifestoLine {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0 0 1.6rem;
+  max-width: 520px;
+}
+
+.manifestoRight {
+  margin-left: auto;
+  text-align: right;
+}
+
+.manifestoClose {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 2.5rem 0 0;
+  text-align: center;
+}
+
+/* ── Vision & Mission ─────────────────────────────────────────────────────── */
+.visionSection {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4.5rem 1.2rem;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 2.5rem;
+  align-items: stretch;
+}
+
+.visionCol p {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  margin: 0 0 1.2rem;
+}
+
+.missionBox {
+  background: var(--navy);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.missionBox p {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+/* ── Core Principles ──────────────────────────────────────────────────────── */
+.principlesSection {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem 1.2rem 4.5rem;
+  text-align: center;
+}
+
+.principlesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  margin-top: 2rem;
+}
+
+.principleCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.8rem 1.3rem;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.principleCard:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.principleIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+
+.principleCard h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.principleCard p {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ── Close Section ─────────────────────────────────────────────────────────── */
+.closeSection {
+  background: var(--navy);
+  padding: 5rem 1.2rem 5.5rem;
+  text-align: center;
+}
+
+.closeText {
+  max-width: 560px;
+  margin: 0 auto 0.6rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+
+.closeTextSub {
+  font-size: 0.95rem;
+  color: var(--warning);
+  font-weight: 600;
+  margin: 0 0 3rem;
+}
+
+.tapRideMove {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+
+.tapWord {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: inline-block;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 2rem;
+  background: var(--warning);
+  color: var(--navy);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ctaBtn:hover {
+  background: #fbbf24;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+}
+
+.ctaBtn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .storySection,
+  .visionSection { grid-template-columns: 1fr; gap: 2rem; }
+  .storyQuote { position: static; }
+  .principlesGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .heroContent h1 { font-size: 1.9rem; }
+  .heroPunch { font-size: 1.2rem; }
+  .bigQuote { font-size: 1.25rem; }
+  .manifestoLine { font-size: 1.15rem; }
+  .manifestoClose { font-size: 1.5rem; }
+  .principlesGrid { grid-template-columns: 1fr; }
+  .tapWord { font-size: 2.1rem; }
+
+  .routeLine {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+  .routeLine::before { display: none; }
+  .routeStop { width: 100%; }
+  .routeStopNumber { right: calc(50% - 36px); }
+}

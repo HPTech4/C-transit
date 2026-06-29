@@ -5,6 +5,7 @@ import {
   FaUpload,
   FaCheckCircle,
   FaTimes,
+  FaCamera,
 } from "react-icons/fa";
 import { KYC_API_URL } from "../config/api";
 import styles from "./KYCModal.module.css";
@@ -14,6 +15,7 @@ export default function KYCModal({ onClose }) {
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -41,6 +43,39 @@ export default function KYCModal({ onClose }) {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
   };
+
+  const handleDrop = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setDragging(false);
+
+  const file = e.dataTransfer.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    setError('Please upload a valid image file');
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    setError('Image size must be less than 5MB');
+    return;
+  }
+
+  setError('');
+  setIdCardImage(file);
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  setPreviewUrl(URL.createObjectURL(file));
+};
+
+const handleDragOver = (e) => {
+  e.preventDefault();
+  setDragging(true);
+};
+
+const handleDragLeave = () => {
+  setDragging(false);
+};
 
   const handleSubmit = async () => {
     if (!idCardImage) {
@@ -132,48 +167,74 @@ export default function KYCModal({ onClose }) {
 
         {/* Content */}
         <div className={styles.content}>
-          <div className={styles.uploadBox}>
-            {previewUrl ? (
-              <motion.div
-                className={styles.previewContainer}
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-              >
-                <img
-                  src={previewUrl}
-                  alt="School ID Card"
-                  className={styles.previewImage}
-                />
-                <button
-                  className={styles.changeBtn}
-                  onClick={() =>
-                    document.getElementById("idCardInput").click()
-                  }
-                >
-                  Change Image
-                </button>
-              </motion.div>
-            ) : (
-              <motion.label
-                htmlFor="idCardInput"
-                className={styles.uploadLabel}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <FaUpload />
-                <span>Click to upload</span>
-                <small>PNG, JPG, GIF up to 5MB</small>
-              </motion.label>
-            )}
-            <input
-              id="idCardInput"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className={styles.fileInput}
-            />
-          </div>
+          <div
+  className={`${styles.uploadBox} ${dragging ? styles.dragging : ''}`}
+  onDrop={handleDrop}
+  onDragOver={handleDragOver}
+  onDragLeave={handleDragLeave}
+>
+  {previewUrl ? (
+    <motion.div
+      className={styles.previewContainer}
+      initial={{ scale: 0.9 }}
+      animate={{ scale: 1 }}
+    >
+      <img
+        src={previewUrl}
+        alt="School ID Card"
+        className={styles.previewImage}
+      />
+      <button
+        className={styles.changeBtn}
+        onClick={() => document.getElementById("idCardInput").click()}
+      >
+        Change Image
+      </button>
+    </motion.div>
+  ) : (
+    <motion.label
+      htmlFor="idCardInput"
+      className={styles.uploadLabel}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <FaUpload />
+      <span>Click to upload or drag and drop</span>
+      <small>PNG, JPG, GIF up to 5MB</small>
 
+      {/* 👇 Camera capture button */}
+      <button
+        type="button"
+        className={styles.cameraBtn}
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById('cameraInput').click();
+        }}
+      >
+        <FaCamera /> Take Photo
+      </button>
+    </motion.label>
+  )}
+
+  {/* File upload input */}
+  <input
+    id="idCardInput"
+    type="file"
+    accept="image/*"
+    onChange={handleImageUpload}
+    className={styles.fileInput}
+  />
+
+  {/* Camera capture input */}
+  <input
+    id="cameraInput"
+    type="file"
+    accept="image/*"
+    capture="environment" 
+    onChange={handleImageUpload}
+    className={styles.fileInput}
+  />
+</div>
           <div className={styles.instructions}>
             <h4>Guidelines:</h4>
             <ul>

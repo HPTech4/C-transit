@@ -8,6 +8,9 @@ import TapHistoryPage from './dashboard/TapHistoryPage';
 import NotificationsPage from './dashboard/NotificationsPage';
 import ProfilePage from './dashboard/ProfilePage';
 import SettingsPage from './dashboard/SettingsPage';
+import HelpCenter from './dashboard/HelpCenter';
+import SettingsPage from './dashboard/SettingsPage';
+import ContactSupport from './dashboard/Contact';
 import axios from 'axios';
 
 import { USER_API_URL } from './../config/api';
@@ -104,7 +107,7 @@ setRecentTaps(normalized.slice(0, 5));
     setCurrentPage(page);
   };
 
-  const pageProps = {
+const pageProps = {
     userData,
     walletBalance,
     recentTaps,
@@ -112,8 +115,8 @@ setRecentTaps(normalized.slice(0, 5));
     onFundWallet: () => handleNavigate('wallet'),
     onTransfer: () => handleNavigate('wallet'),
     onViewAll: () => handleNavigate('history'),
+    onContactSupport: () => handleNavigate('contact'),
   };
-
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -126,8 +129,12 @@ setRecentTaps(normalized.slice(0, 5));
         return <NotificationsPage {...pageProps} />;
       case 'profile':
         return <ProfilePage {...pageProps} />;
-      case 'settings':
+    case 'settings':
         return <SettingsPage {...pageProps} />;
+      case 'help':
+        return <HelpCenter {...pageProps} />;
+      case 'contact':
+        return <ContactSupport {...pageProps} onBack={() => handleNavigate('help')} />;
       default:
         return <DashboardHome {...pageProps} />;
     }

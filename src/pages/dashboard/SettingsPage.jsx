@@ -20,7 +20,7 @@ import {
 } from 'react-icons/fa';
 import styles from './SettingsPage.module.css';
 import KYCModal from '../../components/KYCModal';
-import { USER_API_URL } from '../../config/api';
+import { USER_API_URL, KYC_API_URL } from '../../config/api';
 
 
 export default function Settings() {
@@ -335,11 +335,11 @@ function CardLinking({ onShowInfo, onToast }) {
 
     try {
       // TODO(backend): replace with your real card-linking endpoint once ready
-      const response = await fetch(`${USER_API_URL}/link`, {
+      const response = await fetch(`${USER_API_URL}/confirm-card`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('authtoken')}`,
         },
         body: JSON.stringify({ otp: code }),
       });
@@ -444,12 +444,47 @@ function CardLinking({ onShowInfo, onToast }) {
     </motion.div>
   );
 }
+
 /* ── KYC Section ───────────────────────────────────────────────────────────── */
 function KYCSection({ onToast }) {
   const [showKYCModal, setShowKYCModal] = useState(false);
+  const [kycStatus, setKycStatus] = useState('unverified');
+  const [statusLoading, setStatusLoading] = useState(true);
 
-  // FIX 2: kycStatus must be state so it can update after submission
-  const [kycStatus, setKycStatus] = useState('unverified'); // 'unverified' | 'pending' | 'verified'
+  //  Fetch real KYC status on mount
+  useEffect(() => {
+    const fetchKYCStatus = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setStatusLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${KYC_API_URL}/status`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) throw new Error(result.message || 'Failed to fetch KYC status');
+
+        // 👇 adjust this based on what your backend returns
+        const status = result.data?.status || result.status || 'unverified';
+        setKycStatus(status);
+      } catch (err) {
+        console.error('KYC status fetch failed:', err.message);
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+
+    fetchKYCStatus();
+  }, []);
 
   const statusConfig = {
     unverified: {
@@ -472,9 +507,8 @@ function KYCSection({ onToast }) {
     },
   };
 
-  const config = statusConfig[kycStatus];
+  const config = statusConfig[kycStatus] || statusConfig['unverified'];
 
-  // FIX 4: update kycStatus to 'pending' on successful KYC submission
   const handleKYCClose = (result) => {
     setShowKYCModal(false);
     if (result?.success) {
@@ -482,6 +516,16 @@ function KYCSection({ onToast }) {
       onToast(result.message || 'KYC submitted successfully.');
     }
   };
+
+  // 👇 Show loading while fetching status
+  if (statusLoading) {
+    return (
+      <motion.div className={styles.settingsCard} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <h2>Identity Verification (KYC)</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading verification status...</p>
+      </motion.div>
+    );
+  }
 
   return (
     <>
@@ -520,7 +564,7 @@ function KYCSection({ onToast }) {
 
         {kycStatus === 'pending' && (
           <div className={styles.kycPendingNote}>
-             Your submission is being reviewed. We'll notify you once it's complete.
+            Your submission is being reviewed. We'll notify you once it's complete.
           </div>
         )}
       </motion.div>
@@ -531,7 +575,6 @@ function KYCSection({ onToast }) {
     </>
   );
 }
-
 
 
 /* ── Privacy Settings ──────────────────────────────────────────────────────── */

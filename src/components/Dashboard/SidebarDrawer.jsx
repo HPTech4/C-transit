@@ -8,6 +8,7 @@ FaHistory,
 FaBell,
 FaUser,
 FaCog,
+FaQuestionCircle,
 FaSignOutAlt
 } from 'react-icons/fa';
 import styles from './SidebarDrawer.module.css';
@@ -35,6 +36,7 @@ const navItems = [
 { id: 'notifications', label: 'Notifications', icon: FaBell },
 { id: 'profile', label: 'Profile', icon: FaUser },
 { id: 'settings', label: 'Settings', icon: FaCog },
+{ id: 'help', label: 'Help & Support', icon: FaQuestionCircle },
 ];
 
 const handleLogout = () => {

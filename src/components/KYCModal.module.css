@@ -85,6 +85,29 @@
   color: #94a3b8;
 }
 
+.dragging {
+  border: 2px dashed #2563eb;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.cameraBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cameraBtn:hover {
+  background: #1d4ed8;
+}
 .closeBtn {
   background: transparent;
   border: 0;

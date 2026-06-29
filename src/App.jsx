@@ -9,13 +9,15 @@ import DashboardWrapper from './pages/DashboardWrapper';
 import UserProfile from './pages/UserProfile';
 import Settings from './pages/dashboard/SettingsPage';
 import TransferHistory from './pages/TransferHistory';
-import ReportDispute from './pages/ReportDispute';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AgentLogin from './pages/AgentLogin';
 import AgentDashboard from './pages/AgentDashboard';
 import TermsPage from './pages/Terms.page';
 import PrivacyPage from './pages/Privacy.page';
+import AboutPage from './pages/About';
+import ContactSupport from './pages/Contact';
+import HelpCenter from './pages/HelpPage';
 
 // New Auth Screens
 import LoginPage from './pages/Login.page';
@@ -59,6 +61,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactSupport />} />
+            <Route path="/help" element={<HelpCenter />} />
 
             {/* New Auth Routes */}
             <Route
@@ -126,14 +131,6 @@ function App() {
               element={
                 <AuthGuard>
                   <TransferHistory />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/report-dispute"
-              element={
-                <AuthGuard>
-                  <ReportDispute />
                 </AuthGuard>
               }
             />

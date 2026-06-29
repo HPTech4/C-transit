@@ -1,3 +1,4 @@
+// src/config/redis.ts
 import * as IORedisPkg from "ioredis";
 import { type RedisOptions } from "ioredis";
 import env from "./env.js";
@@ -48,7 +49,6 @@ function getRedisClient(): any {
 }
 
 // ── MQTT & OTP Keys ───────────────────────────────────────────────────────────
-// Used for terminal downlink queues and card registration OTP flow
 const redisKeys = {
   // Card registration OTP: SETEX link_otp:{otp} 300 "cardUid|terminalId"
   linkOtp: (otp: string | number): string => `link_otp:${otp}`,
@@ -59,48 +59,43 @@ const redisKeys = {
 };
 
 // ── Hot Read Cache Keys ───────────────────────────────────────────────────────
-// These cache the 3 DB reads that fire on EVERY terminal tap.
-// Keeping them separate from redisKeys makes their purpose explicit.
 const cacheKeys = {
   // Maps hardware card UID → student matricNumber
   // No TTL — permanent mapping, invalidated only on card re-link
-  // e.g. card:map:238DB4E8 → "2022/1/87453LH"
   cardMap: (cardUid: string): string => `card:map:${cardUid}`,
 
   // Caches wallet { balance, is_linked } per student
   // Short TTL — balance changes on every tap
-  // e.g. wallet:2022/1/87453LH → '{"balance":1350,"is_linked":true}'
   wallet: (matricNumber: string): string => `wallet:${matricNumber}`,
 
   // Caches blacklist presence per student
   // Longer TTL — changes less frequently than balance
-  // e.g. blacklist:2022/1/87453LH → "1" (blacklisted) | "0" (clean)
   blacklist: (matricNumber: string): string => `blacklist:${matricNumber}`,
 
   // Caches agent account status for middleware checks on every agent request
-  // Value is the raw AgentStatus string: "ACTIVE" | "SUSPENDED" | "DEACTIVATED"
-  // MUST be DEL'd immediately when admin changes agent status — no grace window
-  // e.g. agent:status:uuid → "ACTIVE"
+  // MUST be DEL'd immediately when admin changes agent status
   agentStatus: (agentId: string): string => `agent:status:${agentId}`,
+
+  // Refresh token store — keyed by tokenId (UUID v4 generated at login)
+  // Value: JSON { userId, role, email }
+  // TTL: REFRESH_TOKEN_TTL (7 days)
+  // DEL on logout or account deactivation — instant revocation
+  refreshToken: (tokenId: string): string => `refresh:${tokenId}`,
+
+  // Caches terminal secret_key for HMAC verification on every uplink message.
+  // Short TTL — secret rotations propagate within 60s.
+  // DEL this key when admin updates a terminal's secret_key.
+  terminalSecret: (terminalId: string): string =>
+    `terminal:secret:${terminalId}`,
 };
 
 // ── TTL Constants ─────────────────────────────────────────────────────────────
 const OTP_TTL_SECONDS = 300; // Card registration OTP — 5 minutes
-
-// Wallet balance TTL: short because balance changes on every tap.
-// A stale read here means a student could be served an incorrect balance display
-// on the terminal screen — acceptable for 30s, not longer.
-const WALLET_CACHE_TTL = 30; // seconds
-
-// Blacklist status TTL: longer than wallet because it changes less frequently.
-// A stale read here means a blacklisted student could get one free ride — acceptable
-// for 60s during testing. Restore to 10s when payment API is live and balance matters.
-const BLACKLIST_CACHE_TTL = 60; // seconds
-
-// Agent status TTL: short enough that a suspension propagates within one minute.
-// The agent service MUST DEL this key on every status change to invalidate immediately
-// rather than waiting for TTL expiry.
-const AGENT_STATUS_TTL = 60; // seconds
+const WALLET_CACHE_TTL = 30; // seconds — short, balance changes every tap
+const BLACKLIST_CACHE_TTL = 60; // seconds — longer, changes less frequently
+const AGENT_STATUS_TTL = 60; // seconds — suspension propagates within 1 min
+const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
+const TERMINAL_SECRET_TTL = 60; // seconds — short enough for key rotation to propagate
 
 export {
   getRedisClient,
@@ -110,4 +105,6 @@ export {
   WALLET_CACHE_TTL,
   BLACKLIST_CACHE_TTL,
   AGENT_STATUS_TTL,
+  REFRESH_TOKEN_TTL,
+  TERMINAL_SECRET_TTL,
 };

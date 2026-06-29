@@ -1,3 +1,4 @@
+// src/config/env.ts
 import "dotenv/config";
 
 const REQUIRED_VARS = [
@@ -9,6 +10,7 @@ const REQUIRED_VARS = [
   "REDIS_URL",
   "ADMIN_API_SECRET",
   "JWT_SECRET",
+  "JWT_REFRESH_SECRET", // ← added
   "OTP_SECRET",
   "MAIL_USER",
   "MAIL_PASSWORD",
@@ -49,10 +51,9 @@ const parseFloatSafe = (
 interface Config {
   NODE_ENV: string;
   PORT: number;
-  // ✅ Added db section — exposes both URLs for prisma.ts to consume
   db: {
-    url: string; // Direct connection — migrations only
-    pooledUrl: string; // Pooled via PgBouncer — all runtime queries
+    url: string;
+    pooledUrl: string;
   };
   mqtt: {
     host: string;
@@ -70,6 +71,7 @@ interface Config {
   };
   jwt: {
     secret: string;
+    refreshSecret: string; // ← added
   };
   otp: {
     secret: string;
@@ -86,12 +88,24 @@ interface Config {
     apiKey: string;
     apiSecret: string;
   };
+  rateLimit: {
+    global: { windowMs: number; max: number };
+    login: { windowMs: number; max: number };
+    adminLogin: { windowMs: number; max: number };
+    register: { windowMs: number; max: number };
+    otp: { windowMs: number; max: number };
+    kyc: { windowMs: number; max: number };
+    kycStatus: { windowMs: number; max: number };
+    transactions: { windowMs: number; max: number };
+    wallets: { windowMs: number; max: number };
+    disputes: { windowMs: number; max: number };
+    notifications: { windowMs: number; max: number };
+  };
 }
 
 const env: Config = {
   NODE_ENV: process.env.NODE_ENV || "production",
   PORT: parseIntSafe(process.env.PORT, 3000),
-  // ✅ db section now properly typed and exposed
   db: {
     url: process.env.DATABASE_URL as string,
     pooledUrl: process.env.DATABASE_URL_POOLED as string,
@@ -112,6 +126,7 @@ const env: Config = {
   },
   jwt: {
     secret: process.env.JWT_SECRET as string,
+    refreshSecret: process.env.JWT_REFRESH_SECRET as string, // ← added
   },
   otp: {
     secret: process.env.OTP_SECRET as string,
@@ -127,6 +142,20 @@ const env: Config = {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME as string,
     apiKey: process.env.CLOUDINARY_API_KEY as string,
     apiSecret: process.env.CLOUDINARY_API_SECRET as string,
+  },
+  rateLimit: {
+    // ── Edit these values to tune limits without touching middleware ──
+    global: { windowMs: 15 * 60 * 1000, max: 100 },
+    login: { windowMs: 15 * 60 * 1000, max: 5 },
+    adminLogin: { windowMs: 15 * 60 * 1000, max: 3 },
+    register: { windowMs: 60 * 60 * 1000, max: 5 },
+    otp: { windowMs: 15 * 60 * 1000, max: 3 },
+    kyc: { windowMs: 60 * 60 * 1000, max: 3 },
+    kycStatus: { windowMs: 15 * 60 * 1000, max: 20 },
+    transactions: { windowMs: 15 * 60 * 1000, max: 30 },
+    wallets: { windowMs: 15 * 60 * 1000, max: 30 },
+    disputes: { windowMs: 60 * 60 * 1000, max: 5 },
+    notifications: { windowMs: 15 * 60 * 1000, max: 30 },
   },
 };
 

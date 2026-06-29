@@ -1,4 +1,5 @@
-import { Request, Response} from "express";
+// src/controller/auth.controller.ts
+import { Request, Response } from "express";
 import prisma from "../lib/prisma.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -10,6 +11,11 @@ import {
   sendOTPEmail,
 } from "../services/otp.service.js";
 import { confirmRegistration } from "../services/registration.service.js";
+import {
+  issueRefreshToken,
+  verifyRefreshToken,
+  revokeRefreshToken,
+} from "../services/token.service.js";
 
 // Interface to handle routes protected by auth middleware
 export interface AuthenticatedRequest extends Request {
@@ -28,6 +34,9 @@ const isValidPassword = (password: string): boolean => {
   return passwordRegex.test(password);
 };
 
+// ─────────────────────────────────────────────
+// registerStudent
+// ─────────────────────────────────────────────
 export const registerStudent = async (req: Request, res: Response) => {
   try {
     const { firstname, lastname, email, matricNumber, password } = req.body;
@@ -77,16 +86,19 @@ export const registerStudent = async (req: Request, res: Response) => {
       { email: email.toLowerCase() },
       "auth.registration_successful_otp_sent"
     );
-    res.status(201).json({
+    return res.status(201).json({
       message: "Registration successful. Check your email for the OTP.",
     });
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error({ err: errMessage }, "auth.registration_error");
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
+// ─────────────────────────────────────────────
+// verifyOTP
+// ─────────────────────────────────────────────
 export const verifyOTP = async (req: Request, res: Response) => {
   try {
     const { email, otp } = req.body;
@@ -129,16 +141,19 @@ export const verifyOTP = async (req: Request, res: Response) => {
       { email: email.toLowerCase() },
       "auth.otp_verified_successfully"
     );
-    res.status(200).json({
+    return res.status(200).json({
       message: "Email verified successfully. You can now log in.",
     });
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error({ err: errMessage }, "auth.verify_otp_error");
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
+// ─────────────────────────────────────────────
+// resendOTP
+// ─────────────────────────────────────────────
 export const resendOTP = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -165,14 +180,22 @@ export const resendOTP = async (req: Request, res: Response) => {
     await sendOTPEmail(email.toLowerCase(), otp);
 
     logger.info({ email: email.toLowerCase() }, "auth.otp_resent");
-    res.status(200).json({ message: "A new OTP has been sent to your email" });
+    return res.status(200).json({
+      message: "A new OTP has been sent to your email",
+    });
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error({ err: errMessage }, "auth.resend_otp_error");
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
+// ─────────────────────────────────────────────
+// loginStudent
+// Issues accessToken (1h) + refreshToken (7d).
+// email is included in payload to match UserJwtPayload
+// interface declared in auth.middleware.ts.
+// ─────────────────────────────────────────────
 export const loginStudent = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -214,37 +237,121 @@ export const loginStudent = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
+    const accessToken = jwt.sign(
+      { userId: user.id, role: user.role, email: user.email },
       env.jwt.secret,
       { expiresIn: "1h" }
     );
+
+    const refreshToken = await issueRefreshToken({
+      userId: user.id,
+      role: user.role,
+      email: user.email,
+    });
 
     logger.info(
       { email: email.toLowerCase(), userId: user.id },
       "auth.login_successful"
     );
-    res.status(200).json({ token, message: "Login successful" });
+    return res.status(200).json({
+      accessToken,
+      refreshToken,
+      message: "Login successful",
+    });
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error({ err: errMessage }, "auth.login_error");
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-export const logoutStudent = (req: Request, res: Response) => {
+// ─────────────────────────────────────────────
+// loginAdmin
+// Bypasses institution email check.
+// Issues accessToken (8h) + refreshToken (7d).
+// Vague error messages — never reveal whether
+// the account exists.
+// ─────────────────────────────────────────────
+export const loginAdmin = async (req: Request, res: Response) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Please provide email and password" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
     });
 
-    logger.info("auth.student_logged_out");
+    if (!user || user.role !== "ADMIN") {
+      logger.warn({ email: email.toLowerCase() }, "auth.admin_login_failed");
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
 
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      logger.warn(
+        { email: email.toLowerCase() },
+        "auth.admin_login_invalid_password"
+      );
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    const accessToken = jwt.sign(
+      { userId: user.id, role: user.role, email: user.email },
+      env.jwt.secret,
+      { expiresIn: "8h" } // Longer than student — admin sessions are supervised
+    );
+
+    const refreshToken = await issueRefreshToken({
+      userId: user.id,
+      role: user.role,
+      email: user.email,
+    });
+
+    logger.info(
+      { email: email.toLowerCase(), userId: user.id },
+      "auth.admin_login_successful"
+    );
+    return res.status(200).json({
+      accessToken,
+      refreshToken,
+      message: "Login successful",
+    });
+  } catch (error) {
+    const errMessage = error instanceof Error ? error.message : "Unknown error";
+    logger.error({ err: errMessage }, "auth.admin_login_error");
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─────────────────────────────────────────────
+// logoutStudent
+// Revokes the refresh token from Redis — instant
+// invalidation regardless of JWT expiry time.
+// Accepts refreshToken in request body.
+// ─────────────────────────────────────────────
+export const logoutStudent = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (refreshToken) {
+      // Extract tokenId from the JWT, then delete from Redis.
+      // We ignore errors here — logging out should always succeed
+      // even if the token is already expired or invalid.
+      const payload = await verifyRefreshToken(refreshToken);
+      if (payload) {
+        await revokeRefreshToken(payload.tokenId);
+      }
+    }
+
+    logger.info("auth.logout_successful");
     return res.status(200).json({
       success: true,
-      message: "Successfully logged out",
+      message: "Logged out successfully",
     });
   } catch (err) {
     logger.error({ err }, "auth.logout_failed");
@@ -255,6 +362,52 @@ export const logoutStudent = (req: Request, res: Response) => {
   }
 };
 
+// ─────────────────────────────────────────────
+// refreshAccessToken
+// Verifies the refresh token against Redis,
+// issues a new accessToken. The refresh token
+// TTL does not reset on use — no sliding sessions.
+// This prevents indefinite extension without
+// re-authentication.
+// ─────────────────────────────────────────────
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+
+    const payload = await verifyRefreshToken(refreshToken);
+
+    if (!payload) {
+      // Covers: invalid signature, expired JWT, revoked (DEL'd from Redis)
+      return res
+        .status(401)
+        .json({ message: "Invalid or expired refresh token" });
+    }
+
+    // Admin gets longer-lived access tokens than students/agents
+    const expiresIn = payload.role === "ADMIN" ? "8h" : "1h";
+
+    const accessToken = jwt.sign(
+      { userId: payload.userId, role: payload.role, email: payload.email },
+      env.jwt.secret,
+      { expiresIn }
+    );
+
+    logger.info({ userId: payload.userId }, "auth.token_refreshed");
+    return res.status(200).json({ accessToken });
+  } catch (error) {
+    const errMessage = error instanceof Error ? error.message : "Unknown error";
+    logger.error({ err: errMessage }, "auth.refresh_error");
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─────────────────────────────────────────────
+// confirmCard
+// ─────────────────────────────────────────────
 export const confirmCard = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
@@ -270,7 +423,7 @@ export const confirmCard = async (req: AuthenticatedRequest, res: Response) => {
         .json({ success: false, message: "OTP is required" });
     }
 
-    // Validate OTP format — must be exactly 6 digits
+    // OTP must be exactly 6 digits
     if (!/^\d{6}$/.test(otp)) {
       return res.status(400).json({
         success: false,
@@ -286,7 +439,8 @@ export const confirmCard = async (req: AuthenticatedRequest, res: Response) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.error("[confirmCard] Error:", error);
+    const errMessage = error instanceof Error ? error.message : "Unknown error";
+    logger.error({ err: errMessage }, "auth.confirm_card_error");
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });

@@ -9,10 +9,8 @@ import {
 
 const router = Router();
 
-// ─────────────────────────────────────────────
 // GET /api/notifications
 // Student's full notification feed + unread count.
-// ─────────────────────────────────────────────
 router.get("/", async (req: CustomAuthRequest, res: Response) => {
   try {
     const result = await getNotifications(req.user!.userId);
@@ -24,11 +22,9 @@ router.get("/", async (req: CustomAuthRequest, res: Response) => {
   }
 });
 
-// ─────────────────────────────────────────────
 // PATCH /api/notifications/mark-all-read
 // Must be defined BEFORE /:id/mark-read so Express
 // doesn't interpret "mark-all-read" as a dynamic :id.
-// ─────────────────────────────────────────────
 router.patch("/mark-all-read", async (req: CustomAuthRequest, res: Response) => {
   try {
     const result = await markAllNotificationsRead(req.user!.userId);
@@ -42,10 +38,8 @@ router.patch("/mark-all-read", async (req: CustomAuthRequest, res: Response) => 
   }
 });
 
-// ─────────────────────────────────────────────
 // PATCH /api/notifications/:id/mark-read
 // Marks a single notification as read.
-// ─────────────────────────────────────────────
 router.patch(
   "/:id/mark-read",
   async (

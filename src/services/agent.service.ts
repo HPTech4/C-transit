@@ -1,17 +1,19 @@
+// src/services/agent.service.ts
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
 import env from "../config/env.js";
 import logger from "../config/logger.js";
+import { issueRefreshToken } from "./token.service.js";
 
 // ─────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────
 
-// What the controller receives after a successful login.
-// Password hash is stripped inside this service — never leaves here.
+// Updated to include refreshToken alongside the access token
 export interface AgentLoginResult {
   token: string;
+  refreshToken: string; // ← added
   agent: {
     id: string;
     firstname: string;
@@ -86,24 +88,25 @@ async function loginAgent(
     );
   }
 
-  // Token expiry for agents — matches the session duration expected for
-  // internal staff. Adjust here if agent sessions need a different window
-  // to the student token expiry defined in the main auth service.
-  const AGENT_TOKEN_EXPIRY = "8h";
-
   const token = jwt.sign(
     { userId: agent.id, role: "AGENT", email: agent.email },
     env.jwt.secret,
-    { expiresIn: AGENT_TOKEN_EXPIRY }
+    { expiresIn: "8h" }
   );
+
+  // Issue refresh token — stored in Redis under refresh:{tokenId}
+  // with 7-day TTL. Revoked on logout via DELETE /api/auth/logout.
+  const refreshToken = await issueRefreshToken({
+    userId: agent.id,
+    role: "AGENT",
+    email: agent.email,
+  });
 
   logger.info({ agentId: agent.id }, "agent.login_success");
 
-  // Build return object explicitly from the select fields — avoids a
-  // destructure-to-discard pattern that triggers no-unused-vars on the
-  // stripped password variable
   return {
     token,
+    refreshToken, // ← added
     agent: {
       id: agent.id,
       firstname: agent.firstname,

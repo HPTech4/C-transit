@@ -8,11 +8,9 @@ import {
 
 const router = Router();
 
-// ─────────────────────────────────────────────
 // POST /api/disputes
 // Student raises a dispute against a RIDE transaction.
 // Body: { transactionId, description }
-// ─────────────────────────────────────────────
 router.post(
   "/",
   async (
@@ -71,11 +69,9 @@ router.post(
   }
 );
 
-// ─────────────────────────────────────────────
 // GET /api/disputes
 // Returns the authenticated student's own disputes
 // with the disputed transaction summary inline.
-// ─────────────────────────────────────────────
 router.get("/", async (req: CustomAuthRequest, res: Response) => {
   try {
     const disputes = await getStudentDisputes(req.user!.userId);

@@ -7,6 +7,8 @@ import {
   type DriverEventData,
   type DriverRegisterData,
 } from "../utils/parser.js";
+// uplinkRouter.ts — add import at top
+import { verifyAndUnwrap } from "../services/hmac.service.js";
 import { ingestTransactionBatch } from "../services/ingestion.service.js";
 import { handlePendingLink } from "../services/registration.service.js";
 import { handleLwtEvent } from "./lwtHandler.js";
@@ -35,6 +37,8 @@ function extractTerminalId(topic: string): string | null {
   return id;
 }
 
+// uplinkRouter.ts — replace routeUplinkMessage function only
+
 async function routeUplinkMessage(
   topic: string,
   payloadBuffer: Buffer
@@ -46,30 +50,46 @@ async function routeUplinkMessage(
   }
 
   const log = logger.child({ terminalId, topic });
-  const rawPayload = payloadBuffer.toString("utf8").trim();
+  const rawMessage = payloadBuffer.toString("utf8").trim();
 
+  // ── Status messages bypass HMAC ───────────────────────────────────────
+  // LWT and status payloads ("ONLINE" / "OFFLINE") are published by the
+  // broker on behalf of the terminal — they cannot be HMAC-signed.
+  // These are safe to process unsigned: they only update terminal status
+  // in DB and flush the Redis queue — no financial logic runs here.
   if (topic.endsWith("/status")) {
-    await handleLwtEvent(terminalId, rawPayload);
+    await handleLwtEvent(terminalId, rawMessage);
     return;
   }
+
   if (!topic.endsWith("/tx")) {
     log.warn("uplink.unexpected_topic_suffix — discarding");
     return;
   }
 
-  const payloadType = detectPayloadType(rawPayload);
+  // ── HMAC verification gate ────────────────────────────────────────────
+  // All /tx messages must be signed. verifyAndUnwrap returns the raw
+  // payload with the HMAC wrapper stripped, or null on any failure.
+  // Failures are logged inside verifyAndUnwrap — no need to log here.
+  const payload = await verifyAndUnwrap(terminalId, rawMessage);
+  if (!payload) {
+    // verifyAndUnwrap already logged the reason — just discard silently
+    return;
+  }
+
+  const payloadType = detectPayloadType(payload);
   log.debug(
-    { payloadType, payloadLength: rawPayload.length },
+    { payloadType, payloadLength: payload.length },
     "uplink.message_received"
   );
 
   switch (payloadType) {
     case PAYLOAD_TYPE.TRANSACTION_BATCH:
-      await ingestTransactionBatch(terminalId, rawPayload);
+      await ingestTransactionBatch(terminalId, payload);
       break;
 
     case PAYLOAD_TYPE.PENDING_LINK: {
-      const { data, error } = parsePendingLink(rawPayload);
+      const { data, error } = parsePendingLink(payload);
       if (error) {
         log.warn({ error }, "uplink.pending_link_parse_error — discarding");
         return;
@@ -79,12 +99,13 @@ async function routeUplinkMessage(
       }
       break;
     }
+
     case PAYLOAD_TYPE.SYS_FULL_SYNC:
       await handleFullSyncRequest(terminalId, log);
       break;
 
     case PAYLOAD_TYPE.DRIVER_EVENT: {
-      const { data, error } = parseDriverEvent(rawPayload);
+      const { data, error } = parseDriverEvent(payload);
       if (error) {
         log.warn({ error }, "uplink.driver_event_parse_error — discarding");
         return;
@@ -94,8 +115,9 @@ async function routeUplinkMessage(
       }
       break;
     }
+
     case PAYLOAD_TYPE.DRIVER_REGISTER: {
-      const { data, error } = parseDriverRegister(rawPayload);
+      const { data, error } = parseDriverRegister(payload);
       if (error) {
         log.warn({ error }, "uplink.driver_register_parse_error — discarding");
         return;
@@ -105,9 +127,10 @@ async function routeUplinkMessage(
       }
       break;
     }
+
     default:
       log.warn(
-        { rawPayload: rawPayload.substring(0, 80) },
+        { rawPayload: payload.substring(0, 80) },
         "uplink.unknown_payload_type"
       );
       break;

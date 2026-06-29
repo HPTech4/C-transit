@@ -20,6 +20,19 @@ import walletsRouter, {
   requireStudentAuth,
 } from "./src/controller/wallets.controller.js";
 import { authenticateToken } from "./src/middleware/auth.middleware.js";
+import {
+  globalLimiter,
+  loginLimiter,
+  adminLoginLimiter,
+  registerLimiter,
+  otpLimiter,
+  kycSubmitLimiter,
+  kycStatusLimiter,
+  transactionLimiter,
+  walletLimiter,
+  disputeLimiter,
+  notificationLimiter,
+} from "./src/middleware/rate-limit.middleware.js";
 
 const app = express();
 
@@ -32,15 +45,17 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://c-transit-new.vercel.app",
-      "https://c-transit-pink.vercel.app", // ← backend URL that fronted calls across
+      "https://c-transit-pink.vercel.app",
+      "https://ctransit.me",
     ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // ← OPTIONS required for preflight
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
 
 connectDB();
 
+// ── Request logger ────────────────────────────────────────────────────────
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   res.on("finish", () => {
@@ -58,6 +73,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// ── Global rate limit ceiling ─────────────────────────────────────────────
+// Applies to every route. Specific limiters below override this for
+// sensitive endpoints — express matches middleware in registration order.
+app.use(globalLimiter);
+
 app.get("/", (req: Request, res: Response) => {
   res.send("C-transit server is running");
 });
@@ -65,25 +85,59 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/health", healthRouter);
 app.use("/admin", adminRouter);
 
+// ── Auth ──────────────────────────────────────────────────────────────────
+// Specific limiters registered before the router so they fire first.
+// express-rate-limit matches on path prefix at the app level.
+app.use("/api/auth/register", registerLimiter);
+app.use("/api/auth/login", loginLimiter);
+app.use("/api/auth/admin/login", adminLoginLimiter);
+app.use("/api/auth/verify-otp", otpLimiter);
+app.use("/api/auth/resend-otp", otpLimiter);
 app.use("/api/auth", authRoutes);
 
 app.use("/api/users", userRoutes);
+
+// ── KYC ───────────────────────────────────────────────────────────────────
+app.use("/api/kyc/submit", kycSubmitLimiter);
+app.use("/api/kyc/status", kycStatusLimiter);
 app.use("/api/kyc", kycRoutes);
-app.use("/api/wallets", authenticateToken, requireStudentAuth, walletsRouter);
-app.use("/api/transactions", authenticateToken, transactionRoutes);
-// authenticateToken is not applied here — agent.routes.ts owns the full
+
+// ── Wallets ───────────────────────────────────────────────────────────────
+app.use(
+  "/api/wallets",
+  walletLimiter,
+  authenticateToken,
+  requireStudentAuth,
+  walletsRouter
+);
+
+// ── Transactions ──────────────────────────────────────────────────────────
+app.use(
+  "/api/transactions",
+  transactionLimiter,
+  authenticateToken,
+  transactionRoutes
+);
+
+// ── Agents ────────────────────────────────────────────────────────────────
+// authenticateToken not applied here — agent.routes.ts owns the full
 // middleware chain: authenticateToken → requireAgent → checkAgentActive
 app.use("/api/agents", agentRoutes);
-app.use("/api/disputes", disputeRoutes);
-app.use("/api/notifications", notificationRoutes);
 
-// 404 handler
+// ── Disputes ──────────────────────────────────────────────────────────────
+app.use("/api/disputes", disputeLimiter, disputeRoutes);
+
+// ── Notifications ─────────────────────────────────────────────────────────
+app.use("/api/notifications", notificationLimiter, notificationRoutes);
+
+// ── 404 ───────────────────────────────────────────────────────────────────
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Not found" });
 });
 
-// Global error handler — must have exactly 4 params for Express to
-// treat it as an error handler rather than a regular middleware
+// ── Global error handler ──────────────────────────────────────────────────
+// Must have exactly 4 params for Express to treat it as an error handler
+// rather than regular middleware — next is required even if unused.
 app.use((err: Error, req: Request, res: Response) => {
   logger.error({ err: err.message, path: req.path }, "http.unhandled_error");
   res.status(500).json({ error: "Internal server error" });

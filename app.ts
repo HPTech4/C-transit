@@ -36,6 +36,8 @@ import {
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 app.use(morgan("dev"));
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: false }));
@@ -43,10 +45,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(
   cors({
     origin: [
+      "https://ctransit.me",
       "http://localhost:5173",
       "https://c-transit-new.vercel.app",
       "https://c-transit-pink.vercel.app",
-      "https://ctransit.me",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
